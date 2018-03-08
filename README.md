@@ -22,3 +22,8 @@ python3 run_pilon.py \
   --threads 1 \
   --ram 16
 ```
+
+To config snpEff database, run the following script. Now that paths are hard-coded. SNPEff v2_0_5 was used for this task. 
+```
+sh snpeff_db.sh
+```
