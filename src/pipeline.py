@@ -1,7 +1,7 @@
 from subprocess import check_call
 import os
 import contextlib
-import configparser
+# import configparser
 
 @contextlib.contextmanager
 def cd(dir):
@@ -11,7 +11,6 @@ def cd(dir):
     os.chdir(original_path)
 
 def run(cmd):
-    # print(cmd)
     check_call(cmd, shell=True)
 
 def rm(file):
@@ -50,8 +49,7 @@ def bwa_align(fa, fq1, fq2, prefix):
     index_bam(sorted_bam)
     return sorted_bam
 
-def bam2fqs(bam, prefix, ram=4,
-            picard=):
+def bam2fqs(bam, prefix, ram, picard):
     ''' realign BAM file to a reference genome
         bam: bam file
         prefix: output prefix
@@ -64,7 +62,7 @@ def bam2fqs(bam, prefix, ram=4,
     run(cmd)
     return (fq1, fq2)
 
-def pilon(fa, bam, prefix, ram, threads=1, jar):
+def pilon(fa, bam, prefix, ram, threads, jar):
     '''
         fa: fasta file
         bam: bam
@@ -95,38 +93,46 @@ def update_snpeff_cfg(config, genome):
     config: snpeff's configuration file
     genome: name of genome
     """
-    
+
     return
 
-
-def snpeff_db(gff3, genome, config, prefix, ram, jar):
-    ''' create snpEff database
-    gff: gff file of gene annotation
-    genome: name of the reference genome
-    config: snpEff config files
-    prefix: output Prefix
-    ram: RAM in GB
-    jar: snpEff jar
+def snpeff(invcf, outvcf, jar, config, genome, ram):
+    ''' run SNPEFF on a vcf
+    invcf: input vcf
+    outvcf: output vcf
+    jar: snpeff jar
+    genome: tag of genome name
+    ram: memory in GB
+    config: configuration file
     '''
-    os.mkdir(genome)
-    new_config = update_snpeff_cfg(config, genome)
-    cmd = ' '.join([
-        'java -Xmx4'+ram+'g',
-        '-jar', jar,
-        'build -gff3',
-        '-config', config])
-    return cmd
-
-def snpeff(invcf, outvcf, ram, jar):
-    ''' run SNPEFF '''
     cmd = ' '.join([
         'java -Xmx'+str(ram)+'g',
         '-jar', jar,
         'eff', '-v',
+        '-c', config,
         '-onlyCoding False',
-        '-i vcf -o vcf', invcf, '>', outvcf])
-    # run(cmd)
+        '-i vcf -o vcf', genome, invcf, '>', outvcf])
+    run(cmd)
     return cmd
+
+# def snpeff_db(gff3, genome, config, prefix, ram, jar):
+#     ''' create snpEff database
+#     gff: gff file of gene annotation
+#     genome: name of the reference genome
+#     config: snpEff config files
+#     prefix: output Prefix
+#     ram: RAM in GB
+#     jar: snpEff jar
+#     '''
+#     os.mkdir(genome)
+#     new_config = update_snpeff_cfg(config, genome)
+#     cmd = ' '.join([
+#         'java -Xmx4'+ram+'g',
+#         '-jar', jar,
+#         'build -gff3',
+#         '-config', config])
+#     return cmd
+
 
 # def process_pilon_out(log, outdir):
 #     ''' process pilon output

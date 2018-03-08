@@ -1,29 +1,72 @@
-# Evaluate pilon improvement of JEC21 using illumina data
-Run pilon to evaluate the quality of JEC21
+# Fungal pipeline
+Fungal genomic analysis pipeline
+## Introduction
+Fungal genomic analysis pipeline, including:
+* Reference genome quality evaluation
+* snpEff annotation
+* Variant calling
+* Phylogenetic tree
 
-## Prerequisite
-* Python3
-* Access to UGER farm
+## Projects using this pipeline
+* [Cryptococcus neoformans serotype D project](analysis/crypto/README.md)
+
+## Dependencies
+* python3
+* Bioinformatics tools need to be in the environment `PATH`.
 
 ## Usage
-Reproduce this work from UGER farm
+Below are major functionality of this pipeline:
+### Evaluate reference genome quality with pilon: `run_pilon.py`
+
 ```
-use UGER
-qsub src/launch_to_uger.sh
+usage: run_pilon.py [-h] --prefix PREFIX --bam BAM --fa FA [--outdir OUTDIR]
+                    [--gff3 GFF3] [--ram RAM] [--threads THREADS]
+                    [--picard_jar PICARD_JAR] [--snpeff_jar SNPEFF_JAR]
+                    [--pilon_jar PILON_JAR] [--snpeff_db SNPEFF_DB]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --gff3 GFF3           GFF3 annotation
+  --ram RAM             RAM usage of input file
+  --threads THREADS     Number of threads for pilon
+  --picard_jar PICARD_JAR
+                        Picard jar
+  --snpeff_jar SNPEFF_JAR
+                        Jar to snpeff
+  --pilon_jar PILON_JAR
+                        Pilon Jar
+  --snpeff_db SNPEFF_DB
+                        snpEff database
+
+Required arguments:
+  --prefix PREFIX       output prefix
+  --bam BAM             input bam
+  --fa FA               reference genome fasta file to evaluate
+  --outdir OUTDIR       output directory
+
 ```
 
-To run the pilon pipeline manually, do:
-```
-python3 run_pilon.py \
-  --outdir /gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21 \
-  --fa /gsap/garage-fungal/Crypto_neoformans_seroD_B454/assembly/JEC21.fasta \
-  --bam /seq/picard_aggregation/G138688/AFA_1003_15/v1/AFA_1003_15.bam \
-  --prefix AFA_1003_15 \
-  --threads 1 \
-  --ram 16
-```
+### Annotation genomic variants with snpEff: `run_snpeff.py`
 
-To config snpEff database, run the following script. Now that paths are hard-coded. SNPEff v2_0_5 was used for this task. 
 ```
-sh snpeff_db.sh
+usage: run_snpeff.py [-h] -i INPUT_VCF -o OUTPUT_VCF --genome_name GENOME_NAME
+                     -c CONFIG [-m RAM] [--snpeff_jar SNPEFF_JAR]
+
+Run snpeff
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -m RAM, --ram RAM     RAM usage
+  --snpeff_jar SNPEFF_JAR
+                        jar file of snpeff
+
+required arguments:
+  -i INPUT_VCF, --input_vcf INPUT_VCF
+                        input vcf
+  -o OUTPUT_VCF, --output_vcf OUTPUT_VCF
+                        Output vcf
+  --genome_name GENOME_NAME
+                        genome name in snpeff config file
+  -c CONFIG, --config CONFIG
+                        config file for snpeff
 ```

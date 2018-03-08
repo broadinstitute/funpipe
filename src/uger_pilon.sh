@@ -23,7 +23,7 @@ reuse .python-3.6.3
 reuse group=gtba
 reuse GAEMER
 
-export PATH=/gsap/garage-fungal/OBA/FungalProjects/B454_Crypto_PhaseIII/src:$PATH
+export PATH=/cil/shed/sandboxes/xiaoli/fungal-pipeline/src:$PATH
 
 run_pilon.py \
   --outdir /gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21 \
