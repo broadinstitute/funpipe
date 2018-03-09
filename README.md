@@ -11,7 +11,7 @@ Fungal genomic analysis pipeline, including:
 * [Cryptococcus neoformans serotype D project](analysis/crypto/README.md)
 
 ## Dependencies
-* python3
+* Python-3.4
 * Bioinformatics tools need to be in the environment `PATH`.
 
 ## Usage
