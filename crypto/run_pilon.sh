@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 
 #$ -l h_rt=06:16:16
-#$ -N JEC21_pilon
+#$ -N cserod_pilon
 #$ -l h_vmem=16g
 #$ -pe smp 1
-#$ -binding linear:4
+#$ -binding linear:1
 #$ -R y
 #$ -P gscid
 #$ -m ea
 #$ -M xiaoli@broadinstitute.org
-#$ -o /gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21
+#$ -o /gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21_NCBI
 #$ -cwd
 #$ -j y
 
@@ -26,9 +26,9 @@ reuse GAEMER
 export PATH=/cil/shed/sandboxes/xiaoli/fungal-pipeline/src:$PATH
 
 run_pilon.py \
-  --outdir /gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21 \
-  --fa /gsap/garage-fungal/Crypto_neoformans_seroD_B454/assembly/JEC21.fasta \
+  --outdir /gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21_NCBI \
+  --fa /gsap/garage-fungal/Crypto_neoformans_seroD_B454/assembly/NCBI_05Mar18/GCF_000149245.1_CNA3_genomic.fna \
   --bam /seq/picard_aggregation/G138688/AFA_1003_15/v1/AFA_1003_15.bam \
-  --prefix AFA_1003_15 \
+  --prefix AFA_1003_15_NCBI \
   --threads 1 \
   --ram 16
