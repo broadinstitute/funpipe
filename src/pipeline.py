@@ -55,8 +55,8 @@ def bam2fqs(bam, prefix, ram, picard):
         prefix: output prefix
         fa: fasta file
     '''
-    fq1=prefix+'_1.fq'
-    fq2=prefix+'_2.fq'
+    fq1=prefix+'_1.fq.gz'
+    fq2=prefix+'_2.fq.gz'
     cmd = ' '.join(['java -Xmx'+str(ram)+'g', '-jar', picard, 'SamToFastq',
                     'I='+bam, 'F='+fq1, 'F2='+fq2])
     run(cmd)
@@ -78,23 +78,26 @@ def pilon(fa, bam, prefix, ram, threads, jar):
         '--frags', bam,
         '--output', prefix,
         '--threads', str(threads),
-        '--vcf --changes --tracks --verbose'])
+        '--vcf --changes --tracks --verbose > '+prefix+'.pilon.log 2>&1'])
     run(cmd)
+    return cmd
+
+def process_pilon_out(log, outdir):
+    ''' process pilon output
+        log: logfile
+        outdir: output directory
+    '''
+    cmd = ' '.join(['pilon_metrics', '-d', outdir, '-l', log])
+    run(cmd)
+    return cmd
 
 def index_bam(bam):
     run('samtools index '+bam)
+    return bam+'.bai'
 
 def bwa_index_fa(fa):
     run('bwa index '+fa)
     return fa+'.fai'
-
-def update_snpeff_cfg(config, genome):
-    """
-    config: snpeff's configuration file
-    genome: name of genome
-    """
-
-    return
 
 def snpeff(invcf, outvcf, jar, config, genome, ram):
     ''' run SNPEFF on a vcf
@@ -133,14 +136,10 @@ def snpeff(invcf, outvcf, jar, config, genome, ram):
 #         '-config', config])
 #     return cmd
 
-
-# def process_pilon_out(log, outdir):
-#     ''' process pilon output
-#         log: logfile
-#         outdir: output directory
-#     '''
-#     script='/gsap/assembly_analysis/apps/prod/pilon/bin/pilon_metrics'
-#     -l /path/pilon.logfile -d [/path/pilondirectory]
-#     cmd = ' '.join([
+# def update_snpeff_cfg(config, genome):
+#     """
+#     config: snpeff's configuration file
+#     genome: name of genome
+#     """
 #
-#     ])
+#     return
