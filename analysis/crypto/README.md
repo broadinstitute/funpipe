@@ -38,3 +38,28 @@ To config snpEff database, run the following script. Now that paths are hard-cod
 ```
 sh snpeff_db.sh
 ```
+
+### GATK variant calling
+Python virtual environment will be needed to use BTL's widdler. To setup the environment:
+```
+# create virtual environment
+use Python-2.7
+mkdir /cil/shed/sandboxes/user/ENV
+cd /cil/shed/sandboxes/user
+virtualenv ENV                          
+
+# install dependent packages
+source ENV/bin/activate
+pip install ratelimit
+pip install python-dateutil
+pip install pytz
+pip install sqlalchemy
+```
+submit and monitor wdl jobs
+```
+python widdler.py run /cil/shed/sandboxes/xiaoli/BTL-wdl/gatk/gatk.wdl \
+  /cil/shed/sandboxes/xiaoli/fungal-pipeline/analysis/crypto/gatk_test.json \
+  -S gscid-cromwell
+
+python widdler.py query 263d5cf5-8f18-4aa7-8af9-f55113e59117 -s -S gscid-cromwell
+```
