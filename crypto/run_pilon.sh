@@ -21,7 +21,7 @@ reuse .bwa-0.7.12
 reuse Java-1.8
 reuse .python-3.6.3
 reuse group=gtba
-reuse GAEMER
+reuse GAEMR
 
 export PATH=/cil/shed/sandboxes/xiaoli/fungal-pipeline/src:$PATH
 
