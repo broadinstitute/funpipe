@@ -23,11 +23,17 @@ def main(arguments):
     parser.add_argument('-m', '--ram', type=int, default=4, help='RAM usage')
     parser.add_argument('--snpeff_jar', help='jar file of snpeff',
         default='/gsap/garage-fungal/Crypto_neoformans_seroD_B454/annotation/snpeff_db/snpEff.jar')
-
+    parser.add_argument('--gff3', help='gff3 file')
+    parser.add_argument('--genome', help='tag of reference genome')
+    parser.add_argument('--ref_fa', help="Reference fasta file")
     args = parser.parse_args(arguments)
 
+    if args.snpeff_db:
+        snpeff_db(
+            args.gff3, args.dir, args.genome. args.config, args.prefix,
+            args.ram, args.jar, args.ref_fa)
     snpeff(args.input_vcf, args.output_vcf, args.snpeff_jar, args.config,
-        args.genome_name, args.ram)
+           args.genome_name, args.ram)
     print(args)
 
 if __name__ == '__main__':
