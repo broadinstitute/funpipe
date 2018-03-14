@@ -27,7 +27,7 @@ def sort_bam(bam, delete=True):
         rm(bam)
     return output
 
-def index_fa(fa):
+def samtools_index_fa(fa):
     ''' index a fasta file in place '''
     run('samtools faidx '+fa)
     return fa+'.fai'
@@ -40,7 +40,7 @@ def bwa_align(fa, fq1, fq2, prefix):
         prefix: output file prefix
     '''
     if not os.path.isfile(fa+'.fai'):
-        index_fa(fa)
+        samtools_index_fa(fa)
     if not (os.path.isfile(fa+'.bwt')):
         bwa_index_fa(fa)
     run(' '.join(['bwa mem', fa, fq1, fq2, '| samtools view -S -b -u > ',
@@ -118,28 +118,19 @@ def snpeff(invcf, outvcf, jar, config, genome, ram):
     run(cmd)
     return cmd
 
-# def snpeff_db(gff3, genome, config, prefix, ram, jar):
-#     ''' create snpEff database
-#     gff: gff file of gene annotation
-#     genome: name of the reference genome
-#     config: snpEff config files
-#     prefix: output Prefix
-#     ram: RAM in GB
-#     jar: snpEff jar
-#     '''
-#     os.mkdir(genome)
-#     new_config = update_snpeff_cfg(config, genome)
-#     cmd = ' '.join([
-#         'java -Xmx4'+ram+'g',
-#         '-jar', jar,
-#         'build -gff3',
-#         '-config', config])
-#     return cmd
-
-# def update_snpeff_cfg(config, genome):
-#     """
-#     config: snpeff's configuration file
-#     genome: name of genome
-#     """
-#
-#     return
+def snpeff_db(
+    gff3, dir, genome, config, prefix, ram, jar, ref_fa):
+    ''' Create snpEff database
+    gff3: gff file of gene annotation
+    genome: name of the reference genome
+    config: snpEff config files
+    prefix: output Prefix
+    ram: RAM in GB
+    jar: snpEff jar
+    ref_fa: reference fasta file
+    '''
+    snpeff_dir = os.path.dirname(jar)
+    cmd = ' '.join(['sh snpeff_db.sh', dir, snpeff_dir, genome, ref_fa, gff3,
+                    ram])
+    run(cmd)
+    return cmd
