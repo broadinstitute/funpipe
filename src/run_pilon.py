@@ -41,10 +41,10 @@ def parse_input_arg(args):
 def main(inargs):
     args = parse_input_arg(inargs)
     with(cd(args.outdir)):
-        # fq1, fq2 = bam2fqs(args.bam, args.prefix, args.ram, args.picard_jar)
-        # realign_bam = bwa_align(args.fa, fq1, fq2, args.prefix)
-        # pilon(args.fa, realign_bam, args.prefix, args.ram, args.threads,
-        #       args.pilon_jar)
+        fq1, fq2 = bam2fqs(args.bam, args.prefix, args.ram, args.picard_jar)
+        realign_bam = bwa_align(args.fa, fq1, fq2, args.prefix)
+        pilon(args.fa, realign_bam, args.prefix, args.ram, args.threads,
+              args.pilon_jar)
         process_pilon_out(args.prefix+'.pilon.log', '.')
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))

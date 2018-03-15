@@ -39,11 +39,13 @@ def pilon_log_metrics(logfile):
         version = v
     if version:
         metrics.append(Metric('pilonVersion', 'Pilon Version', 'string', version))
+
     genome = None
     for g in re.compile("Copying reference genome (.*)").findall(log):
         genome = g
     if version:
         metrics.append(Metric('reference', 'Reference genome', 'string', genome))
+
     bams = {}
     coverage = {}
     coverage_re = re.compile("(\w+) ([A-Za-z0-9._-]+) Reads: [0-9]+, Coverage: ([0-9]+)")
@@ -105,13 +107,13 @@ if __name__ == '__main__':
     parser = OptionParser(usage="""
     usage: %prog [options] <pilon_output_directory>
 
-    Parses pilon output and generates metrics.
+    Parses pilon log and generates summary metrics.
     """)
 
     parser.add_option('--log', '-l', default='pilon.log',
                       help='Name of pilon log file')
     parser.add_option('--directory', '-d', default='.',
-                      help='Directory of pilon output')
+                      help='Directory of pilon log')
 
     (options, args) = parser.parse_args()
 
