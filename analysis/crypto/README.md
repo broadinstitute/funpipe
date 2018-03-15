@@ -1,30 +1,25 @@
 # Cryptococcus neoformans serotype D project
-Documentation of analysis on Cryptococcus neoformans serotype D project.
+Commands to reproduce analysis of Cryptococcus neoformans serotype D project.
 
 ## Introduction
 Fungal genomic analysis pipeline, including pilon based reference genome refinement, snpeff variant annotation.
 
 ## Dependencies
-Pipeline now can only be run on Broad's `UGER` cluster. Tools and environment are set using `dotkit`.  
+* Analyses were set to run with `UGER` cluster. `dotkit` is needed to set proper tools in the running environment.  
+* Python virtual environment is needed to run `widdler`.
+* Set `fungal-pipeline/src` in your `PATH`.
 
 ### Evaluate pilon improvement of JEC21 using illumina data
-Reproduce the analysis, submit below jobs consecutively (note, in the future will be a single shell script).
+Reproduce the analysis, submit below jobs consecutively.
 Working directory and reference files are:
 ```
 dir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/  # working directory
-fa=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/assembly
-bams=
-```
-
-```
-use UGER
-qsub src/launch_to_uger.sh
-qsub src/
-qsub src/
+#
+qsub run_pilon.sh
 ```
 
 To run the pilon pipeline manually, do:
-```
+```shell
 python3 run_pilon.py \
   --outdir /gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21 \
   --fa /gsap/garage-fungal/Crypto_neoformans_seroD_B454/assembly/JEC21.fasta \
@@ -34,7 +29,13 @@ python3 run_pilon.py \
   --ram 16
 ```
 
-To config snpEff database, run the following script. Now that paths are hard-coded. SNPEff v2_0_5 was used for this task. snpEff is known to throw out pseudogenes and some transcripts, and this has not been updated in latest version (v4.3t) of it.
+To config snpEff database, run the following script.
+```
+qsub create_snpeff_db.sh
+```
+### Run snpEff
+
+`snpEff v4.1g` was used for this task. snpEff is known to throw out pseudogenes and some transcripts on mitochondrion, and this has not been updated in latest version (v4.3t).
 ```
 sh snpeff_db.sh
 ```
@@ -55,11 +56,9 @@ pip install python-dateutil
 pip install pytz
 pip install sqlalchemy
 ```
-submit and monitor wdl jobs
+Submit and monitor wdl jobs:
 ```
-python widdler.py run /cil/shed/sandboxes/xiaoli/BTL-wdl/gatk/gatk.wdl \
-  /cil/shed/sandboxes/xiaoli/fungal-pipeline/analysis/crypto/gatk_test.json \
-  -S gscid-cromwell
-
-python widdler.py query 263d5cf5-8f18-4aa7-8af9-f55113e59117 -s -S gscid-cromwell
+sh run_gatk.sh          # submit job
+query_task              # monitor job
+task_dir <task id>      # print task directory
 ```
