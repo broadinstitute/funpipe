@@ -5,4 +5,4 @@ use Python-2.7
 source /cil/shed/sandboxes/xiaoli/ENV/bin/activate # activate virtual environment
 export PATH=/cil/shed/sandboxes/xiaoli/widdler:$PATH
 
-widdler.py query $1 -S gscid-cromwell
+widdler.py $@ -S gscid-cromwell
