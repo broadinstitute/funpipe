@@ -59,6 +59,8 @@ pip install sqlalchemy
 Submit and monitor wdl jobs:
 ```
 sh run_gatk.sh          # submit job
-query_task              # monitor job
+widdler monitor         # monitor job
+widdler query           # query all finished jobs
+widdler abort <task id> # abort task
 task_dir <task id>      # print task directory
 ```
