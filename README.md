@@ -70,3 +70,12 @@ required arguments:
   -c CONFIG, --config CONFIG
                         config file for snpeff
 ```
+
+### WIDDLER wrapper
+This wrapper automatically setup virtual environment for running WDL. 
+```
+widdler monitor         # monitor job
+widdler query           # query all finished jobs
+widdler abort <task id> # abort task
+task_dir <task id>      # print task directory
+```
