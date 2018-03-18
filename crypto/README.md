@@ -9,12 +9,18 @@ Fungal genomic analysis pipeline, including pilon based reference genome refinem
 * Python virtual environment is needed to run `widdler`.
 * Set `fungal-pipeline/src` in your `PATH`.
 
+### Reference genomes
+Download reference genome for JEC21 from NCBI, perform md5sum check and patch contig names
+```
+get_annot.py              # in devel
+python3 patch_chrs.py     # patch : need to add command line args
+```
+
 ### Evaluate pilon improvement of JEC21 using illumina data
 Reproduce the analysis, submit below jobs consecutively.
 Working directory and reference files are:
 ```
 dir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/  # working directory
-#
 qsub run_pilon.sh
 ```
 
@@ -56,9 +62,15 @@ pip install python-dateutil
 pip install pytz
 pip install sqlalchemy
 ```
-Submit and monitor wdl jobs:
+Use tool `widdler` to automatic setup environment and analysis.
+
+Launch GATK jobs:
 ```
-sh run_gatk.sh          # submit job
+sh run_gatk.sh gatk_single_sample.json # test run on single sample
+sh run_gatk.sh gatk_pilot_samples.json # submit job
+```
+Monitor jobs:
+```
 widdler monitor         # monitor job
 widdler query           # query all finished jobs
 widdler abort <task id> # abort task
