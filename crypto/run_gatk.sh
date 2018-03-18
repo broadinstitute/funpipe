@@ -6,5 +6,5 @@ source /cil/shed/sandboxes/xiaoli/ENV/bin/activate # activate virtual environmen
 export PATH=/cil/shed/sandboxes/xiaoli/widdler:$PATH
 
 widdler.py run \
-  /cil/shed/sandboxes/xiaoli/BTL-wdl/gatk/gatk.wdl gatk_pilot_samples.json \
+  /cil/shed/sandboxes/xiaoli/BTL-wdl/gatk/gatk.wdl $1 \
   -S gscid-cromwell

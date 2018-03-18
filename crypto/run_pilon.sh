@@ -27,7 +27,7 @@ export PATH=/cil/shed/sandboxes/xiaoli/fungal-pipeline/src:$PATH
 
 run_pilon.py \
   --outdir /gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21_NCBI \
-  --fa /gsap/garage-fungal/Crypto_neoformans_seroD_B454/assembly/NCBI_05Mar18/GCF_000149245.1_CNA3_genomic.patched.noMT.fasta \
+  --fa /gsap/garage-fungal/Crypto_neoformans_seroD_B454/assembly/NCBI_JEC21/GCF_000091045.1_ASM9104v1_genomic.patched.noMT.fasta \
   --bam /seq/picard_aggregation/G138688/AFA_1003_15/v1/AFA_1003_15.bam \
   --prefix AFA_1003_15_NCBI \
   --threads 1 \
