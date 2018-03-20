@@ -1,4 +1,6 @@
 from subprocess import check_call
+#from plumbum import local
+#from plumbum.cmd import wget
 import os
 import contextlib
 # import configparser
@@ -82,12 +84,13 @@ def pilon(fa, bam, prefix, ram, threads, jar):
     run(cmd)
     return cmd
 
-def process_pilon_out(log, outdir):
+def process_pilon_out(log, outdir, prefix):
     ''' process pilon output
         log: logfile
         outdir: output directory
     '''
-    cmd = ' '.join(['pilon_metrics', '-d', outdir, '-l', log])
+    cmd = ' '.join(
+         ['pilon_metrics', '-d', outdir, '-l', log, '--out_prefix', prefix])
     run(cmd)
     return cmd
 
@@ -134,3 +137,28 @@ def snpeff_db(
                     ram])
     run(cmd)
     return cmd
+
+# def get_ref(ftp, md5, dir='.'):
+#     """ download reference files from NCBI and perform md5sumcheck to files
+#     :param ftp: ftp URL
+#     :param md5: file that contains md5checksum results for
+#     :param dir: destination directory
+#     """
+#     wget[ftp, dir]()
+#     if md5:
+#         with open(md5, 'r') as tsv:
+#             for line in tsv:
+#                 checksum, file = line.strip().split()
+#                 check_md5(file, checksum)
+
+
+# def check_md5(file, checksum):
+#     """ perform md5 check sum
+#     :param file: file to check
+#     :param checksum: known checksum value
+#     """
+#     cmd = local['md5sum', file]
+#     if :
+#         return True
+#     else:
+#         return False

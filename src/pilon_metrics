@@ -1,4 +1,5 @@
-#!/bin/env python2
+#!/bin/env python
+# Use python 2.7.1
 import os, sys, re
 from optparse import OptionParser
 from gaemr.SimpleTable import SimpleTable
@@ -13,22 +14,24 @@ class Metric:
     def __str__(self):
         return "%s\t%s\t%s\t%s" % (self.name, self.value, self.type, self.desc)
 
-def make_gaemr_table(metrics):
+def make_gaemr_table(metrics, output_prefix):
     data = []
     headers = []
     for m in metrics:
         metrics_string = m.__str__()
         fields = metrics_string.split('\t')
         if fields[-1] == 'Pilon Version':
-            headers = [fields[-1],fields[1]]
+            headers = [fields[-1], fields[1]]
         else:
-            data.append([''.join(word.capitalize() + " " for word in fields[-1].split()),fields[1]])
+            data.append(
+                [''.join(word.capitalize() + " " for word in fields[-1].split()),
+                 fields[1]])
 
-    st = SimpleTable(headers,data,"Pilon Metrics")
-    st.print_output("Pilon.pilon_metrics")
+    st = SimpleTable(headers, data, "Pilon Metrics")
+    st.print_output(output_prefix)
 
 
-def pilon_log_metrics(logfile):
+def pilon_log_metrics(logfile, output_prefix):
     metrics = []
 
     with open(logfile, 'r') as f:
@@ -98,10 +101,7 @@ def pilon_log_metrics(logfile):
     metrics.append(Metric('collapsedRegions', 'Collapsed regions', 'int', collapsed_regions))
     metrics.append(Metric('collapsedBases', 'Collapsed bases', 'int', collapsed_bases))
 
-    make_gaemr_table(metrics)
-
-    for m in metrics:
-        print m
+    make_gaemr_table(metrics, output_prefix)
 
 if __name__ == '__main__':
     parser = OptionParser(usage="""
@@ -112,12 +112,15 @@ if __name__ == '__main__':
 
     parser.add_option('--log', '-l', default='pilon.log',
                       help='Name of pilon log file')
-    parser.add_option('--directory', '-d', default='.',
-                      help='Directory of pilon log')
+    parser.add_option('--dir', '-d', default='.',
+                      help="output directory of pilon summary")
+    parser.add_option('--out_prefix', default='Pilon.pilon_metrics',
+                      help="Output pilon metrics")
 
     (options, args) = parser.parse_args()
 
     # back compatibility...free argument is directory
     if len(args) == 1: options.directory = args[0]
 
-    pilon_log_metrics(os.path.join(options.directory, options.log))
+    pilon_log_metrics(
+        options.log, os.path.join(options.dir, options.out_prefix))
