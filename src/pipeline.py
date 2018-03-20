@@ -138,6 +138,29 @@ def snpeff_db(
     run(cmd)
     return cmd
 
+def bam_depth(bam):
+    cmd = 'samtools depth '+bam+' | bgzip > '+bam+'.depth.gz'
+    run(cmd)
+    tabix(bam+'.depth.gz')
+    return cmd
+
+def depth_per_window(pileup, out_prefix, window=10000):
+    '''
+    :param pileup: pileup file from samtools
+    :param window: window size in basepair
+    '''
+    out_file = output_prefix+'.tsv.gz'
+    cmd = 'get_aln_den_per_window_v2.pl '+pileup+' |bgzip > '+out_file
+    run(cmd)
+    tabix(out_file)
+    return
+
+def tabix(file, type=None):
+    cmd = 'tabix '+file
+    if type:
+        cmd += '-p '+type
+    run(cmd)
+
 # def get_ref(ftp, md5, dir='.'):
 #     """ download reference files from NCBI and perform md5sumcheck to files
 #     :param ftp: ftp URL
