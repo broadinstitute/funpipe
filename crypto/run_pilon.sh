@@ -19,7 +19,7 @@ reuse GCC-5.2
 reuse .samtools-1.3
 reuse .bwa-0.7.12
 reuse Java-1.8
-reuse .python-3.6.3
+reuse Python-2.7
 reuse group=gtba
 reuse GAEMR
 
