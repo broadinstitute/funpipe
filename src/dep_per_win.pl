@@ -11,11 +11,11 @@ use Data::Dumper;
 sub help{
    print STDERR qq{
    Usage: dep_per_win.pl
-      --output_dir|o            output directory
-      --prefix|p           output prefix
-      --window             sliding window size
-      --mpileup|m          pileup
-      --faidx
+      --output_dir|o       Output directory
+      --prefix|p           Output prefix
+      --window             Sliding window size
+      --mpileup|m          Pileup
+      --faidx              Fasta index file
       --h|help\n
    };
    exit 2;
