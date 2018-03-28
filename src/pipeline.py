@@ -138,28 +138,38 @@ def snpeff_db(
     run(cmd)
     return cmd
 
-def bam_depth(bam):
-    cmd = 'samtools depth '+bam+' | bgzip > '+bam+'.depth.gz'
+def bam_depth(bam, out_prefix, idx=False):
+    ''' calculate bam depth
+    :param bam: input to bam file
+    :param out_prefix: output Prefix
+    :param idx: output index
+    '''
+    outfile = out_prefix+'.depth.gz'
+    cmd = 'samtools depth '+bam+' | bgzip > '+ outfile
     run(cmd)
-    tabix(bam+'.depth.gz')
-    return cmd
+    if idx:
+        tabix(outfile, type='vcf')
+    return outfile
 
-def depth_per_window(pileup, out_prefix, window=10000):
+def depth_per_window(pileup, out_prefix, faidx, window=5000):
     '''
     :param pileup: pileup file from samtools
     :param window: window size in basepair
     '''
-    out_file = output_prefix+'.tsv.gz'
-    cmd = 'get_aln_den_per_window_v2.pl '+pileup+' |bgzip > '+out_file
+    cmd = ' '.join([
+        'dep_per_win.pl -m', pileup,
+        '-p', out_prefix,
+        '--window', str(window),
+        '--faidx', faidx])
     run(cmd)
-    tabix(out_file)
-    return
+    return cmd
 
 def tabix(file, type=None):
     cmd = 'tabix '+file
     if type:
-        cmd += '-p '+type
+        cmd += ' -p '+type
     run(cmd)
+
 
 # def get_ref(ftp, md5, dir='.'):
 #     """ download reference files from NCBI and perform md5sumcheck to files

@@ -72,10 +72,33 @@ required arguments:
 ```
 
 ### WIDDLER wrapper
-This wrapper automatically setup virtual environment for running WDL. 
+This wrapper automatically setup virtual environment for running WDL.
 ```
 widdler monitor         # monitor job
 widdler query           # query all finished jobs
 widdler abort <task id> # abort task
 task_dir <task id>      # print task directory
+```
+
+### Run GATK-WDL
+Before analysis, update `json` file to corresponding `gatk.wdl`, then launch analysis with:
+```
+widdler run gatk.wdl example.json
+```
+
+### Ploidy analysis
+```
+usage: run_ploidy.py [-h] -i BAM --faidx FAIDX [--prefix PREFIX] [-o OUT_DIR]
+
+run ploidy analysis by analysing
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --prefix PREFIX       Prefix of output files
+  -o OUT_DIR, --out_dir OUT_DIR
+                        Output file
+
+required arguments:
+  -i BAM, --bam BAM     Input file
+  --faidx FAIDX         fasta index
 ```
