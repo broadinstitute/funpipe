@@ -76,3 +76,8 @@ widdler query           # query all finished jobs
 widdler abort <task id> # abort task
 task_dir <task id>      # print task directory
 ```
+
+### Ploidy analysis
+```
+qsub run_ploidy.sh
+```
