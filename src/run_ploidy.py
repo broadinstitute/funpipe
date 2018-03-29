@@ -11,7 +11,7 @@ def run_ploidy(bam, faidx):
     depth_per_window(pileup, os.path.basename(bam), faidx)
     # rm(sorted_bam)
 
-def main(arguments):
+if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='run ploidy analysis by analysing ')
     # required arguments
@@ -19,15 +19,13 @@ def main(arguments):
     required.add_argument(
         '-i', '--bam', required=True, help='Input file')
     required.add_argument(
-        '--faidx', required=True, help='fasta index')
+        '--faidx', required=True, help='Fasta index')
     # optional arguments
     parser.add_argument('--prefix', help='Prefix of output files')
     parser.add_argument(
         '-o', '--out_dir', help="Output file", default='.')
 
-    args = parser.parse_args(arguments)
-    cd(args.out_dir)
-    run_ploidy(args.bam, args.faidx)
+    args = parser.parse_args()
 
-if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:]))
+    with cd(args.out_dir):
+        run_ploidy(args.bam, args.faidx)
