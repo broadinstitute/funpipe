@@ -1,8 +1,9 @@
 from subprocess import check_call
-#from plumbum import local
-#from plumbum.cmd import wget
 import os
 import contextlib
+
+# from plumbum import local
+# from plumbum.cmd import wget
 # import configparser
 
 @contextlib.contextmanager
@@ -18,19 +19,24 @@ def run(cmd):
 def rm(file):
     run('rm '+file)
 
-def sort_bam(bam, delete=True):
+def sort_bam(bam, out_dir='.', delete=False):
+    ''' sort BAM using samtools
+    :param bam: input bam
+    :param out_dir: output directory, default '.'
+    :param delete: delete original BAM
     '''
-    bam: input bam
-    delete: delete original bam
-    '''
-    output = bam[:-4] + '.sorted.bam'
-    run('samtools sort '+bam+' > '+output)
+    bam_name = os.path.basename(bam)
+    outfile = os.path.join(
+        out_dir, os.path.splitext(bam_name)[0] + '.sorted.bam')
+    run('samtools sort '+bam+' > '+outfile)
     if delete:
         rm(bam)
     return output
 
 def samtools_index_fa(fa):
-    ''' index a fasta file in place '''
+    ''' index a fasta file in place
+    :param fa: fasta file
+    '''
     run('samtools faidx '+fa)
     return fa+'.fai'
 
@@ -165,11 +171,95 @@ def depth_per_window(pileup, out_prefix, faidx, window=5000):
     return cmd
 
 def tabix(file, type=None):
+    ''' Index tabix file
+    :param file: input file
+    :param type: file type, vcf
+    '''
     cmd = 'tabix '+file
     if type:
         cmd += ' -p '+type
     run(cmd)
 
+def fa2phylip(fa, out_prefix, jar):
+    ''' transfer fasta file to phylip with java tool readSeq
+    :param fa: fasta file
+    :param jar: path to readseq.jar
+    :param out_prefix:
+    '''
+    cmd = ' '.join(['java -cp', jar, 'run -f 12', fa])
+    run(cmd)
+    return
+
+def ramxl(phylip, output, threads):
+    ''' Run RAaML
+    :param phylip: input phylip format file
+    :param output: output file name
+    :param threads: number of threads used for
+    '''
+    cmd = ' '.join([
+        'raxmlHPC-PTHREADS-SSE3 -p 78960 -f a -x 12345 -N 1000 -m GTRCAT',
+        '-T', str(threads), '-n', output, '-s', phylip])
+    run(cmd)
+    return output
+
+def fasttree(fa, prefix):
+    ''' Run FastTreeDP
+    :param fa: fasta file
+    :param prefix: output prefix
+    '''
+    cmd = ' '.join([
+        'FastTreeDP -nt', fa, '>', out_prefix+'.nwk'
+    ])
+    return prefix+'.nwk'
+
+def vcfsnpsToFa(vcf_list, out_prefix):
+    out_file = out_prefix+'.fasta'
+    cmd = ' '.join([
+        'vcfSnpsToFasta.py', vcf_list, '>', out_prefix+'.fasta'
+    ])
+    run(cmd)
+    return out_file
+
+def filterGatkGenotypes(vcf, out_prefix):
+    ''' filter Gatk output vcf
+    :param vcf: input vcf file
+    :param out_prefix: output prefix
+    '''
+    outfile = out_prefix+'_GQ50_AD08_DP10.vcf'
+    cmd = ' '.join([
+        'filterGatkGenotypes.py --min_GQ 50 --min_percent_alt_in_AD 0.8',
+        '--min_total_DP 10', vcf, '>', outfile
+    ])
+    run(cmd)
+    return outfile
+
+
+class gatk:
+    def __init__(self, fa, jar, out_dir='.', RAM=4):
+        ''' VCF sample QC
+        :param vcf: vcf file
+        :param fa: input Fasta
+        :param jar: input jar file
+        :param RAM: RAM usage
+        :param out_dir: output directory
+        '''
+        self.out_dir = out_dir
+        self.out = ''
+        self.cmd = ' '.join([
+            'java -Xmx'+str(RAM)+'g', jar, '-R', fa
+        ])
+
+    def variantEval(self, vcf, prefix):
+        ''' VCF sample QC
+        :param vcf: input vcf
+        :param prefix: output prefix
+        '''
+        out = os.path.join(self.out_dir, prefix+'.eval')
+        cmd = ' '.join([self.cmd, '-T variantEval', '--eval', vcf,
+            '-o', out, '--noEV -noST'
+        ])
+        run(cmd)
+        return out
 
 # def get_ref(ftp, md5, dir='.'):
 #     """ download reference files from NCBI and perform md5sumcheck to files
