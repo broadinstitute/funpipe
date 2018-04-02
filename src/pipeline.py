@@ -234,8 +234,22 @@ def filterGatkGenotypes(vcf, out_prefix):
     return outfile
 
 
+class picard:
+    def __init__(self, jar='/seq/software/picard/1.853/bin/picard.jar', RAM=4):
+        self.cmd = ' '.join([
+            'java -Xmx'+str(RAM)+'g -jar', jar
+        ])
+
+    def dict(self, fa, dict=None):
+        ''' build fasta dictionary '''
+        if dict is None:
+            dict = 'tmp'
+        cmd = ' '.join([self.cmd, "R="+fa, "O="+dict])
+        run(cmd)
+
 class gatk:
-    def __init__(self, fa, jar, out_dir='.', RAM=4):
+    def __init__(self, fa, jar='/xchip/gtex/xiaoli/tools/GenomeAnalysisTK.jar',
+                 out_dir='.', RAM=4):
         ''' VCF sample QC
         :param vcf: vcf file
         :param fa: input Fasta
@@ -246,18 +260,30 @@ class gatk:
         self.out_dir = out_dir
         self.out = ''
         self.cmd = ' '.join([
-            'java -Xmx'+str(RAM)+'g', jar, '-R', fa
+            'java -Xmx'+str(RAM)+'g -jar', jar, '-R', fa
         ])
 
-    def variantEval(self, vcf, prefix):
-        ''' VCF sample QC
+    def variantEval(
+        self, vcf, prefix, titv=True, samp=True, indel=True, multi=True):
+        ''' VCF sample QC by different stratifications
         :param vcf: input vcf
         :param prefix: output prefix
+        :param titv: use TiTv Evaluator
+        :param indel: use InDel Evaluator
+        :param multi: summarize multiallelic sites
+        :param samp: stratify by samples
         '''
         out = os.path.join(self.out_dir, prefix+'.eval')
-        cmd = ' '.join([self.cmd, '-T variantEval', '--eval', vcf,
-            '-o', out, '--noEV -noST'
-        ])
+        cmd = ' '.join([self.cmd, '-T VariantEval', '--eval', vcf,
+            '-o', out, '-noEV -noST -EV CountVariants'])
+        if titv:
+            cmd += ' -EV TiTvVariantEvaluator'
+        if samp:
+            cmd += ' -ST Sample'
+        if indel:
+            cmd += ' -EV IndelSummary'
+        if multi:
+            cmd += ' -EV MultiallelicSummary'
         run(cmd)
         return out
 
