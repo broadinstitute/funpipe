@@ -19,6 +19,15 @@ def run(cmd):
 def rm(file):
     run('rm '+file)
 
+def index_fa(fa):
+    ''' index fasta file with common genomic tools
+    :param fa: fasta file
+    '''
+    samtools_index_fa(fa)
+    bwa_index_fa(fa)
+    pcd = picard()
+    pcd.dict(fa)
+
 def sort_bam(bam, out_dir='.', delete=False):
     ''' sort BAM using samtools
     :param bam: input bam
