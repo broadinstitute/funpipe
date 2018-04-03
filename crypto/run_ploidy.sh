@@ -9,7 +9,7 @@
 #$ -P gscid
 #$ -t 1-24
 #$ -tc 0
-#$ -o /gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21_NCBI
+#$ -o /gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21_NCBI/ploidy
 #$ -cwd
 #$ -j y
 
@@ -21,9 +21,11 @@ reuse Python-3.4
 export PATH=/cil/shed/sandboxes/xiaoli/fungal-pipeline/src:$PATH
 export PYTHONPATH=/cil/shed/sandboxes/xiaoli/fungal-pipeline/src:$PYTHONPATH
 
-dir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21_NCBI
-bamlist="$dir"/pilot.aligned.bam_list.tsv
-faidx=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/assembly/NCBI_JEC21/GCF_000091045.1_ASM9104v1_genomic.patched.noMT.fasta.fai
+wkdir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454
+prjdir="$wkdir"/analysis/JEC21_NCBI
+
+bamlist="$prjdir"/pilot.realigned.bam_list.tsv
+faidx="$wkdir"/assembly/NCBI_JEC21/GCF_000091045.1_ASM9104v1_genomic.patched.noMT.fasta.fai
 
 bam=$(awk "NR==$SGE_TASK_ID" $bamlist)
-run_ploidy.py --bam $bam --out_dir $dir/ploidy --faidx $faidx
+run_ploidy.py --bam $bam --out_dir $prjdir/ploidy --faidx $faidx
