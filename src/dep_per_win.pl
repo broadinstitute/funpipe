@@ -21,7 +21,7 @@ sub help{
    exit 2;
 }
 
-sub output_bed{
+sub output_tsv{
   # output
   my ($prefix, $out_dir, $chrDep, $winSize) = @_;
   my $output = catfile($out_dir, $prefix.".depth.tsv");
@@ -118,6 +118,8 @@ my $out_dir = '.';
 );
 &help() if $help || $nOpts == 0;
 
+
+
 # initalize
 my $winEnd = $winSize - 1;  # end position of window
 my $currContig = 'NA';         # current contig
@@ -170,7 +172,7 @@ $$winDep{$currContig}{$currSliWin}{dep} = $depthSum/$winSize;
 my $chrlen = load_faidx($faidx);
 my $aveDep = average_depth($chrDep, $chrlen);
 depth_fold_change($winDep, $aveDep);
-output_bed($prefix, $out_dir, $winDep, $winSize);
+output_tsv($prefix, $out_dir, $winDep, $winSize);
 
 __END__
 =head1 NAME: dep_per_win.pl
