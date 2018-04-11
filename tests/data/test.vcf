@@ -1,0 +1,48 @@
+##fileformat=VCFv4.1
+##FILTER=<ID=PASS,Description="All filters passed">
+##fileDate=20180302
+##reference=file:/gsap/garage-fungal/Crypto_neoformans_seroD_B454/assembly/JEC21.fasta
+##contig=<ID=chr1,length=2300533>
+##contig=<ID=chr2,length=1632307>
+##contig=<ID=chr3,length=2105742>
+##contig=<ID=chr4,length=1783081>
+##contig=<ID=chr5,length=1507550>
+##contig=<ID=chr6,length=1438950>
+##contig=<ID=chr7,length=1347793>
+##contig=<ID=chr8,length=1194300>
+##contig=<ID=chr9,length=1178688>
+##contig=<ID=chr10,length=1085720>
+##contig=<ID=chr11,length=1019846>
+##contig=<ID=chr12,length=906719>
+##contig=<ID=chr13,length=787999>
+##contig=<ID=chr14,length=762694>
+##FILTER=<ID=LowCov,Description="Low Coverage of good reads at location">
+##FILTER=<ID=Amb,Description="Ambiguous evidence in haploid genome">
+##FILTER=<ID=Del,Description="This base is in a deletion or change event from another record">
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Valid read depth; some reads may have been filtered">
+##INFO=<ID=TD,Number=1,Type=Integer,Description="Total read depth including bad pairs">
+##INFO=<ID=PC,Number=1,Type=Integer,Description="Physical coverage of valid inserts across locus">
+##INFO=<ID=BQ,Number=1,Type=Integer,Description="Mean base quality at locus">
+##INFO=<ID=MQ,Number=1,Type=Integer,Description="Mean read mapping quality at locus">
+##INFO=<ID=QD,Number=1,Type=Integer,Description="Variant confidence/quality by depth">
+##INFO=<ID=BC,Number=4,Type=Integer,Description="Count of As, Cs, Gs, Ts at locus">
+##INFO=<ID=QP,Number=4,Type=Integer,Description="Percentage of As, Cs, Gs, Ts weighted by Q & MQ at locus">
+##INFO=<ID=IC,Number=1,Type=Integer,Description="Number of reads with insertion here">
+##INFO=<ID=DC,Number=1,Type=Integer,Description="Number of reads with deletion here">
+##INFO=<ID=XC,Number=1,Type=Integer,Description="Number of reads clipped here">
+##INFO=<ID=AC,Number=A,Type=Integer,Description="Allele count in genotypes, for each ALT allele, in the same order as listed">
+##INFO=<ID=AF,Number=A,Type=Float,Description="Fraction of evidence in support of alternate allele(s)">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##INFO=<ID=SVLEN,Number=.,Type=String,Description="Difference in length between REF and ALT alleles">
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the variant described in this record">
+##INFO=<ID=IMPRECISE,Number=0,Type=Flag,Description="Imprecise change from local reassembly (ALT contains Ns)">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=AD,Number=.,Type=String,Description="Allelic depths for the ref and alt alleles in the order listed">
+##FORMAT=<ID=DP,Number=1,Type=String,Description="Approximate read depth; some reads may have been filtered">
+##ALT=<ID=DUP,Description="Possible segmental duplication">
+##bcftools_viewVersion=1.6+htslib-1.6
+##bcftools_viewCommand=view AFA_1003_15.vcf.gz; Date=Thu Mar  8 16:18:48 2018
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	SAMPLE
+chr1	1	.	C	G	1560	PASS	DP=42;TD=72;BQ=37;MQ=37;QD=37;BC=0,42,0,0;QP=0,100,0,0;PC=53;IC=0;DC=0;XC=0;AC=0;AF=0	GT	0/0
+chr1	2	.	C	T	1632	PASS	DP=43;TD=74;BQ=38;MQ=37;QD=37;BC=0,43,0,0;QP=0,100,0,0;PC=55;IC=0;DC=0;XC=0;AC=0;AF=0	GT	0/0
+chr1	3	.	A	G	1659	PASS	DP=44;TD=77;BQ=38;MQ=38;QD=37;BC=44,0,0,0;QP=100,0,0,0;PC=55;IC=0;DC=0;XC=1;AC=0;AF=0	GT	0/0

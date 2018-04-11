@@ -1,0 +1,12 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+#!genome-build CNA3
+#!genome-build-accession NCBI_Assembly:GCF_000149245.1
+##sequence-region chr1 1 2291499
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=235443
+chr1	RefSeq	region	1	2291499	.	+	.	ID=id0;Dbxref=taxon:235443;Name=1;chromosome=1;gbkey=Src;genome=chromosome;mol_type=genomic DNA;strain=H99
+chr1	RefSeq	gene	100	5645	.	-	.	ID=gene0;Dbxref=GeneID:23887952;Name=CNAG_04548;end_range=5645,.;gbkey=Gene;gene_biotype=protein_coding;locus_tag=CNAG_04548;partial=true
+chr1	RefSeq	mRNA	100	5645	.	-	.	ID=rna0;Parent=gene0;Dbxref=GeneID:23887952,Genbank:XM_012190751.1;Name=XM_012190751.1;end_range=5645,.;gbkey=mRNA;partial=true;product=hypothetical protein;transcript_id=XM_012190751.1
+chr1	RefSeq	exon	5494	5645	.	-	.	ID=id1;Parent=rna0;Dbxref=GeneID:23887952,Genbank:XM_012190751.1;end_range=5645,.;gbkey=mRNA;partial=true;product=hypothetical protein;transcript_id=XM_012190751.1
+chr1	RefSeq	CDS	5494	5645	.	-	0	ID=cds0;Parent=rna0;Dbxref=GeneID:23887952,Genbank:XP_012046141.1;Name=XP_012046141.1;gbkey=CDS;product=hypothetical protein;protein_id=XP_012046141.1

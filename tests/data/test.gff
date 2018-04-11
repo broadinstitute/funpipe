@@ -1,0 +1,17 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+#!genome-build CNA3
+#!genome-build-accession NCBI_Assembly:GCF_000149245.1
+##sequence-region NC_026745.1 1 2291499
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=235443
+NC_026745.1	RefSeq	region	1	2291499	.	+	.	ID=id0;Dbxref=taxon:235443;Name=1;chromosome=1;gbkey=Src;genome=chromosome;mol_type=genomic DNA;strain=H99
+NC_026745.1	RefSeq	gene	100	5645	.	-	.	ID=gene0;Dbxref=GeneID:23887952;Name=CNAG_04548;end_range=5645,.;gbkey=Gene;gene_biotype=protein_coding;locus_tag=CNAG_04548;partial=true
+NC_026745.1	RefSeq	mRNA	100	5645	.	-	.	ID=rna0;Parent=gene0;Dbxref=GeneID:23887952,Genbank:XM_012190751.1;Name=XM_012190751.1;end_range=5645,.;gbkey=mRNA;partial=true;product=hypothetical protein;transcript_id=XM_012190751.1
+NC_026745.1	RefSeq	exon	5494	5645	.	-	.	ID=id1;Parent=rna0;Dbxref=GeneID:23887952,Genbank:XM_012190751.1;end_range=5645,.;gbkey=mRNA;partial=true;product=hypothetical protein;transcript_id=XM_012190751.1
+NC_026745.1	RefSeq	CDS	5494	5645	.	-	0	ID=cds0;Parent=rna0;Dbxref=GeneID:23887952,Genbank:XP_012046141.1;Name=XP_012046141.1;gbkey=CDS;product=hypothetical protein;protein_id=XP_012046141.1
+##sequence-region NC_018792.1 1 24919
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=235443
+NC_018792.1	RefSeq	region	1	 24919	 .	 +	 .	 ID=id60910;Dbxref=taxon:235443;Is_circular=true;Name=MT;gbkey=Src;genome=mitochondrion;mol_type=genomic DNA;strain=H99
+NC_018792.1	RefSeq	gene	20	2196	.	 +	 .	 ID=gene8311;Dbxref=GeneID:13824787;Name=CNAG_09000;gbkey=Gene;gene_biotype=protein_coding;locus_tag=CNAG_09000
+NC_018792.1	RefSeq	CDS	 20	233	 .	 +	 0	 ID=cds7813;Parent=gene8311;Dbxref=Genbank:YP_006883707.1,GeneID:13824787;Name=YP_006883707.1;gbkey=CDS;product=NADH dehydrogenase subunit 1;protein_id=YP_006883707.1;transl_table=4
