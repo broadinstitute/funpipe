@@ -18,7 +18,7 @@ reuse UGER
 reuse .samtools-1.3
 reuse Python-3.4
 reuse .htslib-1.7
-reuse .perl-5.24.1
+reuse .perl-5.18.1
 
 export PATH=/cil/shed/sandboxes/xiaoli/fungal-pipeline/src:$PATH
 export PYTHONPATH=/cil/shed/sandboxes/xiaoli/fungal-pipeline/src:$PYTHONPATH
