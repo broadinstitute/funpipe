@@ -76,7 +76,7 @@ widdler query           # query all finished jobs
 widdler abort <task id> # abort task
 task_dir <task id>      # print task directory
 ```
-
+Default task were sent to `gscid-cromwell`, if not working, could use alternative, such as `ale1`.
 ### Ploidy analysis
 ```
 qsub run_ploidy.sh
