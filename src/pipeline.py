@@ -370,11 +370,11 @@ class gatk:
         run(cmd)
         return out_vcf
 
-    def selectVar(self, in_vcf, xl=None, l=None):
+    def selectVar(self, in_vcf, xl=None, il=None):
         ''' select variants
         :param in_vcf: input vcf
         :param xl: intervals to exclude
-        :param l: intervals to include
+        :param il: intervals to include
         '''
         output = self.prefix+'.vcf.gz'
         cmd = ' '.join([
@@ -382,8 +382,8 @@ class gatk:
             '-o ', output])
         if xl is not None:
             cmd += '-XL '+xl
-        if l is not None:
-            cmd += '-L '+l
+        if il is not None:
+            cmd += '-L '+il
         run(cmd)
         return output
 
