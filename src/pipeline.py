@@ -307,8 +307,9 @@ class picard:
 
 
 class gatk:
-    def __init__(self, fa, jar='/xchip/gtex/xiaoli/tools/GenomeAnalysisTK.jar',
-                 out_dir='.', RAM=4):
+    def __init__(
+            self, fa, prefix='output', out_dir='.', RAM=4,
+            jar='/xchip/gtex/xiaoli/tools/GenomeAnalysisTK.jar'):
         ''' VCF sample QC
         :param vcf: vcf file
         :param fa: input Fasta
@@ -317,22 +318,20 @@ class gatk:
         :param out_dir: output directory
         '''
         self.out_dir = out_dir
-        self.out = ''
         self.cmd = ' '.join([
             'java -Xmx'+str(RAM)+'g -jar', jar, '-R', fa
         ])
+        self.prefix = prefix
 
-    def variantEval(self, vcf, prefix, titv=True, samp=True, indel=True,
-                    multi=True):
+    def variantEval(self, vcf, titv=True, samp=True, indel=True, multi=True):
         ''' VCF sample QC by different stratifications
         :param vcf: input vcf
-        :param prefix: output prefix
         :param titv: use TiTv Evaluator
         :param indel: use InDel Evaluator
         :param multi: summarize multiallelic sites
         :param samp: stratify by samples
         '''
-        out = os.path.join(self.out_dir, prefix+'.eval')
+        out = os.path.join(self.out_dir, self.prefix+'.eval')
         cmd = ' '.join([self.cmd, '-T VariantEval', '--eval', vcf,
                         '-o', out, '-noEV -noST -EV CountVariants'])
         if titv:
@@ -345,6 +344,89 @@ class gatk:
             cmd += ' -EV MultiallelicSummary'
         run(cmd)
         return out
+
+    def combineVar(self, vcf_dict, option, priority=None):
+        '''
+        :param vcf_dict: dictionary of vcf files, with key abbreviation of
+                         each vcf
+        :param prefix: output prefix
+        :param option: merging options
+        :param priority:
+        '''
+        out_vcf = self.prefix+'.vcf.gz'
+        options = ['UNIQUIFY', 'PRIORITIZE']
+        if option not in options:
+            raise ValueError('Merge option not valid.\n')
+        if option == 'PRIORITIZE' and priority is None:
+            raise ValueError('Need to specify priority.\n')
+        cmd = ' '.join([
+            self.cmd, '-T CombineVariants', '-genotypeMergeOptions', option,
+            '-O', out_vcf])
+        for name, vcf in vcf_dict.items():
+            if option == 'PRIORITIZE':
+                cmd += ' --variant:'+name+' '+vcf
+            else:
+                cmd += ' --variant '+vcf
+        run(cmd)
+        return out_vcf
+
+    def selectVar(self, in_vcf, xl=None, l=None):
+        ''' select variants
+        :param in_vcf: input vcf
+        :param xl: intervals to exclude
+        :param l: intervals to include
+        '''
+        output = self.prefix+'.vcf.gz'
+        cmd = ' '.join([
+            self.cmd, '-T SelectVariants', '--variant', in_vcf,
+            '-o ', output])
+        if xl is not None:
+            cmd += '-XL '+xl
+        if l is not None:
+            cmd += '-L '+l
+        run(cmd)
+        return output
+
+
+def filter_variants(invcf, outvcf, min_GQ=50, AD=0.8, DP=10):
+    ''' apply variant filtering using GQ, AD and DP
+    :param invcf: input vcf
+    :param outvcf: output vcf
+    :param min_GQ: minimum GQ cutoff
+    :param AD: allelic depth cutoff
+    :param DP: depth cutoff
+    '''
+    cmd = ' '.join(['filterGatkGenotypes.py', '--min_GQ', str(min_GQ),
+                    '--min_percent_alt_in_AD', str(AD),
+                    '--min_total_DP', str(DP), invcf, '>', outvcf])
+    run(cmd)
+    return outvcf
+
+
+def vcf_snp_to_fasta(invcf, prefix, max_amb=100000):
+    ''' snp only vcf to fasta file
+    :param invcf: input vcf file
+    :param prefix: output file prefix
+    :param max_amb: maximum number of samples with ambiguous calls for a site
+                    to be included, recommended number of samples 10%
+    '''
+    cmd = ' '.join(['vcfSnpsToFasta.py --max_amb_samples', max_amb, invcf, '>',
+                   prefix+'.fasta'])
+    run(cmd)
+    return prefix+'.fasta'
+
+
+def FastTreeDP(in_fa, out_prefix):
+    ''' perform fastaTreeDP analysis
+    :param in_fa: input fasta file
+    :param out_prefix: output file prefix
+    :returns nwk file
+    '''
+    out_nwk = out_prefix+'.nwk'
+    cmd = 'FastTreeDP -nt '+in_fa+' > ' + out_nwk
+    run(cmd)
+    return out_nwk
+
 
 # def get_ref(ftp, md5, dir='.'):
 #     """ download reference files from NCBI and perform md5sumcheck to files
