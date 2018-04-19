@@ -59,6 +59,7 @@ def patch_fasta(in_fa, out_fa, ctg_sufx, rm_mt=True):
                     pfa.write(line)
             else:
                 pfa.write(line)
+    fa.close()
     return chr_map
 
 
