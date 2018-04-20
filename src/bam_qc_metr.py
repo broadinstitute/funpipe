@@ -8,7 +8,7 @@ import json
 
 pstats = {
     'alignment_summary_metrics':
-        ['TOTAL_READS', 'PF_HQ_ALIGNED_READS', 'PCT_CHIMERAS'],
+        ['TOTAL_READS', 'PCT_PF_READS_ALIGNED', 'PCT_CHIMERAS'],
     'gc_bias.summary_metrics':
         ['AT_DROPOUT', 'GC_DROPOUT'],
     'insert_size_metrics':
@@ -17,7 +17,7 @@ pstats = {
 }
 
 stats_list = [
-    'TOTAL_READS', 'PF_HQ_ALIGNED_READS', 'PCT_CHIMERAS', 'AT_DROPOUT',
+    'TOTAL_READS', 'PCT_PF_READS_ALIGNED', 'PCT_CHIMERAS', 'AT_DROPOUT',
     'GC_DROPOUT', 'MEDIAN_INSERT_SIZE', 'STANDARD_DEVIATION', 'MEAN_COVERAGE']
 
 
