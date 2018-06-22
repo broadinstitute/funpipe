@@ -35,6 +35,8 @@ class TestPatchRefContigs(unittest.TestCase):
             filecmp.cmp('expNoMt.gff', 'outNoMt.gff'),
             'Output file not same as expected.')
 
+# test combineVariants: java -jar /xchip/gtex/xiaoli/tools/GenomeAnalysisTK.jar --variant test.vcf --variant test2.vcf -o merged.vcf -genotypeMergeOptions UNSORTED -R test.fa -T CombineVariants --assumeIdenticalSamples
+
 
 if __name__ == '__main__':
     unittest.main()
