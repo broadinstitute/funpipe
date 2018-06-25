@@ -1,0 +1,5 @@
+#!/bin/bash
+# Tool for log on to uges queue
+source /broad/software/scripts/useuse
+reuse UGES  # load dotkit for UGES
+qrsh        # Login to UGES queue
