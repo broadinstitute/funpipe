@@ -56,7 +56,7 @@ def sort_bam(bam, out_dir='.'):
     bam_name = os.path.basename(bam)
     outfile = os.path.join(
         out_dir, os.path.splitext(bam_name)[0] + '.sorted.bam')
-    run('samtools sort '+bam+' > '+outfile)
+    run('samtools sort -T '+out_dir+' '+bam+' > '+outfile)
     return outfile
 
 
@@ -185,8 +185,8 @@ def snpeff_db(gff3, dir, genome, config, prefix, ram, jar, ref_fa):
 def bam_depth(bam, out_prefix, idx=False):
     ''' calculate bam depth
     :param bam: input to bam file
-    :param out_prefix: output Prefix
-    :param idx: output index
+    :param out_prefix: output Prefix, could include output path
+    :param idx: whether to index output mpileup file or not, default is false
     '''
     outfile = out_prefix+'.depth.gz'
     cmd = 'samtools depth '+bam+' | bgzip > '+outfile

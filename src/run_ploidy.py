@@ -9,8 +9,8 @@ from pipeline import bam_depth, depth_per_window, sort_bam, cd, run
 def run_ploidy(out_dir, bam, faidx):
     with cd(args.out_dir):
         out_prefix = join(out_dir, splitext(basename(bam))[0])
-        sorted_bam = sort_bam(bam)
-        pileup = bam_depth(sorted_bam, out_prefix)
+        sorted_bam = sort_bam(bam, out_dir)
+        pileup = bam_depth(sorted_bam, out_prefix, idx=True)
         depth_per_window(pileup, basename(bam), faidx)
 
 
