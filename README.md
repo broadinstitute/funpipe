@@ -13,9 +13,11 @@ Fungal genomic analysis pipeline, including:
 ## Dependencies
 * Python-3.4
 * Bioinformatics tools need to be in the environment `PATH`.
+* [crimson](https://github.com/bow/crimson)
 
 ## Usage
 Below are major functionality of this pipeline:
+
 ### Evaluate reference genome quality with pilon: `run_pilon.py`
 
 ```
@@ -87,6 +89,7 @@ widdler run gatk.wdl example.json
 ```
 
 ### Ploidy analysis
+This analysis will only work with PERL version 5.14 - 5.18.
 ```
 usage: run_ploidy.py [-h] -i BAM --faidx FAIDX [--prefix PREFIX] [-o OUT_DIR]
 
@@ -102,3 +105,18 @@ required arguments:
   -i BAM, --bam BAM     Input file
   --faidx FAIDX         fasta index
 ```
+
+### Phylogenetic analysis
+Phylogenetic analysis was performed firstly .
+```
+
+```
+
+### Utility tools
+There are several utility tools to facilitate the analysis, they locate under `utils` subdirectory.
+`task_dir` returns the task directory of a specific on-prem submission.
+```
+task_dir <job ID>
+```
+`uges` will help login UGES queue.
+`widdler` is a wrapper around `widdler.py` from Broad-BTL for easier utility. It automatically setup environment to run the job.
