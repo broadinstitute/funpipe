@@ -26,5 +26,6 @@
   "gatk.indel_resource": [],
   "gatk.snp_annotation": [],
   "gatk.known_sites": [],
-  "gatk.indel_annotation": []
+  "gatk.indel_annotation": [],
+  "gatk.CombineVariants.genotypeMergeOptions": "UNSORTED --assumeIdenticalSamples"
 }
