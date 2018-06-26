@@ -45,18 +45,19 @@ def index_fa(fa):
     pcd.dict(fa)
 
 
-def sort_bam(bam, out_dir='.'):
+def sort_bam(bam, out_dir, tmp=None):
     ''' sort BAM using samtools
     :param bam: input bam
-    :param out_dir: output directory, default '.'
-    :param delete: delete original BAM
-
+    :param out_dir: output directory
+    :param tmp: temporary directory for
     :returns: name of sorted bam
     '''
     bam_name = os.path.basename(bam)
-    outfile = os.path.join(
-        out_dir, os.path.splitext(bam_name)[0] + '.sorted.bam')
-    run('samtools sort -T '+out_dir+' '+bam+' > '+outfile)
+    prefix = os.path.join(out_dir, os.path.splitext(bam_name)[0])
+    if tmp is None:
+       tmp = prefix
+    outfile = prefix + '.sorted.bam'
+    run('samtools sort -T '+tmp+' '+bam+' > '+outfile)
     return outfile
 
 
