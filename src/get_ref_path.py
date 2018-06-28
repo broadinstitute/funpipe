@@ -18,4 +18,4 @@ with open(bam_list, 'r') as bams:
         fdir = dirname(path.split('\t')[1])
         ref_seq = parse_analysis_files(join(fdir, 'analysis_files.txt'))
         df = pd.concat([df, ref_seq])
-df.to_csv(ref_list, sep='\t', index=False)
+df.drop_duplicates().to_csv(ref_list, sep='\t', index=False)
