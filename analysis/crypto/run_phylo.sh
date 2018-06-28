@@ -32,5 +32,5 @@ filterGatkGenotypes.py \
    ${prefix}.vcf > ${prefix}_GQ50_AD08_DP10.vcf
 
 echo ${prefix}_GQ50_AD08_DP10.vcf > vcf_list.txt
-vcfSnpsToFasta.py vcf_list.txt > ${prefix}.fasta
+vcfSnpsToFasta.py --max_amb_samples 10 vcf_list.txt > ${prefix}.fasta
 FastTreeDP -nt ${prefix}.fasta > ${prefix}.nwk
