@@ -78,6 +78,13 @@ task_dir <task id>      # print task directory
 ```
 Default task were sent to `gscid-cromwell`, if not working, could use alternative, such as `ale1`.
 ### Ploidy analysis
+Generate coverage plot for Cryptococcus neoformans H99, JEC21, and their hybrids/progeny. Three chromosome coordinate files for H99, JEC21 and hybrid genomes, using sliding window of 5k.
+```
+H99: cneo_h99_sa_chr_coord_5k.dat
+JEC21: cneo_jec21_sd_chr_corrd_5k.dat
+H99+JEC21: cneo_h99_jec21_chr_coord_5k.dat
+```
+To launch the analysis on-prem (UGER), use the following command:  
 ```
 qsub run_ploidy.sh
 ```
