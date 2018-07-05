@@ -3,28 +3,30 @@
 % Files required to run the function - check the Load section
 % matlab 2016b
 %---------------------------------------------------------------------------------
-figure('rend','painters','pos',[10 10 900 1500])
+figure('rend','painters','pos',[100 10 1200 4000])
 %---------------------------------------------------------------------------------
 % load the data files
 %---------------------------------------------------------------------------------
-
-load pilot_cov_fc.den; % Normalized Alignment Cover Data
-load cneo_sc_color.dat;
-load cneo_centro_coords.dat;
+load batch1_75_AD_A.den;
+% load pilot_cov_fc.den; % Normalized Alignment Cover Data
+load ../JEC21_NCBI/ploidy/plots/cneo_sc_color.dat;
+load plots/cneo_centro_coords.dat;
 
 %---------------------------------------------------------------------------------
 % assign the data files
 %---------------------------------------------------------------------------------
 
-alnDen = pilot_cov_fc; % Assign the plot subset.den to the 'alnDen' variable
+alnDen = batch1_75_AD_A; % Assign the plot subset.den to the 'alnDen' variable
 colNum = 7; % Initialized to the starting strain column number.
 
 %---------------------------------------------------------------------------------
 % plot the data
 %---------------------------------------------------------------------------------
 
-for idx = 1:24
-    h(idx) = subplot(24, 1, idx);
+n_samples = 75
+for idx = 1:n_samples    % change this number
+    disp(idx)
+    h(idx) = subplot(n_samples, 1, idx);
 
     % density data for each strain plotted scaffold-wise
     for sc = 1:14
@@ -37,8 +39,8 @@ for idx = 1:24
         R = cneo_sc_color(sc, 6); % B
 
         % plot the density data -- Uncomment stem or line
-        stem(alnDen(i1:i2, 2), alnDen(i1:i2, colNum), 'MarkerSize', 0.025, 'Color', [P Q R]); % Uncomment for a stem plot.
-        % plot(alnDen(i1:i2, 2), alnDen(i1:i2, colNum), 'Color', [P Q R], 'square'); % Uncomment for a line plot.
+        % stem(alnDen(i1:i2, 2), alnDen(i1:i2, colNum), 'MarkerSize', 0.025, 'Color', [P Q R]); % Uncomment for a stem plot.
+        plot(alnDen(i1:i2, 2), alnDen(i1:i2, colNum), 'Color', [P Q R], 'square'); % Uncomment for a line plot.
         box on; hold all;
     end
 
@@ -60,6 +62,7 @@ for idx = 1:24
 
     colNum = colNum+1; % col value for next colNumain
 end
+print('batch1_75_AD_A.png', '-dpng')
 
 % %---------------------------------------------------------------------------------
 % % plot the centromere data
