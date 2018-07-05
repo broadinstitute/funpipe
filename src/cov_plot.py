@@ -34,7 +34,7 @@ def cov_fc_to_den(cov, contain=None):
     downstream matlab ploting code
     :param cov: coverage data.frame
     :param contain: characters defined subgenomes
-    :return: a datafram with den entries
+    :return: a datafram with coverage entries
     '''
     # remove unused columns
     den = cov.drop(['end0', 'id'], axis=1)
@@ -53,9 +53,17 @@ def cov_fc_to_den(cov, contain=None):
     return den
 
 
-def coverage_plot(cov):
-    plt.show()
-    return
+def output_den_tsv(prefix, den):
+    ''' output density tsv file
+    :param prefix: output Prefix
+    :param den: density matrix
+    '''
+    # output den files
+    with open(prefix+'.samples.tsv', 'w') as samples:
+        for sample in den.columns[6:].tolist():
+            samples.write(sample+'\n')
+    den.to_csv(prefix+'.den', index=False, header=False, sep='\t')
+    return 1
 
 
 def main(arguments):
@@ -64,34 +72,42 @@ def main(arguments):
     # required arguments
     required = parser.add_argument_group('required arguments')
     required.add_argument(
-        '-i', '--input', required=True, help='Input tsv lists')
+        '-i', '--input', required=True, help='Input tsv lists'
+    )
     required.add_argument(
         '-o', '--output', help="Output file",
-        default=sys.stdout, type=argparse.FileType('w'))
+        default=sys.stdout, type=argparse.FileType('w')
+    )
     required.add_argument(
-        '--faidx', help='fasta index file from samtools')
+        '--faidx', help='fasta index file from samtools'
+    )
     required.add_argument(
-        '--depth', '-d', help='depth profile from samtools')
+        '--depth', '-d', help='depth profile from samtools'
+    )
+    required.add_argument(
+        '--prefix', '-p', help='output prefix'
+    )
     # optional arguments
+    parser.add_argument(
+        '--g_flags', help='subgenome flag'
+    )
     parser.add_argument('prefix', help='Prefix of output files')
     args = parser.parse_args(arguments)
     print(args)
 
-    prefix = 'batch1_75_AD'
-    contain = ['_A', '_D']
+    # prefix = 'batch1_75_AD'
+    # g_flag = ['_A', '_D']
+    # combine coverage tsv
     cov = combine_cov_fc(args.input)
     # output merged table
     cov.to_csv(args.output, sep='\t', index=False)
-    for i in contain:
-        # output sample IDs
-        den = cov_fc_to_den(cov, contain=i)
-        # samples list
-        with open(prefix+i+'.samples.tsv', 'w') as samples:
-            for sample in den.columns[6:].tolist():
-                samples.write(sample+'\n')
+    if args.g_flags is None:
+        output_den_tsv(args.prefix, cov_fc_to_den(cov))
+    else:
+        for flag in args.g_flags:
+            # output sample IDs
+            output_den_tsv(args.prefix+flag, cov_fc_to_den(cov, contain=flag))
 
-        den.to_csv(prefix+i+'.den', index=False, header=False, sep='\t')
-        # output den files
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
