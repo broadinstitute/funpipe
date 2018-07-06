@@ -29,21 +29,55 @@ def combine_cov_fc(input):
     return cov
 
 
-def cov_fc_to_den(cov, contain=None):
+def n_contigs_per_subgenome(contig_set, subgenome):
+    ''' Get number of contigs per each subgenome
+    :contig_set
+    '''
+
+
+def get_contig_sets(all_contigs, subgenome):
+    ''' Get all contig sets from each subgenome
+    :param all_contigs: a set include all contigs
+    :param subgenome: array of suffice in contigs for each subgenome
+    '''
+    contig_map = {}   # a hash map between contig map and their orders
+    n_contig_set = [0] * len(subgenome)   # number of contigs in each subgenome
+    for i in range(len(subgenome)):
+        for j in all_contigs:
+            if subgenome[i] in j:
+                n_contig_set[i] += 1
+                if i != 0:
+                    n_sub_cont = (int(j.replace(subgenome[i], ''))
+                                  + n_contig_set[i-1])
+                    contig_map = {j: n_sub_cont}
+    return contig_map
+
+
+def cov_fc_to_den(cov, prefix, subgenome, split=False):
     ''' from coverage fold change file to generate density file needed for the
     downstream matlab ploting code
     :param cov: coverage data.frame
-    :param contain: characters defined subgenomes
+    :param prefix: prefix of contig names
+    :param subgenome: suffix of contig names, standing for different subgenomes
+    :param split: split by subgenomes, not yet implemented
     :return: a datafram with coverage entries
     '''
     # remove unused columns
+    cov = combine_cov_fc('batch1_75_AD_cov_fc_list.tsv')
     den = cov.drop(['end0', 'id'], axis=1)
-    # subset to only a subgenome
-    if contain is not None:
-        den = den[den.chr.str.contains(contain)]
-    # change chr to numbers and sort according to chromosomes
-    den['chr'] = den.chr.str.replace(contain, '').str.replace('chr', '')
-    den = den.sort(['chr', 'start0']).drop(['start0'], axis=1)
+    den['chr'] = den.chr.str.replace(prefix, '')
+    if split:
+        # subset to only a subgenome
+        den = den[den.chr.str.contains(subgenome)]
+    else:
+        chrs = set(den.chr)
+        contig_map = get_contig_sets(chrs, subgenome)
+
+    # substitute contig names to numbers
+    den.replace({'chr': contig_map}, inplace=True)
+    den.sort_values(['chr', 'start0'], axis=0, inplace=True)
+    den.drop(['start0'], axis=1, inplace=True)    # reformat to den file
+
     # add additional columns for den file
     den.insert(loc=1, column='id', value=range(1, den.shape[0]+1))
     den.insert(loc=2, column='dos1', value=1)
@@ -54,7 +88,7 @@ def cov_fc_to_den(cov, contain=None):
 
 
 def output_den_tsv(prefix, den):
-    ''' output density tsv file
+    ''' output density data structure to tsv file
     :param prefix: output Prefix
     :param den: density matrix
     '''
