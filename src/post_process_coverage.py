@@ -135,13 +135,15 @@ def main(arguments):
     cov = combine_cov_fc(args.input)
     # output merged table
     cov.to_csv(args.output, sep='\t', index=False)
-    if args.g_flags is None:
-        output_den_tsv(args.prefix, cov_fc_to_den(cov))
-    else:
-        for flag in args.g_flags:
-            # output sample IDs
-            output_den_tsv(args.prefix+flag, cov_fc_to_den(cov, contain=flag))
-
+    output_den_tsv(args.prefix, cov_fc_to_den(cov))
+    # To do: add option to filter a specific subgenome
+    # if args.g_flags is None:
+    #     output_den_tsv(args.prefix, cov_fc_to_den(cov))
+    # else:
+    #     for flag in args.g_flags:
+    #         # output sample IDs
+    #         output_den_tsv(args.prefix+flag, cov_fc_to_den(cov, contain=flag))
+    #
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
