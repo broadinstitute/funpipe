@@ -3,56 +3,63 @@
 % Files required to run the function - check the Load section
 % matlab 2016b
 %---------------------------------------------------------------------------------
-figure('rend','painters','pos',[100 10 1200 4000])
+
+% parameter to be prespecified:
+% 1. coverage density matrix: *.den
+% 2. chromosome coordinates and RGB Color
+% 3. centromere coordinates for specific genomes
+
+n_samples = 64  % change this number
+prefix = 'batch1_AD_progeny'
+n_sc = 28
+n_bins = 7560   % # sliding windows for the genome
+
+figure('rend','painters','pos',[100 10 1200 n_samples * 100])   # automate height
 %---------------------------------------------------------------------------------
 % load the data files
 %---------------------------------------------------------------------------------
-load batch1_75_AD_A.den;
-% load pilot_cov_fc.den; % Normalized Alignment Cover Data
-load ../JEC21_NCBI/ploidy/plots/cneo_sc_color.dat;
-load plots/cneo_centro_coords.dat;
+alnDen = load(strcat(prefix,'.den'));
+chrColor = load('/cil/shed/sandboxes/xiaoli/fungal-pipeline/analysis/crypto/cneo_h99_jec21_chr_coord_5k.dat');  % chromosome coordinates and RGB color
+% load plots/cneo_centro_coords.dat;   % centromere coordinate
 
 %---------------------------------------------------------------------------------
 % assign the data files
 %---------------------------------------------------------------------------------
 
-alnDen = batch1_75_AD_A; % Assign the plot subset.den to the 'alnDen' variable
-colNum = 7; % Initialized to the starting strain column number.
+colNum = 7; % Initialized to the starting column number.
 
 %---------------------------------------------------------------------------------
 % plot the data
 %---------------------------------------------------------------------------------
 
-n_samples = 75
-for idx = 1:n_samples    % change this number
-    disp(idx)
+for idx = 1:n_samples
     h(idx) = subplot(n_samples, 1, idx);
 
     % density data for each strain plotted scaffold-wise
-    for sc = 1:14
-        i1 = cneo_sc_color(sc, 2); % Start of scaffold
-        i2 = cneo_sc_color(sc, 3); % End of scaffold
+    for sc = 1:n_sc
+        i1 = chrColor(sc, 2); % Start of scaffold
+        i2 = chrColor(sc, 3); % End of scaffold
 
         % colours for the scaffolds assigned here.
-        P = cneo_sc_color(sc, 4); % R
-        Q = cneo_sc_color(sc, 5); % G
-        R = cneo_sc_color(sc, 6); % B
+        P = chrColor(sc, 4); % R
+        Q = chrColor(sc, 5); % G
+        R = chrColor(sc, 6); % B
 
         % plot the density data -- Uncomment stem or line
-        % stem(alnDen(i1:i2, 2), alnDen(i1:i2, colNum), 'MarkerSize', 0.025, 'Color', [P Q R]); % Uncomment for a stem plot.
-        plot(alnDen(i1:i2, 2), alnDen(i1:i2, colNum), 'Color', [P Q R], 'square'); % Uncomment for a line plot.
+        stem(alnDen(i1:i2, 2), alnDen(i1:i2, colNum), 'MarkerSize', 0.025, 'Color', [P Q R]); % Uncomment for a stem plot.
+        % plot(alnDen(i1:i2, 2), alnDen(i1:i2, colNum), 'Color', [P Q R], 'square'); % Uncomment for a line plot.
         box on; hold all;
     end
 
     % calibrate the normal and cnv levels
-    plot (alnDen(:, 2), alnDen(:, 3), 'Color', [0.411765 0.411765 0.411765]); % Normal coverage, i.e. no gain or loss in copy number
-    plot (alnDen(:, 2), alnDen(:, 4), 'Color', [0.411765 0.411765 0.411765]); % Gain of 1 copy (for diploids)
-    plot (alnDen(:, 2), alnDen(:, 5), 'Color', [0.545098 0.537255 0.537255]); % Gain of 1 copy (for haploids)
-    plot (alnDen(:, 2), alnDen(:, 6), 'Color', [0.545098 0.545098 0.478431]); % Gain of 2 copies (for haploids)
+%    plot(alnDen(:, 2), alnDen(:, 3), 'Color', [0.411765 0.411765 0.411765]); % Normal coverage, i.e. no gain or loss in copy number
+%    plot(alnDen(:, 2), alnDen(:, 4), 'Color', [0.411765 0.411765 0.411765]); % Gain of 1 copy (for diploids)
+%    plot(alnDen(:, 2), alnDen(:, 5), 'Color', [0.545098 0.537255 0.537255]); % Gain of 1 copy (for haploids)
+%    plot(alnDen(:, 2), alnDen(:, 6), 'Color', [0.545098 0.545098 0.478431]); % Gain of 2 copies (for haploids)
 
 
     set(h(idx), ...
-        'XLim', [0 3781], ...
+        'XLim', [0 n_bins], ...   % need to automate
         'XTick', [], ...
         'XTickLabel', [], ...
         'YLim', [0 3], ...
@@ -62,7 +69,7 @@ for idx = 1:n_samples    % change this number
 
     colNum = colNum+1; % col value for next colNumain
 end
-print('batch1_75_AD_A.png', '-dpng')
+print(strcat(prefix, '.png'), '-dpng')
 
 % %---------------------------------------------------------------------------------
 % % plot the centromere data
