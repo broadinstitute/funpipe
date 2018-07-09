@@ -3,9 +3,9 @@
 import os
 import sys
 import argparse
-import matplotlib.pyplot as plt
 import pandas as pd
 from glob import glob
+# import matplotlib.pyplot as plt
 
 
 def combine_cov_fc(input):
@@ -29,12 +29,6 @@ def combine_cov_fc(input):
     return cov
 
 
-def n_contigs_per_subgenome(contig_set, subgenome):
-    ''' Get number of contigs per each subgenome
-    :contig_set
-    '''
-
-
 def get_contig_sets(all_contigs, subgenome):
     ''' Get all contig sets from each subgenome
     :param all_contigs: a set include all contigs
@@ -49,23 +43,24 @@ def get_contig_sets(all_contigs, subgenome):
                 if i != 0:
                     n_sub_cont = (int(j.replace(subgenome[i], ''))
                                   + n_contig_set[i-1])
-                    contig_map = {j: n_sub_cont}
+                    contig_map[j] = n_sub_cont
+                else:
+                    contig_map[j] = int(j.replace(subgenome[i], ''))
     return contig_map
 
 
-def cov_fc_to_den(cov, prefix, subgenome, split=False):
+def cov_fc_to_den(cov, contig_prefix, subgenome, split=False):
     ''' from coverage fold change file to generate density file needed for the
     downstream matlab ploting code
     :param cov: coverage data.frame
-    :param prefix: prefix of contig names
+    :param contig_prefix: prefix of contig names
     :param subgenome: suffix of contig names, standing for different subgenomes
     :param split: split by subgenomes, not yet implemented
     :return: a datafram with coverage entries
     '''
     # remove unused columns
-    cov = combine_cov_fc('batch1_75_AD_cov_fc_list.tsv')
     den = cov.drop(['end0', 'id'], axis=1)
-    den['chr'] = den.chr.str.replace(prefix, '')
+    den['chr'] = den.chr.str.replace(contig_prefix, '')
     if split:
         # subset to only a subgenome
         den = den[den.chr.str.contains(subgenome)]
@@ -100,6 +95,33 @@ def output_den_tsv(prefix, den):
     return 1
 
 
+def post_process_coverage(fc_list, cov_tsv, prefix):
+    """
+    :param fc_list:  fold change list tsv
+    :param cov_tsv: output file coverage tsv name
+    :param prefix: output file prefix
+    :param g_flags: subgenome flags
+    """
+
+    # prefix = 'batch1_75_AD'
+    g_flags = ['_A', '_D']
+    # combine coverage tsv
+    cov = combine_cov_fc(input)
+    # output merged table
+    cov.to_csv(output, sep='\t', index=False)
+    den = cov_fc_to_den(cov, 'chr', g_flags)
+    output_den_tsv(prefix, den)
+    # To do: add option to filter a specific subgenome
+    # if args.g_flags is None:
+    #     output_den_tsv(args.prefix, cov_fc_to_den(cov))
+    # else:
+    #     for flag in args.g_flags:
+    #         # output sample IDs
+    #         output_den_tsv(args.prefix+flag, cov_fc_to_den(cov, contain=flag))
+    #
+    return
+
+
 def main(arguments):
     parser = argparse.ArgumentParser(
         description='PLOT COVERAGE ACROSS GENOME FOR MULTIPLE STRAINS')
@@ -129,21 +151,6 @@ def main(arguments):
     args = parser.parse_args(arguments)
     print(args)
 
-    # prefix = 'batch1_75_AD'
-    # g_flag = ['_A', '_D']
-    # combine coverage tsv
-    cov = combine_cov_fc(args.input)
-    # output merged table
-    cov.to_csv(args.output, sep='\t', index=False)
-    output_den_tsv(args.prefix, cov_fc_to_den(cov))
-    # To do: add option to filter a specific subgenome
-    # if args.g_flags is None:
-    #     output_den_tsv(args.prefix, cov_fc_to_den(cov))
-    # else:
-    #     for flag in args.g_flags:
-    #         # output sample IDs
-    #         output_den_tsv(args.prefix+flag, cov_fc_to_den(cov, contain=flag))
-    #
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
