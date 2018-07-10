@@ -55,7 +55,7 @@ def sort_bam(bam, out_dir, tmp=None):
     bam_name = os.path.basename(bam)
     prefix = os.path.join(out_dir, os.path.splitext(bam_name)[0])
     if tmp is None:
-       tmp = prefix
+        tmp = prefix
     outfile = prefix + '.sorted.bam'
     run('samtools sort -T '+tmp+' '+bam+' > '+outfile)
     return outfile
