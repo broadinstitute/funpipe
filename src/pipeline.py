@@ -388,6 +388,20 @@ class gatk:
         run(cmd)
         return output
 
+    def genotypeConcordance(self, comp, eval):
+        ''' comppare
+        :param comp: VCF file for comparison
+        :parma eval: VCF file for evaluation
+        :param out: output evaluation results
+        '''
+        out = self.out_dir+'/'+self.prefix+'.txt'
+        cmd = ' '.join([
+            self.cmd, '-T GenotypeConcordance', '--comp', comp, '--eval', eval,
+            '--out', out
+        ])
+        run(cmd)
+        return out
+
 
 def filter_variants(invcf, outvcf, min_GQ=50, AD=0.8, DP=10):
     ''' apply variant filtering using GQ, AD and DP
