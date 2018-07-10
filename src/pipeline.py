@@ -289,8 +289,9 @@ class picard:
     def dict(self, fa, dict=None):
         ''' build fasta dictionary '''
         if dict is None:
-            dict = 'tmp'
-        cmd = ' '.join([self.cmd, "R="+fa, "O="+dict])
+            dict = os.path.splitext(fa)[0]+'.dict'
+        cmd = ' '.join([self.cmd, 'CreateSequenceDictionary', "R="+fa,
+                       "O="+dict])
         run(cmd)
 
     def bam2fqs(bam, prefix, ram, picard):
