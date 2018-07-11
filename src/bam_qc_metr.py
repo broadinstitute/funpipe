@@ -5,8 +5,9 @@ import sys
 import argparse
 from crimson import picard
 import json
+import pandas as pd
 
-pstats = {
+stats = {
     'alignment_summary_metrics':
         ['TOTAL_READS', 'PCT_PF_READS_ALIGNED', 'PCT_CHIMERAS'],
     'gc_bias.summary_metrics':
@@ -29,18 +30,35 @@ def get_picard_stat(file):
         return all_metr[-1]
 
 
-def parse_file_path(path):
-    ''' parse file path '''
-    fdir = dirname(path)
-    base = basename(path)
-    prefix = splitext(base)[0]
-    suffix = splitext(base)[-1]
+def get_ref_fa(file):
+    ''' get reference sequence from "analysis files"
+    :param file: path to the bam files
+    '''
+    df = pd.read_csv('/seq/picard_aggregation/G143266/CL161/current/analysis_files.txt', header=0, sep='\t')
+
+
+def parse_gp_bam_path(path):
+    ''' parse on-prem BAM path from the genomic platform, to get directory,
+    base name, prefix and suffix of the BAM. Prefix of the BAM is usually
+    sample name.
+    :param path: on-prem bam path from the genomic platform
+    '''
+    fdir = dirname(path)          # file directory
+    base = basename(path)         # base name of the bam
+    prefix = splitext(base)[0]    # prefix of the bam file, usually sample name
+    suffix = splitext(base)[-1]   # suffix of the bam file
     return fdir, base, prefix, suffix
 
 
 def output_stats(qc_stats, bam_qc_file):
+    ''' output qc statistics to a file
+    :param qc_stats: an array that contains all BAM QC statistics
+    :param bam_qc_file: file path to output all the metrics
+    '''
     with open(bam_qc_file, 'w+') as bam_qc:
+        # output header to the file
         bam_qc.write('\t'.join(['Sample'] + stats_list)+'\n')
+        # output QC stats for each sample from the array
         for sample in qc_stats:
             stats = [sample]
             for stat in stats_list:
@@ -49,14 +67,17 @@ def output_stats(qc_stats, bam_qc_file):
 
 
 def process_bam_files(bam_list_file, bam_qc_file):
-    '''
+    ''' process all bam files and get corresponding QC metrics and reference
+    paths from Broad's Genomic Platform
     :param bam_list_file: a list of bam files
+    :param bam_qc_file: file path to output all QC metrics
     '''
     qc_stats = {}
     with open(bam_list_file, 'r') as bam_list:
+        # process each bam record in the bam list
         for line in bam_list:
             sample, path = line.strip().split('\t')
-            fdir, fname, prefix, suffix = parse_file_path(path)
+            fdir, fname, prefix, suffix = parse_gp_bam_path(path)
             qc_stats[sample] = {}
             for suffix in pstats:
                 all_metr = get_picard_stat(join(fdir, prefix+'.'+suffix))
