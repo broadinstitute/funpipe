@@ -24,7 +24,6 @@ export PATH=/cil/shed/sandboxes/xiaoli/fungal-pipeline/src:$PATH
 export PYTHONPATH=/cil/shed/sandboxes/xiaoli/fungal-pipeline/src:$PYTHONPATH
 
 # to do: input json file as input
-
 # project directory
 # prjdir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21_NCBI
 # prjdir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/test_ad
@@ -41,12 +40,22 @@ faidx=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/assembly/NCBI_H99_JEC21.f
 #faidx=/seq/references/Cryptococcus_neoformans_JEC21/v0/Cryptococcus_neoformans_JEC21.fasta.fai
 #faidx=/seq/references/Cryptococcus_neoformans_grubii_h99/v0/Cryptococcus_neoformans_grubii_h99.fasta.fai
 
+
+
+# produce realigned bam list
+# cd $prjdir
+
+# paste <(ll *bam | awk '{print $8}' | cut -f1 -d.) <(ll *bam | awk '{print $8}') > "$prefix"_realigned_bam_list.tsv
+
+
 # run analysis
 bam=$(awk "NR==$SGE_TASK_ID" $bamlist | cut -f2)
 echo "run_ploidy.py --bam $bam --out_dir $prjdir --faidx $faidx"
 run_ploidy.py --bam $bam --out_dir $prjdir --faidx $faidx
 
-cd $prjdir
-# produce realigned bam list
-paste <(ll *bam | awk '{print $8}' | cut -f1 -d.) <(ll *bam | awk '{print $8}') > "$prefix"_realigned_bam_list.tsv
-# add scripts
+paste <(ls -l *depth.tsv | awk '{print $9}' | cut -f1 -d.) <(ls -l *depth.tsv | awk '{print $9}') > "$prefix"_cov_fc_list.tsv
+# cov_plot.py
+
+# Separate A and D analysis
+grep 'A' batch1_75_AD_cov_fc.tsv > batch1_75_AD_chrA_cov_fc.tsv
+grep 'D' batch1_75_AD_cov_fc.tsv > batch1_75_AD_chrD_cov_fc.tsv
