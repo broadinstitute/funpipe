@@ -31,7 +31,8 @@ def rm(file):
     ''' remove a file
     :param file: path of file to remove
     '''
-    run('rm '+file)
+    for i in files:
+        run('rm '+file)
 
 
 def index_fa(fa):
@@ -76,7 +77,6 @@ def bwa_align(fa, fq1, fq2, prefix):
     :param fq1: fq file1
     :param fq2: fq file2
     :param prefix: output file prefix
-
     :returns:
     '''
     if not os.path.isfile(fa+'.fai'):
@@ -463,8 +463,23 @@ def bam_sum(bam, out_txt):
     :param out_txt: output file name
     :return : output summary name
     '''
-    cmd = 'samtools flagstat ' + bam '> out_txt'
+    cmd = 'samtools flagstat ' + bam + '> out_txt'
     return out_txt
+
+
+def clean_bam(bam, out_prefix):
+    ''' clean up bams to keep only good quality alignment
+    :param bam: input bam path
+    :param out_prefix: output prefix
+    '''
+    out_file = out_prefix+'.cleanup.bam'
+    cmd = ' '.join(
+        ['samtools view -bh -f 2 -F 1024 -F 4 -F 8 -F 512 -F 2048 -F 256 -q 30',
+         bam, '>', out_file]
+    )
+    run(cmd)
+    return out_file
+
 
 # def get_ref(ftp, md5, dir='.'):
 #     """ download reference files from NCBI and perform md5sumcheck to files
