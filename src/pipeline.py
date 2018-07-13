@@ -444,6 +444,28 @@ def FastTreeDP(in_fa, out_prefix):
     return out_nwk
 
 
+def get_vcf_af_miss(vcf, out_tsv):
+    ''' get vcf and AF and missingness from a VCF
+    Caveat: This module assumes the VCF's coming from GATK, with AF as the
+    field for allele frequencies, and AC for Allele Count, and AN for Allele
+    Number.
+    :param vcf: input path of vcf
+    :param out_tsv: output tsv file name
+    '''
+    cmd = ''
+
+    return out_tsv
+
+
+def bam_sum(bam, out_txt):
+    ''' get read cateroties
+    :param bam: input bam path
+    :param out_txt: output file name
+    :return : output summary name
+    '''
+    cmd = 'samtools flagstat ' + bam '> out_txt'
+    return out_txt
+
 # def get_ref(ftp, md5, dir='.'):
 #     """ download reference files from NCBI and perform md5sumcheck to files
 #     :param ftp: ftp URL
