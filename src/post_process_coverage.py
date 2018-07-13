@@ -95,7 +95,7 @@ def output_den_tsv(prefix, den):
     return 1
 
 
-def post_process_coverage(fc_list, cov_tsv, prefix):
+def post_process_coverage(fc_list, prefix):
     """
     :param fc_list:  fold change list tsv
     :param cov_tsv: output file coverage tsv name
@@ -106,9 +106,9 @@ def post_process_coverage(fc_list, cov_tsv, prefix):
     # prefix = 'batch1_75_AD'
     g_flags = ['_A', '_D']
     # combine coverage tsv
-    cov = combine_cov_fc(input)
+    cov = combine_cov_fc(fc_list)
     # output merged table
-    cov.to_csv(output, sep='\t', index=False)
+    # cov.to_csv(output, sep='\t', index=False)
     den = cov_fc_to_den(cov, 'chr', g_flags)
     output_den_tsv(prefix, den)
     # To do: add option to filter a specific subgenome
@@ -122,35 +122,23 @@ def post_process_coverage(fc_list, cov_tsv, prefix):
     return
 
 
-def main(arguments):
+if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='PLOT COVERAGE ACROSS GENOME FOR MULTIPLE STRAINS')
     # required arguments
     required = parser.add_argument_group('required arguments')
     required.add_argument(
-        '-i', '--input', required=True, help='Input tsv lists'
+        '-i', '--fc_list', required=True, help='Input tsv lists'
     )
     required.add_argument(
-        '-o', '--output', help="Output file",
-        default=sys.stdout, type=argparse.FileType('w')
+        '-p', '--prefix', help='output prefix', required=True
     )
-    required.add_argument(
-        '--faidx', help='fasta index file from samtools'
-    )
-    required.add_argument(
-        '--depth', '-d', help='depth profile from samtools'
-    )
-    required.add_argument(
-        '--prefix', '-p', help='output prefix'
-    )
+
     # optional arguments
     parser.add_argument(
         '--g_flags', help='subgenome flag'
     )
-    parser.add_argument('prefix', help='Prefix of output files')
-    args = parser.parse_args(arguments)
+    args = parser.parse_args()
+
     print(args)
-
-
-if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:]))
+    post_process_coverage(args.fc_list, args.prefix)
