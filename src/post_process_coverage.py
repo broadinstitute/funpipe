@@ -5,7 +5,6 @@ import sys
 import argparse
 import pandas as pd
 from glob import glob
-# import matplotlib.pyplot as plt
 
 
 def combine_cov_fc(input):
@@ -17,7 +16,6 @@ def combine_cov_fc(input):
         input, sep='\t', header=None, names=('Sample', 'Path'))
     cov = pd.DataFrame()
     for i in range(0, cov_list.shape[0]):
-        print(cov_list['Sample'][i])
         tab = (pd.read_csv(cov_list['Path'][i], sep='\t',
                            usecols=['chr', 'start0', 'end0', 'id', 'fc'])
                .rename(columns={'fc': cov_list['Sample'][i]}))
@@ -108,7 +106,7 @@ def post_process_coverage(fc_list, prefix):
     # combine coverage tsv
     cov = combine_cov_fc(fc_list)
     # output merged table
-    # cov.to_csv(output, sep='\t', index=False)
+    cov.to_csv(prefix+'.tsv', sep='\t', index=False)
     den = cov_fc_to_den(cov, 'chr', g_flags)
     output_den_tsv(prefix, den)
     # To do: add option to filter a specific subgenome
