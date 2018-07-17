@@ -5,12 +5,14 @@ import sys
 import argparse
 import pandas as pd
 from glob import glob
+import matplotlib
+import matplotlib.pyplot as plt
 
 
 def combine_cov_fc(input):
     ''' combine coverage fold changes profiles from samples
-    :param input: input file containing sample and
-    :return Pandas DataFrame
+   :param input: input file containing sample and
+   :return Pandas DataFrame
     '''
     cov_list = pd.read_csv(
         input, sep='\t', header=None, names=('Sample', 'Path'))
@@ -29,8 +31,8 @@ def combine_cov_fc(input):
 
 def get_contig_sets(all_contigs, subgenome):
     ''' Get all contig sets from each subgenome
-    :param all_contigs: a set include all contigs
-    :param subgenome: array of suffice in contigs for each subgenome
+   :param all_contigs: a set include all contigs
+   :param subgenome: array of suffice in contigs for each subgenome
     '''
     contig_map = {}   # a hash map between contig map and their orders
     n_contig_set = [0] * len(subgenome)   # number of contigs in each subgenome
@@ -50,11 +52,11 @@ def get_contig_sets(all_contigs, subgenome):
 def cov_fc_to_den(cov, contig_prefix, subgenome, split=False):
     ''' from coverage fold change file to generate density file needed for the
     downstream matlab ploting code
-    :param cov: coverage data.frame
-    :param contig_prefix: prefix of contig names
-    :param subgenome: suffix of contig names, standing for different subgenomes
-    :param split: split by subgenomes, not yet implemented
-    :return: a datafram with coverage entries
+   :param cov: coverage data.frame
+   :param contig_prefix: prefix of contig names
+   :param subgenome: suffix of contig names, standing for different subgenomes
+   :param split: split by subgenomes, not yet implemented
+   :return: a datafram with coverage entries
     '''
     # remove unused columns
     den = cov.drop(['end0', 'id'], axis=1)
@@ -82,8 +84,8 @@ def cov_fc_to_den(cov, contig_prefix, subgenome, split=False):
 
 def output_den_tsv(prefix, den):
     ''' output density data structure to tsv file
-    :param prefix: output Prefix
-    :param den: density matrix
+   :param prefix: output Prefix
+   :param den: density matrix
     '''
     # output den files
     with open(prefix+'.samples.tsv', 'w') as samples:
@@ -93,12 +95,42 @@ def output_den_tsv(prefix, den):
     return 1
 
 
+def cal_subg_percent(cov, plt=False, cov_thres=0.1):
+    ''' calculate subgenome percentage for each chromosome
+   :param cov: coverage data.frame
+   :param plt: add heatmap visualization
+   :param cov_thres: coverage threshold for including a bin across the genome.
+    '''
+    chrs = set(cov.chr)
+    # subgenome map
+    # subg_map = {
+    #     'chr1_A': 'chr1_D',
+    #     'chr2_A': 'chr2_D',
+    #     'chr3_A': 'chr12_D',
+    #     'chr4_A': 'chr13_D',
+    #     'chr5_A': 'chr6_D',
+    #     'chr6_A': 'chr7_D',
+    #     'chr7_A': 'chr8_D',
+    #     'chr8_A': 'chr9_D',
+    #     'chr9_A': 'chr11_D',
+    #     'chr10_A': 'chr12_D',
+    #     'chr11_A': 'chr5_D',
+    #     'chr12_A': 'chr15_D',
+    #     'chr13_A': 'chr16_D',
+    #     'chr14_A': 'chr10_D'
+    # }
+
+    # calculate proportion of reads coming from each chromosome
+    
+
+
+
 def post_process_coverage(fc_list, prefix):
     """
-    :param fc_list:  fold change list tsv
-    :param cov_tsv: output file coverage tsv name
-    :param prefix: output file prefix
-    :param g_flags: subgenome flags
+   :param fc_list:  fold change list tsv
+   :param cov_tsv: output file coverage tsv name
+   :param prefix: output file prefix
+   :param g_flags: subgenome flags
     """
 
     # prefix = 'batch1_75_AD'
@@ -109,6 +141,7 @@ def post_process_coverage(fc_list, prefix):
     cov.to_csv(prefix+'.tsv', sep='\t', index=False)
     den = cov_fc_to_den(cov, 'chr', g_flags)
     output_den_tsv(prefix, den)
+    cal_subg_percent()
     # To do: add option to filter a specific subgenome
     # if args.g_flags is None:
     #     output_den_tsv(args.prefix, cov_fc_to_den(cov))
