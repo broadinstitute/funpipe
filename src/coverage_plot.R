@@ -34,8 +34,8 @@ for (sample in names(cov)[7:(n_sample+6)]) {
 dev.off()
 
 # separate two sub-genomes
-subg1 <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14)
-subg2 <- c(15, 16, 25, 26, 18, 19, 20, 21, 23, 24, 17, 27, 28, 22)
+subg1 <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14)    # A 
+subg2 <- c(15, 16, 25, 19, 20, 21, 22, 28, 23, 24, 17, 18, 26, 27)  # D 
 png(paste0(prefix,'cmp.png'), width=2000, height=n_sample*250, unit='px', res=300)
 par(mfrow=c(n_sample * 2, 1))
 for (sample in names(cov)[7:(n_sample+6)]) {
