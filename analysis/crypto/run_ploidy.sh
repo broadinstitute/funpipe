@@ -7,7 +7,7 @@
 #$ -binding linear:1
 #$ -R y
 #$ -P gscid
-#$ -t 1-75
+#$ -t 1-2
 #$ -tc 0
 #$ -o /gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21_NCBI/batch1_AD_coverage
 #$ -cwd
@@ -26,15 +26,15 @@ export PYTHONPATH=/cil/shed/sandboxes/xiaoli/fungal-pipeline/src:$PYTHONPATH
 # to do: input json file as input
 # project directory
 # prjdir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21_NCBI
-prjdir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/test_ad
+# prjdir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/test_ad
 #prjdir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21_NCBI/batch1
-# prjdir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21_NCBI/batch1_AD_coverage
-# prefix=batch1_86_AD
-prefix=batch1_75_AD
+prjdir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21_NCBI/batch1_AD_coverage
+prefix=batch1_86_AD
+# prefix=batch1_75_AD
 
 cd $prjdir
 # Input: bamlist
-bamlist="$prefix"_realigned_sorted_bam_list.tsv
+bamlist="$prefix"_realigned_bam_list.tsv
 
 # produce realigned bam list
 # paste <(ll *bam | awk '{print $8}' | cut -f1 -d.) <(ll *bam | awk '{print $8}') > $bamlist
@@ -50,8 +50,8 @@ faidx=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/assembly/NCBI_H99_JEC21.f
 
 # run analysis
 bam=$(awk "NR==$SGE_TASK_ID" $bamlist | cut -f2)
-echo "run_ploidy.py --bam $bam --out_dir $prjdir --faidx $faidx -no_sort"
-run_ploidy.py -i $bam --faidx $faidx --out_dir $prjdir --no_sort
+echo "run_ploidy.py --bam $bam --out_dir $prjdir --faidx $faidx"
+run_ploidy.py -i $bam --faidx $faidx --out_dir $prjdir
 
 
 # paste <(ls -l *depth.tsv | awk '{print $9}' | cut -f1 -d.) <(ls -l *depth.tsv | awk '{print $9}') > "$prefix"_cov_fc_list.tsv
