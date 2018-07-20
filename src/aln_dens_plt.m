@@ -14,7 +14,14 @@ prefix = 'batch1_AD_progeny'
 n_sc = 28
 n_bins = 7560   % # sliding windows for the genome
 
-figure('rend','painters','pos',[100 10 1200 n_samples * 100])   # automate height
+n_samples = 15  % change this number
+prefix = 'batch1_15AD_cov_fc'
+n_sc = 28
+n_bins = 7560   % # sliding windows for the genome
+
+
+
+figure('rend','painters','pos',[100 10 1000 n_samples * 50])   # automate height
 %---------------------------------------------------------------------------------
 % load the data files
 %---------------------------------------------------------------------------------
@@ -52,10 +59,10 @@ for idx = 1:n_samples
     end
 
     % calibrate the normal and cnv levels
-%    plot(alnDen(:, 2), alnDen(:, 3), 'Color', [0.411765 0.411765 0.411765]); % Normal coverage, i.e. no gain or loss in copy number
-%    plot(alnDen(:, 2), alnDen(:, 4), 'Color', [0.411765 0.411765 0.411765]); % Gain of 1 copy (for diploids)
-%    plot(alnDen(:, 2), alnDen(:, 5), 'Color', [0.545098 0.537255 0.537255]); % Gain of 1 copy (for haploids)
-%    plot(alnDen(:, 2), alnDen(:, 6), 'Color', [0.545098 0.545098 0.478431]); % Gain of 2 copies (for haploids)
+    plot(alnDen(:, 2), alnDen(:, 3), 'Color', [0.411765 0.411765 0.411765]); % Normal coverage, i.e. no gain or loss in copy number
+    plot(alnDen(:, 2), alnDen(:, 4), 'Color', [0.411765 0.411765 0.411765]); % Gain of 1 copy (for diploids)
+    plot(alnDen(:, 2), alnDen(:, 5), 'Color', [0.545098 0.537255 0.537255]); % Gain of 1 copy (for haploids)
+    plot(alnDen(:, 2), alnDen(:, 6), 'Color', [0.545098 0.545098 0.478431]); % Gain of 2 copies (for haploids)
 
 
     set(h(idx), ...
