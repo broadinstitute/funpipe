@@ -108,7 +108,7 @@ def output_den_tsv(prefix, den, legacy):
     return 1
 
 
-def cal_subg_percent(cov):
+def cal_subg_percent(cov, threhold=1):
     ''' calculate subgenome percentage for each chromosome
     :param cov: coverage data.frame
     :return data.frame: percentage of contig coverage.
@@ -131,18 +131,27 @@ def cal_subg_percent(cov):
     #     'chr14_A': 'chr10_D'
     # }
     # calculate proportion of reads coming from each chromosome
+    # wether coverage above threshold
+    cov_thres = cov.iloc[:, 4:].apply(lambda x: x >= 1)
+    cov_thres.insert(0, 'chr', cov.contigs)
     chrs = sorted(list(set(cov.chr)))
     contig_pct_cov = {}
-    for sample in cov.columns.values[4:]:
+    for sample in cov_thres.columns.values[2:]:
         sample_cov = cov[sample].sum()
         contig_pct_cov[sample] = []
         for i in chrs:
-            pct_cov = (round(
-                cov.loc[cov.chr == i, sample].sum()/sample_cov * 100, 2))
-            contig_pct_cov[sample].append(pct_cov)
+            pass_thres = (cov_thres.loc[cov_thres.chr == i, sample].sum())
+            contig_pct_cov[sample].append(pass_thres)
     contig_pct_cov_df = pd.DataFrame.from_dict(contig_pct_cov)
     contig_pct_cov_df.insert(0, 'contigs', chrs)
     return contig_pct_cov_df
+
+
+def cmp_thres(val, threshold):
+    if val >= threshold:
+        return 1
+    else:
+        return 0
 
 
 def coverage_analysis(fc_list, prefix, legacy):
