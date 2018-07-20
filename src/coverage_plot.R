@@ -131,3 +131,24 @@ for (sample in names(cov)[(1+start_column):(n_sample+start_column)]) {
   cov_plot(cov, subg2, sample, cols, is_D=T)
 }
 dev.off()
+
+# 
+contigs = c(paste('chr', 1:14, '_A', sep=''), paste('chr', 1:14, '_D', sep=''))
+pct_cov = read.csv('batch1_AD_progeny.pct_cov.tsv', sep='\t')
+pct_cov = read.csv('batch1_81D_AD_cov_fc.pct_cov.tsv', sep='\t')
+pct_cov = read.csv('batch1_15AD_cov.pct_cov.tsv', sep='\t')
+
+prefix='batch1_15D'
+pct_cov = pct_cov[order(match(pct_cov$contigs, contigs)),]
+n_samples = dim(pct_cov)[2] - 1
+png(paste(prefix,'cov.png', sep=''), width=3000, height=n_samples*500, 
+    unit='px', res=300)
+par(mfrow=c(n_samples, 2))
+par(mar=c(2, 4, 2, 0.5))
+for (sample in names(pct_cov)[2:n_samples]) {
+  barplot(pct_cov[c(1:14), sample], names.arg=pct_cov$contigs[1:14],
+          main=paste(sample, '_A', sep=''), ylab='% coverage', ylim=c(0,6))
+  barplot(pct_cov[c(15:28), sample], names.arg=pct_cov$contigs[15:28],
+          main = paste(sample, '_D', sep=''), ylab='% coverage', ylim=c(0,6))
+}
+dev.off()
