@@ -7,9 +7,9 @@
 #$ -binding linear:1
 #$ -R y
 #$ -P gscid
-#$ -t 1-2
+#$ -t 1-75
 #$ -tc 0
-#$ -o /gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21_NCBI/batch1_AD_coverage
+#$ -o /gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/test_ad
 #$ -cwd
 #$ -j y
 
@@ -20,17 +20,16 @@ reuse Python-3.4
 reuse .htslib-1.7
 reuse .perl-5.18.1
 
-export PATH=/cil/shed/sandboxes/xiaoli/fungal-pipeline/src:$PATH
-export PYTHONPATH=/cil/shed/sandboxes/xiaoli/fungal-pipeline/src:$PYTHONPATH
+export PATH=/cil/shed/sandboxes/xiaoli/fungal-pipeline/scripts:$PATH
+export PYTHONPATH=/cil/shed/sandboxes/xiaoli/fungal-pipeline/src/pipeline:$PYTHONPATH
 
 # to do: input json file as input
 # project directory
 # prjdir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21_NCBI
-# prjdir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/test_ad
+prjdir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/test_ad; prefix=batch1_75_AD
+
 #prjdir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21_NCBI/batch1
-prjdir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21_NCBI/batch1_AD_coverage
-prefix=batch1_86_AD
-# prefix=batch1_75_AD
+#prjdir=/gsap/garage-fungal/Crypto_neoformans_seroD_B454/analysis/JEC21_NCBI/batch1_AD_coverage; prefix=batch1_86_AD
 
 cd $prjdir
 # Input: bamlist
