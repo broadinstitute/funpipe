@@ -40,15 +40,15 @@ sub output_tsv{
 }
 
 sub depth_fold_change {
-  # Normalize depth of each chromosome.
-  my ($winDep, $chrDep) = @_;
+  # Normalize depth by overall average depth.
+  my ($winDep, $aveDep) = @_;
   foreach my $contig (keys %$winDep) {
     foreach my $winIdx (keys %{$$winDep{$contig}}) {
-      if ($$chrDep{$contig} == 0) {
+      if ($aveDep == 0) {
         $$winDep{$contig}{$winIdx}{fc} = 'inf';
       } else {
         $$winDep{$contig}{$winIdx}{fc} =
-          $$winDep{$contig}{$winIdx}{dep}/$$chrDep{$contig};
+          $$winDep{$contig}{$winIdx}{dep}/$aveDep;
       }
     }
   }
@@ -63,11 +63,12 @@ sub average_depth{
   # Return:%chrcov: a hash table contains depth of coverage for each chr.
 
   my ($chrDep, $chrlen) = @_;
-  my $aveDep = {};
+  my ($dep, $len) = (0, 0);   # Total depth and total length
   foreach my $contig (keys %$chrDep) {
-    $$aveDep{$contig} = $$chrDep{$contig}/$$chrlen{$contig};
+    $dep += $$chrDep{$contig};
+    $len += $$chrlen{$contig};
   }
-  return $aveDep;
+  return ($dep/$len);
 }
 
 sub load_faidx {
@@ -118,8 +119,6 @@ my $out_dir = '.';
 );
 &help() if $help || $nOpts == 0;
 
-
-
 # initalize
 my $winEnd = $winSize - 1;  # end position of window
 my $currContig = 'NA';         # current contig
@@ -168,6 +167,7 @@ while (my $line = <MPILEUP>) {
 }
 close (MPILEUP) or die;
 $$winDep{$currContig}{$currSliWin}{dep} = $depthSum/$winSize;
+
 
 my $chrlen = load_faidx($faidx);
 my $aveDep = average_depth($chrDep, $chrlen);
