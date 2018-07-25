@@ -52,7 +52,6 @@ def index_fa(fa):
     bwa_index_fa(fa)
     pcd = picard()
     pcd.dict(fa)
-    eprint(" - Finished index fasta files.\n")
 
 
 def sort_bam(bam, out_dir, tmp=None):
@@ -68,7 +67,6 @@ def sort_bam(bam, out_dir, tmp=None):
         tmp = prefix
     outfile = prefix + '.sorted.bam'
     run('samtools sort -T '+tmp+' '+bam+' > '+outfile)
-    eprint(" - Finished sorting BAM.\n")
     return outfile
 
 
@@ -78,6 +76,7 @@ def samtools_index_fa(fa):
     :returns: index file name
     '''
     run('samtools faidx '+fa)
+    done('samtools_index_fa')
     return fa+'.fai'
 
 
@@ -97,7 +96,6 @@ def bwa_align(fa, fq1, fq2, prefix):
                   prefix+'.bam']))
     sorted_bam = sort_bam(prefix+'.bam')
     index_bam(sorted_bam)
-    eprint(" - Finished aligning BAM with BWA.\n")
     return sorted_bam
 
 
@@ -112,7 +110,6 @@ def bam2fqs(bam, prefix, ram, picard):
     cmd = ' '.join(['java -Xmx'+str(ram)+'g', '-jar', picard, 'SamToFastq',
                     'I='+bam, 'F='+fq1, 'F2='+fq2])
     run(cmd)
-    eprint(" - Finished transform BAM to Fastq.\n")
     return (fq1, fq2)
 
 
@@ -134,7 +131,6 @@ def pilon(fa, bam, prefix, ram, threads, jar):
         '--threads', str(threads),
         '--vcf --changes --tracks --verbose > '+prefix+'.pilon.log 2>&1'])
     run(cmd)
-    eprint(" - Finished pilon analysis.\n")
     return cmd
 
 
@@ -146,17 +142,18 @@ def process_pilon_out(log, outdir, prefix):
     cmd = ' '.join(
          ['pilon_metrics', '-d', outdir, '-l', log, '--out_prefix', prefix])
     run(cmd)
-    eprint(" - Finished process pilon output.\n")
     return cmd
 
 
 def index_bam(bam):
     run('samtools index '+bam)
+    done("index_bam")
     return bam+'.bai'
 
 
 def bwa_index_fa(fa):
     run('bwa index '+fa)
+    done()
     return fa+'.fai'
 
 
@@ -208,7 +205,6 @@ def bam_depth(bam, out_prefix, idx=False):
     run(cmd)
     if idx:
         tabix(outfile, type='vcf')
-    eprint(" - Finished get BAM depth profile.\n")
     return outfile
 
 
@@ -223,7 +219,6 @@ def depth_per_window(pileup, out_prefix, faidx, window=5000):
         '--window', str(window),
         '--faidx', faidx])
     run(cmd)
-    eprint(" - Finished calculate depth per window.\n")
     return cmd
 
 
@@ -259,7 +254,6 @@ def ramxl(phylip, output, threads):
         'raxmlHPC-PTHREADS-SSE3 -p 78960 -f a -x 12345 -N 1000 -m GTRCAT',
         '-T', str(threads), '-n', output, '-s', phylip])
     run(cmd)
-    eprint(" - Finished RAMXL.\n")
     return output
 
 
@@ -271,7 +265,6 @@ def fasttree(fa, prefix):
     cmd = ' '.join([
         'FastTreeDP -nt', fa, '>', out_prefix+'.nwk'
     ])
-    eprint(" - Finished Fasttree.\n")
     return prefix+'.nwk'
 
 
@@ -281,7 +274,6 @@ def vcfsnpsToFa(vcf_list, out_prefix):
         'vcfSnpsToFasta.py', vcf_list, '>', out_prefix+'.fasta'
     ])
     run(cmd)
-    eprint(" - Finished transform vcf to fasta.\n")
     return out_file
 
 
@@ -296,7 +288,6 @@ def filterGatkGenotypes(vcf, out_prefix):
         '--min_total_DP 10', vcf, '>', outfile
     ])
     run(cmd)
-    eprint(" - Finishe filtering VCF.\n")
     return outfile
 
 
@@ -494,11 +485,11 @@ def clean_bam(bam, out_prefix):
     '''
     out_file = out_prefix+'.cleanup.bam'
     cmd = ' '.join(
-        ['samtools view -bh -f 2 -F 1024 -F 4 -F 8 -F 512 -F 2048 -F 256 -q 30',
+        ['samtools view',
+         '-bh -f 2 -F 1024 -F 4 -F 8 -F 512 -F 2048 -F 256 -q 30',
          bam, '>', out_file]
     )
     run(cmd)
-    eprint(" - Finished cleaning BAM.\n")
     return out_file
 
 # structural variation
@@ -515,7 +506,6 @@ def breakdancer(bam_file, prefix):
     run('bam2cfg.pl -g -h'+bam_file+'> '+prefix+'.cfg')
     # Detect chromosomal structural variants using breakdancer-max
     run('brakdancer-max -q 40 -r 20 -y 90 '+cfg_file)
-    eprint(" - Finished breakdancer analysis.\n")
     return
 
 # def get_ref(ftp, md5, dir='.'):
