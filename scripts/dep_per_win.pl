@@ -139,7 +139,6 @@ if ($mPileup =~ /gz$/) {
 while (my $line = <MPILEUP>) {
 	chomp $line;
 	my ($contig, $position, $depth) = split "\t", $line;
-
 	update_chr_dep($chrDep, $contig, $depth);
 	if ($currContig ne $contig) {
 		$currWin = get_curr_win($currSliWin, $winSize);
@@ -168,7 +167,7 @@ while (my $line = <MPILEUP>) {
 close (MPILEUP) or die;
 $$winDep{$currContig}{$currSliWin}{dep} = $depthSum/$winSize;
 
-
+#
 my $chrlen = load_faidx($faidx);
 my $aveDep = average_depth($chrDep, $chrlen);
 depth_fold_change($winDep, $aveDep);
