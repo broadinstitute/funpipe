@@ -133,7 +133,7 @@ def cal_subg_percent(cov, threhold=1):
     # calculate proportion of reads coming from each chromosome
     # wether coverage above threshold
     cov_thres = cov.iloc[:, 4:].apply(lambda x: x >= 1)
-    cov_thres.insert(0, 'chr', cov.contigs)
+    cov_thres.insert(0, 'chr', cov.chr)
     chrs = sorted(list(set(cov.chr)))
     contig_pct_cov = {}
     for sample in cov_thres.columns.values[2:]:
