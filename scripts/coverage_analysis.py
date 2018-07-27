@@ -35,7 +35,6 @@ def combine_cov_fc(input):
             cov = tab
         else:
             cov = pd.merge(cov, tab, on=['chr', 'start0', 'end0', 'id'])
-        print(cov.shape)
     return cov
 
 
