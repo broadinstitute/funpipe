@@ -2,15 +2,15 @@ library(argparse)
 
 # To do:
 #' Generalize is_D function in cov_plot
-#' 
+#'
 
 
 #' reverse coordinates
-#' @description reverse coordinates to the reverse strand of 
+#' @description reverse coordinates to the reverse strand of
 #' @param vec input vector
 #' @return a reverse vector of coordinates
 #' Need to fix
-#' 
+#'
 reverse_coord <- function(vec) {
   n_elem <- length(vec)
   dist <- vec[n_elem] - vec[(n_elem-1):1]
@@ -18,11 +18,11 @@ reverse_coord <- function(vec) {
   return(reverse_coord)
 }
 
-#' reorder position by defined chromosome orders. 
+#' reorder position by defined chromosome orders.
 #' @param cov_df coverage data.frame
 #' @param contig_order order of contigs
 #' @return updated data.frame
-#' 
+#'
 reorder_chr <- function (cov_df, contig_order) {
   cov_df = cov_df[order(match(cov_df$chr, contig_order)),]
   cov_df$pos = 1:dim(cov_df)[1]
@@ -35,14 +35,14 @@ mid_pos <- function(pos_vec) {
 }
 
 #' generate coverage_plot
-#' @description 
+#' @description
 #' @param cov coverage data.frame
 #' @param sample sample name
 #' @param col_vec vector of colors for each chromosome
-#' @param contigs contigs need to plot out 
+#' @param contigs contigs need to plot out
 #' @param inverse_contig list of contigs need to reverse their physical postion
 #' @param is_D: whether the subgenome is a D subgenome
-#' 
+#'
 cov_plot <- function (
   cov, sample, col_vec, contigs=NULL, inverse_contig=NULL, is_D=F) {
   cov1 <- cov[cov$chr %in% contigs, ]
@@ -64,11 +64,11 @@ cov_plot <- function (
     }
     if (!is.null(inverse_contigs) & (i %in% inverse_contigs)) {
       pos = rev(cov1$pos[cov1$chr==i])
-      mtext(paste('chr', chr, '*', sep=''), side=1, 
+      mtext(paste('chr', chr, '*', sep=''), side=1,
             at=mid_pos(cov1$pos[cov1$chr==i]), cex=0.8)
     } else {
       pos = cov1$pos[cov1$chr==i]
-      mtext(paste('chr', chr, sep=''), side=1, 
+      mtext(paste('chr', chr, sep=''), side=1,
             at=mid_pos(cov1$pos[cov1$chr==i]), cex=0.8)
     }
     segments(pos, 0, pos, cov1[cov1$chr==i, sample], cols[i])
@@ -80,31 +80,35 @@ cov_plot <- function (
 parser <- ArgumentParser(description='Generate coverage plot')
 parser$add_argument('-d', '--density', help='input density tsv file')
 parser$add_argument('-c', '--color', help='color file for each chromosomes')
-parser$add_argument('-i', '--inverse_contigs', 
+parser$add_argument('-i', '--inverse_contigs',
                     help='contigs that need to inverse positions to complment strand')
 parser$add_argument('-p', '--prefix', help='output prefix')
+parser$add_argument('-l', '--legacy', help='legacy mode'
 args <- parser$parse_args()
 
-# add option to process 
-density <- 'batch1_AD_progeny.den'
-density <- 'batch1_81_D.den'
-density <- 'batch1_15AD_cov_fc.den'
+# add option to process
 
-density <- 'batch1_AD_progeny_cov_den.tsv'
+if (legacy) {
+  start_column = 6
+} else{
+  start_column = 2
+}
 
-prefix <- 'batch1_AD_progeny'
-cov <- read.csv(density_file, sep='\t')
-n_sample = dim(cov)[2] - 6
+cov <- read.csv(density, sep='\t')
+n_sample = dim(cov)[2] - start_column
 
-color <- read.csv('cneo_h99_jec21_chr_coord_5k.dat', sep='\t')
+color <- read.csv(
+   '/cil/shed/sandboxes/xiaoli/cryptoserod/refs/cneo_h99_jec21_chr_coord_5k.dat',
+   sep='\t', col.names=c('chr', 'start', 'end', 'R', 'G', 'B'), header=F
+)
 cols <- vector(length=28)
 for (i in 1:dim(color)[1]) {
   cols[i] <- rgb(color$R[i], color$G[i], color$B[i])
 }
 
 # separate two sub-genomes
-subg1 <- c( 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14)    # A 
-subg2 <- c(15, 16, 25, 26, 18, 19, 20, 21, 23, 24, 17, 27, 28, 22)  # D 
+subg1 <- c( 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14)    # A
+subg2 <- c(15, 16, 25, 26, 18, 19, 20, 21, 23, 24, 17, 27, 28, 22)  # D
 
 cov = reorder_chr(cov, c(subg1, subg2))
 cols <- vector(length=28)
@@ -113,15 +117,11 @@ for (i in 1:dim(color)[1]) {
   cols[color$chr[i]] <- rgb(color$R[i], color$G[i], color$B[i])
 }
 
-if (legacy) {
-  start_column = 6
-} else{
-  start_column = 2
-}
+
 
 # inverse
 inverse_contigs <- c(3, 4, 5, 7, 8, 10, 14)
-png(paste0(prefix,'.cmp.png'), width=2500, height=n_sample*420, unit='px', 
+png(paste0(prefix,'.cmp.png'), width=2500, height=n_sample*420, unit='px',
     res=300)
 par(mfrow=c(n_sample * 2, 1))
 for (sample in names(cov)[(1+start_column):(n_sample+start_column)]) {
@@ -132,7 +132,7 @@ for (sample in names(cov)[(1+start_column):(n_sample+start_column)]) {
 }
 dev.off()
 
-# 
+#
 contigs = c(paste('chr', 1:14, '_A', sep=''), paste('chr', 1:14, '_D', sep=''))
 pct_cov = read.csv('batch1_AD_progeny.pct_cov.tsv', sep='\t')
 pct_cov = read.csv('batch1_81D_AD_cov_fc.pct_cov.tsv', sep='\t')
@@ -141,7 +141,7 @@ pct_cov = read.csv('batch1_15AD_cov.pct_cov.tsv', sep='\t')
 prefix='batch1_15D'
 pct_cov = pct_cov[order(match(pct_cov$contigs, contigs)),]
 n_samples = dim(pct_cov)[2] - 1
-png(paste(prefix,'cov.png', sep=''), width=3000, height=n_samples*500, 
+png(paste(prefix,'cov.png', sep=''), width=3000, height=n_samples*500,
     unit='px', res=300)
 par(mfrow=c(n_samples, 2))
 par(mar=c(2, 4, 2, 0.5))
