@@ -7,6 +7,8 @@ import pandas as pd
 from glob import glob
 import matplotlib
 import matplotlib.pyplot as plt
+from pipeline import run, eprint
+
 
 # To do: add option to filter a specific subgenome
 # if args.g_flags is None:
@@ -35,6 +37,7 @@ def combine_cov_fc(input):
             cov = tab
         else:
             cov = pd.merge(cov, tab, on=['chr', 'start0', 'end0', 'id'])
+    eprint(' - Combine coverage profiles done.')
     return cov
 
 
@@ -107,31 +110,15 @@ def output_den_tsv(prefix, den, legacy):
     return 1
 
 
-def cal_subg_percent(cov, threhold=1):
+def cal_subg_percent(cov, threshold=1):
     ''' calculate subgenome percentage for each chromosome
     :param cov: coverage data.frame
+    :param threshold: cutoffs used to include a window in coverage calculation
     :return data.frame: percentage of contig coverage.
     '''
-    # subgenome map
-    # subg_map = {
-    #     'chr1_A': 'chr1_D',
-    #     'chr2_A': 'chr2_D',
-    #     'chr3_A': 'chr12_D',
-    #     'chr4_A': 'chr13_D',
-    #     'chr5_A': 'chr6_D',
-    #     'chr6_A': 'chr7_D',
-    #     'chr7_A': 'chr8_D',
-    #     'chr8_A': 'chr9_D',
-    #     'chr9_A': 'chr11_D',
-    #     'chr10_A': 'chr12_D',
-    #     'chr11_A': 'chr5_D',
-    #     'chr12_A': 'chr15_D',
-    #     'chr13_A': 'chr16_D',
-    #     'chr14_A': 'chr10_D'
-    # }
     # calculate proportion of reads coming from each chromosome
-    # wether coverage above threshold
-    cov_thres = cov.iloc[:, 4:].apply(lambda x: x >= 1)
+    # whether coverage above threshold
+    cov_thres = cov.iloc[:, 4:].apply(lambda x: x >= threshold)
     cov_thres.insert(0, 'chr', cov.chr)
     chrs = sorted(list(set(cov.chr)))
     contig_pct_cov = {}
@@ -147,52 +134,79 @@ def cal_subg_percent(cov, threhold=1):
 
 
 def cmp_thres(val, threshold):
+    ''' compare with threadshold
+    :param val: value
+    :param threshold: cutoff to compare with
+    '''
     if val >= threshold:
         return 1
     else:
         return 0
 
 
-def coverage_analysis(fc_list, prefix, legacy):
-    """
-    :param fc_list:  fold change list tsv
+def coverage_analysis(fc_tsv, prefix, color_csv, legacy):
+    """ perform coverage analsis
+    :param fc_tsv:  fold change list tsv
     :param prefix: output file prefix
+    :param color_csv: color profile for each contig
     :return
     """
     # prefix = 'batch1_75_AD'
     g_flags = ['_A', '_D']
     # combine coverage tsv
-    cov = combine_cov_fc(fc_list)
+    cov = combine_cov_fc(fc_tsv)
     den = cov_fc_to_den(cov, 'chr', g_flags)
     contig_pct_cov_df = cal_subg_percent(cov)
     # output
     cov.to_csv(prefix+'.tsv', sep='\t', index=False)  # coverage table
-    output_den_tsv(prefix, den, legacy)
+    density = output_den_tsv(prefix, den, legacy)
     contig_pct_cov_df.to_csv(prefix+'.pct_cov.tsv', sep='\t', index=False)
+    coverage_plot(fc_tsv, prefix, color_csv, legacy)
+    eprint(' - Finish coverage analysis.')
+    return 1
+
+
+def coverage_plot(fc_tsv, prefix, color_csv, legacy):
+    """ generate coverage plot
+    :param fc_tsv: coverage profile list, first
+    :param prefix: output prefix
+    :param legacy: to do
+    """
+    run(' '.join(['coverage_plot.R', '-f', fc_tsv, '-p', prefix,
+                  '-c', color_csv, '-l', legacy ])
+    eprint(' - Finish generating coverage plot.')
     return 1
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='PLOT COVERAGE ACROSS GENOME FOR MULTIPLE STRAINS')
+        description='Aggregate coverage profiles of a sample set and generate'
+        +' coverage plot per sample')
     # required arguments
-    required = parser.add_argument_group('required arguments')
+    required = parser.add_argument_group('Required arguments')
     required.add_argument(
-        '-i', '--fc_list', required=True, help='Input tsv lists'
+        '-i', '--fc_tsv', required=True, help='A table-delimited file with '
+        + 'first column sample ID, second column coverage profile path'
     )
     required.add_argument(
         '-p', '--prefix', help='output prefix', required=True
     )
+    required.color(
+        '-c', '--color_csv', help='Color profile for each contig'
+    )
 
     # optional arguments
+    parser.add_argument(
+        '--no_plot', action='store_true', help='not generating coverage plots'
+    )
     # parser.add_argument(
     #     '--g_flags', help='subgenome flag'
     # )
     parser.add_argument(
         '--legacy', help='output density file in legacy mode, for matlab code',
-        action='store_true', default=False
+        action='store_true'
     )
     args = parser.parse_args()
 
     print(args)
-    coverage_analysis(args.fc_list, args.prefix, args.legacy)
+    coverage_analysis(args.fc_tsv, args.prefix, args.color_csv, args.legacy)
