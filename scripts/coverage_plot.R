@@ -5,7 +5,7 @@ library(argparse)
 #'
 
 
-#' reverse coordinates
+#' @title reverse coordinates
 #' @description reverse coordinates to the reverse strand of
 #' @param vec input vector
 #' @return a reverse vector of coordinates
@@ -77,41 +77,45 @@ cov_plot <- function (
   return(1)
 }
 
-
+#' @title: Generate coverage plot
+#' @param density: coverage profile tsv file for each file
+#' prefix: output Prefix
+#' color_csv: color profile csv file for each contig
+#' legacy: whether take legacy input file
 coverage_plot <- function(density, prefix, color_csv, legacy) {
   if (legacy) {
     start_column = 6
   } else{
     start_column = 2
   }
-  
+
   cov <- read.csv(density, sep='\t')
   n_sample = dim(cov)[2] - start_column
-  
-  color <- read.csv(color_csv, sep='\t', 
+
+  color <- read.csv(color_csv, sep='\t',
                     col.names=c('chr', 'start', 'end', 'R', 'G', 'B'), header=F
   )
   cols <- vector(length=28)
   for (i in 1:dim(color)[1]) {
     cols[i] <- rgb(color$R[i], color$G[i], color$B[i])
   }
-  
+
   # separate two sub-genomes
   subg1 <- c( 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14)    # A
   subg2 <- c(15, 16, 25, 26, 18, 19, 20, 21, 23, 24, 17, 27, 28, 22)  # D
-  
+
   cov = reorder_chr(cov, c(subg1, subg2))
   cols <- vector(length=28)
   color$chr = c(subg1, subg2)
   for (i in 1:dim(color)[1]) {
     cols[color$chr[i]] <- rgb(color$R[i], color$G[i], color$B[i])
   }
-  
+
   # inverse
   inverse_contigs <- c(3, 4, 5, 7, 8, 10, 14)
   png(paste0(prefix,'.cmp.png'), width=2500, height=n_sample*420, unit='px',
       res=300)
-  
+
   par(mfrow=c(n_sample * 2, 1))
   for (sample in names(cov)[(1+start_column):(n_sample+start_column)]) {
     print(sample)
@@ -120,30 +124,30 @@ coverage_plot <- function(density, prefix, color_csv, legacy) {
     cov_plot(cov, sample, cols, subg2, is_D=T)
   }
   dev.off()
-  
+
 }
 
+
 parser <- ArgumentParser(description='Generate coverage plot')
-parser$add_argument('-d', '--density', help='input density tsv file')
+parser$add_argument('-f', '--fc_tsv', help='input density tsv file')
 parser$add_argument('-p', '--prefix', help='output prefix')
 parser$add_argument('-l', '--legacy', help='legacy mode', action='store_true')
 parser$add_argument('-c', '--color', help='color file for each chromosomes')
 
 # parser$add_argument('-i', '--inverse_contigs',
-#                     help='contigs that need to inverse positions to complment strand')
+#                     help='contigs that need to inverse positions to compliment strand')
 args <- parser$parse_args()
 
 # add option to process
+coverage_plot(args$fc_tsv, args$prefix, args$color, args$legacy)
 
-coverage_plot(args$density, args$prefix, args$color, args$legacy)
-
-#
 if (FALSE) {
-  contigs = c(paste('chr', 1:14, '_A', sep=''), paste('chr', 1:14, '_D', sep=''))
+  contigs = c(paste('chr', 1:14, '_A', sep=''),
+              paste('chr', 1:14, '_D', sep=''))
   pct_cov = read.csv('batch1_AD_progeny.pct_cov.tsv', sep='\t')
   pct_cov = read.csv('batch1_81D_AD_cov_fc.pct_cov.tsv', sep='\t')
   pct_cov = read.csv('batch1_15AD_cov.pct_cov.tsv', sep='\t')
-  
+
   prefix='batch1_15D'
   pct_cov = pct_cov[order(match(pct_cov$contigs, contigs)),]
   n_samples = dim(pct_cov)[2] - 1
