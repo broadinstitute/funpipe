@@ -1,4 +1,5 @@
-library(argparse)
+#!/usr/bin/env Rscript
+library('argparse')
 
 # To do:
 #' Generalize is_D function in cov_plot
