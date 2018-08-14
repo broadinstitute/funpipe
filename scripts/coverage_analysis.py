@@ -152,7 +152,7 @@ def cmp_thres(val, threshold):
         return 0
 
 
-def coverage_analysis(fc_tsv, prefix, color_csv, legacy):
+def coverage_analysis(fc_tsv, prefix, legacy):
     """ perform coverage analsis
     :param fc_tsv:  fold change list tsv
     :param prefix: output file prefix
@@ -202,9 +202,9 @@ if __name__ == '__main__':
     required.add_argument(
         '-p', '--prefix', help='output prefix', required=True
     )
-    required.add_argument(
-        '-c', '--color_csv', help='Color profile for each contig'
-    )
+#    required.add_argument(
+#        '-c', '--color_csv', help='Color profile for each contig'
+#    )
 
     # optional arguments
     parser.add_argument(
@@ -219,5 +219,4 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    print(args)
-    coverage_analysis(args.fc_tsv, args.prefix, args.color_csv, args.legacy)
+    coverage_analysis(args.fc_tsv, args.prefix, args.legacy)
