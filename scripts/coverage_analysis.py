@@ -99,20 +99,23 @@ def output_den_tsv(prefix, den, legacy):
     :param den: density matrix
     :param legacy: if output tsv in legacy mode, compatible with matlab code
     '''
+    out_den = prefix
     # output den files
     with open(prefix+'.samples.tsv', 'w') as samples:
         for sample in den.columns[6:].tolist():
             samples.write(sample+'\n')
     if legacy:
+        out_den += '.den'
         # add additional columns for den file
         den.insert(loc=2, column='dos1', value=1)
         den.insert(loc=3, column='dos2', value=1.5)
         den.insert(loc=4, column='dos3', value=2)
         den.insert(loc=5, column='dos4', value=3)
-        den.to_csv(prefix+'.den', index=False, header=False, sep='\t')
+        den.to_csv(out_den, index=False, header=False, sep='\t')
     else:
-        den.to_csv(prefix+'_cov_den.tsv', index=False, sep='\t')
-    return 1
+        out_den += '_cov_den.tsv'
+        den.to_csv(out_den, index=False, sep='\t')
+    return out_den
 
 
 def cal_subg_percent(cov, threshold=1):
@@ -166,7 +169,7 @@ def coverage_analysis(fc_tsv, prefix, color_csv, legacy):
     cov.to_csv(prefix+'.tsv', sep='\t', index=False)  # coverage table
     density = output_den_tsv(prefix, den, legacy)
     contig_pct_cov_df.to_csv(prefix+'.pct_cov.tsv', sep='\t', index=False)
-    coverage_plot(fc_tsv, prefix, color_csv, legacy)
+#    coverage_plot(density, prefix, color_csv, legacy)
     eprint(' - Finish coverage analysis.')
     return 1
 
@@ -177,8 +180,11 @@ def coverage_plot(fc_tsv, prefix, color_csv, legacy):
     :param prefix: output prefix
     :param legacy: to do
     """
-    run(' '.join(['coverage_plot.R', '-f', fc_tsv, '-p', prefix,
-                  '-c', color_csv, '-l', legacy ]))
+    cmd = ' '.join(['coverage_plot.R', '-f', fc_tsv, '-p', prefix,
+                    '-c', color_csv])
+    if legacy:
+        cmd += ' -l'
+    run(cmd)
     eprint(' - Finish generating coverage plot.')
     return 1
 
