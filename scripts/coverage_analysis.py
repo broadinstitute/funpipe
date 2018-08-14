@@ -7,10 +7,12 @@ import pandas as pd
 from glob import glob
 import matplotlib
 import matplotlib.pyplot as plt
+from distutils.version import LooseVersion
 from pipeline import run, eprint
 
 
 # To do: add option to filter a specific subgenome
+
 # if args.g_flags is None:
 #     output_den_tsv(args.prefix, cov_fc_to_den(cov))
 # else:
@@ -82,7 +84,10 @@ def cov_fc_to_den(cov, contig_prefix, subgenome, split=False):
 
     # substitute contig names to numbers
     den.replace({'chr': contig_map}, inplace=True)
-    den.sort_values(['chr', 'start0'], axis=0, inplace=True)
+    if LooseVersion(str(pd.__version__)) >= LooseVersion("0.17.0"):
+        den.sort_values(['chr', 'start0'], axis=0, inplace=True)
+    else:
+        den.sort(['chr', 'start0'], axis=0, inplace=True)
     den.drop(['start0'], axis=1, inplace=True)    # reformat to den file
     den.insert(loc=1, column='id', value=range(1, den.shape[0]+1))
     return den
@@ -173,7 +178,7 @@ def coverage_plot(fc_tsv, prefix, color_csv, legacy):
     :param legacy: to do
     """
     run(' '.join(['coverage_plot.R', '-f', fc_tsv, '-p', prefix,
-                  '-c', color_csv, '-l', legacy ])
+                  '-c', color_csv, '-l', legacy ]))
     eprint(' - Finish generating coverage plot.')
     return 1
 
