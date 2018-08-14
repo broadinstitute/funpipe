@@ -196,7 +196,7 @@ if __name__ == '__main__':
     required.add_argument(
         '-p', '--prefix', help='output prefix', required=True
     )
-    required.color(
+    required.add_argument(
         '-c', '--color_csv', help='Color profile for each contig'
     )
 
