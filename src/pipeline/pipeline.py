@@ -99,20 +99,6 @@ def bwa_align(fa, fq1, fq2, prefix):
     return sorted_bam
 
 
-def bam2fqs(bam, prefix, ram, picard):
-    ''' realign BAM file to a reference genome
-        bam: bam file
-        prefix: output prefix
-        fa: fasta file
-    '''
-    fq1 = prefix+'_1.fq.gz'
-    fq2 = prefix+'_2.fq.gz'
-    cmd = ' '.join(['java -Xmx'+str(ram)+'g', '-jar', picard, 'SamToFastq',
-                    'I='+bam, 'F='+fq1, 'F2='+fq2])
-    run(cmd)
-    return (fq1, fq2)
-
-
 def pilon(fa, bam, prefix, ram, threads, jar):
     '''
         fa: fasta file
@@ -206,6 +192,20 @@ def bam_depth(bam, out_prefix, idx=False):
     if idx:
         tabix(outfile, type='vcf')
     return outfile
+
+
+def bam2fastq(bam, out_dir, prefix):
+    ''' BAM2FASTQ
+    :param bam: input bam PATH
+    :param out_dir: output directory
+    :param prefix: output prefix
+    :return fastq
+    '''
+    out_prefix = out_dir+prefix
+    cmd = 'bam2fastq '+bam+' -o '+out_prefix+'#'
+    run(cmd)
+    eprint(' - BAM2FASTQ done.')
+    return(out_prefix+'_1.fq', out_prefix+'_2.fq')
 
 
 def depth_per_window(pileup, out_prefix, faidx, window=5000):
@@ -305,7 +305,7 @@ class picard:
                        "O="+dict])
         run(cmd)
 
-    def bam2fqs(bam, prefix, ram, picard):
+    def bam2fqs(self, bam, prefix):
         ''' Realign BAM file to a reference genome
         :param bam: bam file
         :param prefix: output prefix
@@ -316,7 +316,7 @@ class picard:
         fq2 = prefix+'_2.fq.gz'
         cmd = ' '.join([self.cmd, 'SamToFastq', 'I='+bam, 'F='+fq1, 'F2='+fq2])
         run(cmd)
-        return (fq1, fq2)
+        return(fq1, fq2)
 
 
 class gatk:
@@ -507,6 +507,33 @@ def breakdancer(bam_file, prefix):
     # Detect chromosomal structural variants using breakdancer-max
     run('brakdancer-max -q 40 -r 20 -y 90 '+cfg_file)
     return
+
+
+def fastqc(bam, fq1, fq2, out_dir):
+    ''' quality control of raw or aligned BAMs using FastQc
+    :param bam: input bam path
+    :param out_dir: output directory
+    :param fq1: input fastq pair1
+    :param fq2: inpu  fastq pair2
+    :return output directory
+    '''
+    cmd = ' '.join(['fastqc -f fastq', fq1, fq2, '-o', out_dir])
+    run(cmd)
+    eprint(' - FastQc finished.')
+    return out_dir
+
+
+def diamond_blastx(fa, output):
+    ''' blastx with diamond
+    :param fa: input fasta file.
+    :param output: output file
+    :return output
+    '''
+    cmd = ' '.join(['diamond blastx -d nr -q', fa, '-o', output])
+    run(cmd)
+    eprint(' - Finish diamon_blastx.')
+    return output
+
 
 # def get_ref(ftp, md5, dir='.'):
 #     """ download reference files from NCBI and perform md5sumcheck to files
