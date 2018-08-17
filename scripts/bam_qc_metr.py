@@ -6,20 +6,17 @@ import argparse
 from crimson import picard
 import json
 import pandas as pd
+from glob import glob
+from pipeline import eprint
 
 stats = {
     'alignment_summary_metrics':
         ['TOTAL_READS', 'PCT_PF_READS_ALIGNED', 'PCT_CHIMERAS'],
-    'gc_bias.summary_metrics':
-        ['AT_DROPOUT', 'GC_DROPOUT'],
-    'insert_size_metrics':
-        ['MEDIAN_INSERT_SIZE', 'STANDARD_DEVIATION'],
     'wgs_metrics': ['MEAN_COVERAGE']
 }
 
 stats_list = [
-    'TOTAL_READS', 'PCT_PF_READS_ALIGNED', 'PCT_CHIMERAS', 'AT_DROPOUT',
-    'GC_DROPOUT', 'MEDIAN_INSERT_SIZE', 'STANDARD_DEVIATION', 'MEAN_COVERAGE']
+    'TOTAL_READS', 'PCT_PF_READS_ALIGNED', 'PCT_CHIMERAS', 'MEAN_COVERAGE']
 
 
 def get_picard_stat(file):
@@ -66,23 +63,29 @@ def output_stats(qc_stats, bam_qc_file):
             bam_qc.write('\t'.join(stats)+'\n')
 
 
-def process_bam_files(bam_list_file, bam_qc_file):
+def extract_picard_metrics(qc_path_tsv, bam_qc_file):
     ''' process all bam files and get corresponding QC metrics and reference
     paths from Broad's Genomic Platform
     :param bam_list_file: a list of bam files
     :param bam_qc_file: file path to output all QC metrics
     '''
     qc_stats = {}
-    with open(bam_list_file, 'r') as bam_list:
+    with open(qc_path_tsv, 'r') as qc_path:
         # process each bam record in the bam list
-        for line in bam_list:
+        for line in qc_path:
             sample, path = line.strip().split('\t')
-            fdir, fname, prefix, suffix = parse_gp_bam_path(path)
+            # fdir, fname, prefix, suffix = parse_gp_bam_path(path)
             qc_stats[sample] = {}
-            for suffix in pstats:
-                all_metr = get_picard_stat(join(fdir, prefix+'.'+suffix))
-                for stat in pstats[suffix]:
-                    qc_stats[sample][stat] = all_metr[stat]
+            for suffix in stats:
+                stat_file = glob(join(path, sample+'*'+suffix))
+                if len(stat_file) == 1:
+                    all_metr = get_picard_stat(stat_file[0])
+                    for stat in stats[suffix]:
+                        qc_stats[sample][stat] = all_metr[stat]
+                elif len(stat_file) > 1:
+                        raise ValueError(sample+' has more than one '+suffix)
+                else:
+                    eprint(suffix + ' not available.')
     output_stats(qc_stats, bam_qc_file)
 
 
@@ -101,5 +104,5 @@ if __name__ == '__main__':
         '-d', '--outdir', default='.', help='Output Directory')
 
     args = parser.parse_args()
-    process_bam_files(
+    extract_picard_metrics(
         args.input, join(args.outdir, args.output))
