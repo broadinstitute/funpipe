@@ -63,18 +63,20 @@ def output_stats(qc_stats, bam_qc_file):
             bam_qc.write('\t'.join(stats)+'\n')
 
 
-def extract_picard_metrics(qc_path_tsv, bam_qc_file):
+def extract_picard_metrics(qc_path_tsv, bam_qc_file, is_gp_bam):
     ''' process all bam files and get corresponding QC metrics and reference
     paths from Broad's Genomic Platform
     :param bam_list_file: a list of bam files
     :param bam_qc_file: file path to output all QC metrics
+    :param is_gp_bam: input is a bam path from the Broad's GP
     '''
     qc_stats = {}
     with open(qc_path_tsv, 'r') as qc_path:
         # process each bam record in the bam list
         for line in qc_path:
             sample, path = line.strip().split('\t')
-            # fdir, fname, prefix, suffix = parse_gp_bam_path(path)
+            if is_gp_bam:
+                fdir, fname, prefix, suffix = parse_gp_bam_path(path)
             qc_stats[sample] = {}
             for suffix in stats:
                 stat_file = glob(join(path, sample+'*'+suffix))
@@ -102,7 +104,10 @@ if __name__ == '__main__':
     # optional arguments
     parser.add_argument(
         '-d', '--outdir', default='.', help='Output Directory')
-
+    parser.add_argument(
+        '-b', '--is_gp_bam', action='store_true',
+        help='whether input is a list of GP bam path'
+    )
     args = parser.parse_args()
     extract_picard_metrics(
-        args.input, join(args.outdir, args.output))
+        args.input, join(args.outdir, args.output), args.is_gp_bam)
