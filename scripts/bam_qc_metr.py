@@ -79,7 +79,7 @@ def extract_picard_metrics(qc_path_tsv, bam_qc_file, is_gp_bam):
                 fdir, fname, prefix, suffix = parse_gp_bam_path(path)
             qc_stats[sample] = {}
             for suffix in stats:
-                stat_file = glob(join(path, sample+'*'+suffix))
+                stat_file = glob(join(path, sample+'.'+'*'+suffix))
                 if len(stat_file) == 1:
                     all_metr = get_picard_stat(stat_file[0])
                     for stat in stats[suffix]:
@@ -93,13 +93,18 @@ def extract_picard_metrics(qc_path_tsv, bam_qc_file, is_gp_bam):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Parse Picard metrics from broad GP platform')
+        description=(
+            'Parse Picard metrics from a list of Picard output metrics. \n'
+            'Note that this script assume file name is composed of '
+            '<sample>.*.<suffix>'
+        )
+    )
     # required arguments
     required = parser.add_argument_group('required arguments')
     required.add_argument(
-        '-i', '--input', required=True, help='BAM list')
+        '-i', '--input', required=True, help='Input list of QC metrics')
     required.add_argument(
-        '-o', '--output', help="Output file")
+        '-o', '--output', help="Name of output file")
 
     # optional arguments
     parser.add_argument(
