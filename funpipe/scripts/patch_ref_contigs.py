@@ -3,7 +3,7 @@ import re
 import gzip
 import sys
 import argparse
-from pipeline import cd, samtools_index_fa
+from funpipe import cd, samtools_index_fa
 
 '''
     Patch contig names in GFF and fasta from NCBI

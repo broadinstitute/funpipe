@@ -8,7 +8,7 @@ from glob import glob
 import matplotlib
 import matplotlib.pyplot as plt
 from distutils.version import LooseVersion
-from pipeline import run, eprint
+from funpipe import run, eprint
 
 
 # To do: add option to filter a specific subgenome

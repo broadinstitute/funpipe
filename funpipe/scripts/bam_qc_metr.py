@@ -7,7 +7,7 @@ from crimson import picard
 import json
 import pandas as pd
 from glob import glob
-from pipeline import eprint
+from funpipe import eprint
 
 stats = {
     'alignment_summary_metrics':

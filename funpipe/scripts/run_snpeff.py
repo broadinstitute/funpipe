@@ -3,7 +3,7 @@
 import os
 import sys
 import argparse
-from pipeline import *
+from funpipe import *
 
 def main(arguments):
     parser = argparse.ArgumentParser(
