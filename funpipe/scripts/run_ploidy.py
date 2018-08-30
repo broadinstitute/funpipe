@@ -3,7 +3,7 @@
 from os.path import basename, splitext, join
 import sys
 import argparse
-from pipeline import bam_depth, depth_per_window, sort_bam, cd, run, rm, \
+from funpipe import bam_depth, depth_per_window, sort_bam, cd, run, rm, \
     clean_bam, eprint
 
 

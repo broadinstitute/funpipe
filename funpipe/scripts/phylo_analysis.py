@@ -3,7 +3,7 @@
 import os
 import sys
 import argparse
-from pipeline import cd, vcf_snp_to_fasta, FastTreeDP, filter_variants
+from funpipe import cd, vcf_snp_to_fasta, FastTreeDP, filter_variants
 
 
 def phylo_analysis(input, prefix, max_amb):

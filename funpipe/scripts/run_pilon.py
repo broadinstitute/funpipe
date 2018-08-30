@@ -2,7 +2,7 @@
 
 import sys
 import argparse
-from pipeline import *
+from funpipe import *
 
 def parse_input_arg(args):
     parser = argparse.ArgumentParser()
