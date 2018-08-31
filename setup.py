@@ -2,11 +2,11 @@ from setuptools import setup
 
 
 def readme():
-    with open('funpipe/README.rst') as f:
+    with open('README.rst') as f:
         return f.read()
 
 
-setup(name='FunPipe',
+setup(name='funpipe',
       version='0.1',
       description='A pipeline for analyzing fungal genomic data',
       long_description=readme(),
@@ -23,12 +23,11 @@ setup(name='FunPipe',
       license='MIT',
       packages=['funpipe'],
       install_requires=[
-        'contextlib', 'argparse', 'crimson', 'pandas', 'distutils',
-        'matplotlib', 'gzip'
+        'argparse', 'crimson', 'pandas', 'matplotlib'
       ],
       test_suite='nose.collector',
       tests_require=['nose', 'nose-cover3'],
-      scripts=['scripts/*', 'utils/*'],
+#      scripts=['scripts/*', 'utils/*'],
       include_package_data=True,
       zip_safe=False
 )
