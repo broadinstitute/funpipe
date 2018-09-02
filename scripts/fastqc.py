@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
-from funpipe import fastqc, picard, eprint
+from funpipe import bam.fastqc, picard, utils.eprint
 
 
 def bam_fast_qc(bam, ref_fa, out_dir, prefix):

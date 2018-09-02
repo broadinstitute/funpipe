@@ -8,7 +8,7 @@ from glob import glob
 import matplotlib
 import matplotlib.pyplot as plt
 from distutils.version import LooseVersion
-from funpipe import run, eprint
+from funpipe.utils import run, eprint
 
 
 # To do: add option to filter a specific subgenome
@@ -39,7 +39,7 @@ def combine_cov_fc(input):
             cov = tab
         else:
             cov = pd.merge(cov, tab, on=['chr', 'start0', 'end0', 'id'])
-    eprint(' - Combine coverage profiles done.')
+    print(' - Combine coverage profiles done.')
     return cov
 
 
