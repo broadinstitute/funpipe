@@ -1,9 +1,16 @@
 from setuptools import setup
 from glob import glob
+import unittest
+
 
 def readme():
     with open('README.md') as f:
         return f.read()
+
+def test_suite():
+    test_loader = unittest.TestLoader()
+    test_suite = test_loader.discover('tests', pattern='test_*.py')
+    return test_suite
 
 
 setup(name='funpipe',
@@ -30,7 +37,7 @@ setup(name='funpipe',
       install_requires=[
         'argparse', 'crimson', 'pandas', 'matplotlib'
       ],
-      test_suite='tests',
+      test_suite='setup.test_suite',
       scripts=glob('scripts/*'),
       include_package_data=True,
       zip_safe=False
