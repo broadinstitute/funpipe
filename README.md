@@ -1,24 +1,42 @@
-# Fungal pipeline
-Fungal genomic analysis pipeline
-## Introduction
-Fungal genomic analysis pipeline, including:
-* Reference genome quality evaluation
-* snpEff annotation
-* Variant calling
-* Phylogenetic tree
+FUNPIPE: a python library for building best practice fungal genomic analysis pipeline
+FUNPIPE is a python library, as well as several packaged tools to facilitate easy development of fungal genomic analysis pipelines. using state-of-the-art computational biology tools
 
-## Projects using this pipeline
-* [Cryptococcus neoformans serotype D project](analysis/crypto/README.md)
+## Requirements
+* Python >= 3.4
+* Pandas
+* [crimson](https://github.com/bow/crimson): a library for parsing outputs of bioinformatics tools
+* A list of bioinformatics tools need to be properly installed and export to `PATH`.
 
-## Dependencies
-* Python-3.4
-* Bioinformatics tools need to be in the environment `PATH`.
-* [crimson](https://github.com/bow/crimson)
+### Installation
+To build functional pipelines with this library, virtual machine or virtual environment is recommended. Both `docker` and `conda` configs were provided to setup the proper environment:
 
-## Usage
-Below are major functionality of this pipeline:
+```
+# use docker
 
-### Evaluate reference genome quality with pilon: `run_pilon.py`
+# conda
+
+```
+If you only want to use the library on your current environment, you can install this package directly. FUNPIPE is not yet on PyPI yet, to install this library, clone this repo and run the following command:
+```
+pip3 install .
+```
+### Overview:
+[src](./src): a directory that contains python library for common commands
+[scripts](./scripts): a set of executables for high level fungal analysis
+[tests](./tests): module tests
+
+# Documentation
+Below are major functionality of this pipeline, including
+* Reference genome quality evaluation with `pilon`.
+* Variant annotation using `snpEff`.
+* Haploid variant calling `GATK`.
+* Phylogenetic analysis.
+* Ploidy analysis.
+
+The following projects uses this library:
+* [Cryptococcus neoformans serotype D project](https://github.com/broadinstitute/cneoformans_serod_analysis)
+To use this library for your own research, please cite this manuscript.
+### Evaluate reference genome quality with `pilon`: `run_pilon.py`
 
 ```
 usage: run_pilon.py [-h] --prefix PREFIX --bam BAM --fa FA [--outdir OUTDIR]
@@ -48,7 +66,7 @@ Required arguments:
 
 ```
 
-### Annotation genomic variants with snpEff: `run_snpeff.py`
+### Annotation genomic variants with `snpEff`: `run_snpeff.py`
 
 ```
 usage: run_snpeff.py [-h] -i INPUT_VCF -o OUTPUT_VCF --genome_name GENOME_NAME
