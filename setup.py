@@ -1,8 +1,8 @@
 from setuptools import setup
-
+from glob import glob
 
 def readme():
-    with open('README.rst') as f:
+    with open('README.md') as f:
         return f.read()
 
 
@@ -30,9 +30,8 @@ setup(name='funpipe',
       install_requires=[
         'argparse', 'crimson', 'pandas', 'matplotlib'
       ],
-      test_suite='nose.collector',
-      tests_require=['nose', 'nose-cover3'],
-#      scripts=['scripts/*', 'utils/*'],
+      test_suite='tests',
+      scripts=glob('scripts/*'),
       include_package_data=True,
       zip_safe=False
 )
