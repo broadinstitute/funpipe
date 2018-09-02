@@ -3,8 +3,8 @@
 from os.path import basename, splitext, join
 import sys
 import argparse
-from funpipe import bam_depth, depth_per_window, sort_bam, cd, run, rm, \
-    clean_bam, eprint
+from funpipe.utils import *
+from funpipe.bam import bam_depth, depth_per_window, sort_bam, clean_bam
 
 
 def run_ploidy(out_dir, bam, faidx, bam_sorted, clean_up):

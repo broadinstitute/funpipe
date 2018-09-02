@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-source /broad/software/scripts/useuse
-use Python-2.7
-source /cil/shed/sandboxes/xiaoli/ENV/bin/activate # activate virtual environment
-export PATH=/cil/shed/sandboxes/xiaoli/widdler:$PATH
-
-widdler.py $@ -S gscid-cromwell

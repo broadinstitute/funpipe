@@ -17,11 +17,16 @@ setup(name='funpipe',
         'Topic :: Bioinformatics',
       ],
       keywords=['fungal genomics processing pipeline'],
-      url='https://github.com/broadinstitute/FunPipe',
+      url='https://github.com/broadinstitute/funpipe',
+      project_urls={
+        "Bug tracker": "https://github.com/broadinstitute/funpipe/issues",
+        "Documentation": "https://github.com/broadinstitute/funpipe/README.rst"
+      },
       author='Xiao Li',
       author_email='xiaoli.cbs@gmail.com',
       license='MIT',
       packages=['funpipe'],
+      package_dir = {"funpipe": "src"},
       install_requires=[
         'argparse', 'crimson', 'pandas', 'matplotlib'
       ],

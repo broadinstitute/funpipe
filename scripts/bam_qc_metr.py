@@ -7,7 +7,7 @@ from crimson import picard
 import json
 import pandas as pd
 from glob import glob
-from funpipe import eprint
+
 
 stats = {
     'alignment_summary_metrics':
@@ -87,7 +87,7 @@ def extract_picard_metrics(qc_path_tsv, bam_qc_file, is_gp_bam):
                 elif len(stat_file) > 1:
                         raise ValueError(sample+' has more than one '+suffix)
                 else:
-                    eprint(suffix + ' not available.')
+                    raise ValueError(suffix + ' not available.')
     output_stats(qc_stats, bam_qc_file)
 
 
