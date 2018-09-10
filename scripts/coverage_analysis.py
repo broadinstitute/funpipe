@@ -7,6 +7,7 @@ import pandas as pd
 from glob import glob
 import matplotlib
 import matplotlib.pyplot as plt
+import seaborn as sns
 from distutils.version import LooseVersion
 from funpipe.utils import run
 
@@ -170,7 +171,8 @@ def main(cov_tsv, prefix, legacy, cutoff, no_plot, g_flags):
     cov_df.to_csv(prefix+'.tsv', sep='\t', index=False)
     contig_pct_cov_df = cal_chr_percent(cov_df, cutoff)
     contig_pct_cov_df.to_csv(prefix+'.pct_cov.tsv', sep='\t', index=False)
-    subg_pct_cov_df = cal_subg_percent(cov_df, )
+    subg_pct_cov_df = cal_subg_percent(cov_df, cutoff, g_flags)
+    subg_pct_cov_df.to_csv(prefix+'.subg_pct.tsv', sep='\t', index=False)
     # calculate density
     den_df = coverage_to_density(cov_df, 'chr', g_flags)
     density_tsv = output_density_tsv(prefix, den_df, legacy)
