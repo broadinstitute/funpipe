@@ -1,8 +1,5 @@
-from utils import *
-
-
-""" Run GATK commands """
 class gatk:
+    """ Run GATK commands """
     def __init__(
             self, fa, prefix='output', out_dir='.', RAM=4,
             jar='/xchip/gtex/xiaoli/tools/GenomeAnalysisTK.jar'):

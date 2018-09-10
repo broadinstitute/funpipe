@@ -1,5 +1,4 @@
 import picard as pcd
-from utils import *
 
 
 def index_bam(bam):

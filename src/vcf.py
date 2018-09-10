@@ -1,6 +1,3 @@
-from utils import *
-
-
 def pilon(fa, bam, prefix, ram, threads, jar):
     '''
         fa: fasta file

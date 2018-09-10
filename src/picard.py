@@ -1,6 +1,3 @@
-from utils import *
-
-
 class picard:
     def __init__(self, jar='/seq/software/picard/1.853/bin/picard.jar', RAM=4):
         self.cmd = ' '.join([
