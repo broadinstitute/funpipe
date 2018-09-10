@@ -11,7 +11,6 @@ from distutils.version import LooseVersion
 from funpipe.utils import run
 
 
-# To do: add option to filter a specific subgenome
 def combine_coverage_profiles(input):
     ''' Combine coverage fold changes profiles from samples
     :param input: input file containing sample and
@@ -110,7 +109,7 @@ def output_density_tsv(prefix, den, legacy):
 def cal_chr_percent(cov, min_cov):
     ''' Calculate proportion of reads coming from each chromosome
     :param cov: coverage data.frame
-    :param min_cov: minimum coverage to include a window in coverage calculation
+    :param min_cov: minimum coverage to include a window in analysis
     :return data.frame: percentage of contig coverage.
     '''
     # filter coverage matrix to remove background coverage
@@ -183,8 +182,9 @@ def main(cov_tsv, prefix, legacy, cutoff, no_plot, g_flags):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Aggregate coverage profiles of a sample set and generate'
-        +' coverage plot per sample')
+        description=('Aggregate coverage profiles of a sample set and generate'
+                     ' coverage plot per sample')
+    )
     # required arguments
     required = parser.add_argument_group('Required arguments')
     required.add_argument(
@@ -207,7 +207,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--min_cov', help=('minimum coverage per window for it to be included'
-        ' in the analysis'), default=0
+                           ' in the analysis'), default=0
     )
     parser.add_argument(
         '--legacy', help='output density file in legacy mode, for matlab code',
