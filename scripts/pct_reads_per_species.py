@@ -11,14 +11,14 @@ from distutils.version import LooseVersion
 def reads_per_prot(infile, identity):
     reads_per_prot = {}
     with open(infile, 'r') as input:
-      for line in input:
-        blast_results = line.strip().split('\t')
-        if float(blast_results[2]) >= identity:
-            prot_id = blast_results[1].split('|')[1]
-            if prot_id in reads_per_prot:
-                reads_per_prot[prot_id] += 1
-            else:
-                reads_per_prot[prot_id] = 1
+        for line in input:
+            blast_results = line.strip().split('\t')
+            if float(blast_results[2]) >= identity:
+                prot_id = blast_results[1].split('|')[1]
+                if prot_id in reads_per_prot:
+                    reads_per_prot[prot_id] += 1
+                else:
+                    reads_per_prot[prot_id] = 1
     return reads_per_prot
 
 
@@ -72,7 +72,8 @@ def output(pct_reads_per_tax, prefix):
 def main(taxonids, diamond_blastx_tsv, prefix, identity):
     prot_tax_map_dict = prot_tax_map(taxonids)
     reads_per_prot_dict = reads_per_prot(diamond_blastx_tsv, identity)
-    (reads_per_tax_dict, total_reads) = reads_per_tax(prot_tax_map_dict, reads_per_prot_dict)
+    (reads_per_tax_dict, total_reads) = reads_per_tax(
+        prot_tax_map_dict, reads_per_prot_dict)
     pct_reads_per_tax_dict = pct_reads_per_tax(reads_per_tax_dict, total_reads)
     output(pct_reads_per_tax_dict, prefix)
     return 1
@@ -80,8 +81,9 @@ def main(taxonids, diamond_blastx_tsv, prefix, identity):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Parse diamond alignment results and derive percent of reads'
-            + 'from each '
+        description=(
+            'Parse diamond alignment results and derive percent of reads'
+            'from each ')
     )
     # required arguments
     required = parser.add_argument_group('Required arguments')
@@ -91,7 +93,8 @@ if __name__ == '__main__':
     )
     required.add_argument(
         '--taxonids', required=True,
-        help='Path to mapping file that maps NCBI protein accession numbers to taxon ids'
+        help=('Path to mapping file that maps NCBI protein accession numbers'
+              ' to taxon ids')
     )
     # optional arguments
     parser.add_argument(
