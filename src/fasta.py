@@ -1,4 +1,3 @@
-from utils import *
 import picard as pcd
 # from plumbum import local
 # from plumbum.cmd import wget

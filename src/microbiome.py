@@ -1,6 +1,3 @@
-from utils import *
-
-
 def diamond_blastx(fa, output):
     ''' blastx with diamond
     :param fa: input fasta file.

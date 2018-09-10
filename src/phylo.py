@@ -1,6 +1,3 @@
-from utils import *
-
-
 def vcf_snp_to_fasta(invcf, prefix, max_amb=100000):
     ''' snp only vcf to fasta file
     :param invcf: input vcf file

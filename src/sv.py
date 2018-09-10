@@ -1,6 +1,3 @@
-from utils import *
-
-
 def breakdancer(bam_file, prefix):
     ''' Detect structural variation using breakdancer
     :param bam_file: input bam file
