@@ -2,22 +2,12 @@ import unittest
 import sys
 import os
 from subprocess import check_call
-
-from patch_ref_contigs import *
-from post_process_coverage import get_contig_sets
-from pipeline import gatk
+import pandas as pd
 import filecmp
-
-# class TestMethod(unittest.TestCase):
-#
-#     def test_snpeff_db(self):
-#
-#         self.assertEqual()
-
-os.chdir('data')
 
 
 class TestGATK(unittest.TestCase):
+    from funpipe import gatk
     def setUp(self):
         self.eval = 'test.vcf'
         self.comp = 'test.comp.vcf'
@@ -31,7 +21,7 @@ class TestGATK(unittest.TestCase):
 
 
 class TestPatchRefContigs(unittest.TestCase):
-
+    from patch_ref_contigs import *
     # def test_chr_map_from_desc(self):
     #     desc_line = ''
     #     self.assertEqual()
@@ -52,20 +42,63 @@ class TestPatchRefContigs(unittest.TestCase):
             'Output file not same as expected.')
 
 
-# class TestGetContigSets(unittest.TestCase):
-#     def setUp(self):
-#         self.all_contigs = {'1_A', '2_A', '1_D', '2_D', '1_B', '2_B'}
-#         self.subgenome = ['_A', '_B', '_D']
-#
-#     def test_get_contig_sets(self):
-#         contig_map = get_contig_sets(self.all_contigs, self.subgenome)
-#         expect_out = {'1_A': 1, '2_A': 2, '1_B': 3, '2_B': 4, '1_D': 5,
-#                       '2_D': 6}
-#         self.assertDictEqual(contig_map, expect_out)
+class TestCoverageAnalysis(unittest.TestCase):
+    from coverage_analysis import *
+
+    def setUp(self):
+        self.all_contigs = {'1_A', '2_A', '1_D', '2_D', '1_B', '2_B'}
+        self.subgenome = ['_A', '_B', '_D']
+        self.cov = pd.DataFrame(cov_dict)
+
+    def test_get_contig_sets(self):
+        contig_map = get_contig_sets(self.all_contigs, self.subgenome)
+        expect_out = {'1_A': 1, '2_A': 2, '1_B': 3, '2_B': 4, '1_D': 5,
+                      '2_D': 6}
+        self.assertDictEqual(contig_map, expect_out)
+
+    def test_cal_chr_percent(self):
+        min_cov = 0.25
+        cov = pd.DataFrame({
+            'chr':['chr1', 'chr1', 'chr2', 'chr2'],
+            'start0':  [0, 5000, 10000, 15000],
+            'end0': [5000, 10000, 15000, 20000],
+            'id': ['chr1_0', 'chr1_1', 'chr2_0', 'chr2_1'],
+            'sample1': [0.1, 1, 0.1,   1],
+            'sample2': [  1, 0.2, 1, 0.2]
+        })
+
+        exp_cov_df = pd.DataFrame({
+            'chr':['chr1', 'chr2'],
+            'sample1': [0.5, 0.5],
+            'sample2': [0.5, 0.5]
+        })
+
+        self.assertTrue(
+            exp_cov_df.same(cal_chr_percent(cov, min_cov))
+        )
+
+    def test_cal_subg_percent(self):
+        min_cov=0.25
+        subg = ['_A', '_B']
+        cov = pd.DataFrame({
+            'chr':['chr1_A', 'chr1_B', 'chr2_A', 'chr2_B'],
+            'start0':  [0, 5000, 10000, 15000],
+            'end0': [5000, 10000, 15000, 20000],
+            'id': ['chr1_A_0', 'chr1_B_0', 'chr2_A_0', 'chr2_B_0'],
+            'sample1': [0.4, 0.6, 0.4, 0.6],
+            'sample2': [0.6, 0.4, 0.6, 0.4]
+        })
+        exp_pct_df = pd.DataFrame({
+            'subg': ['_A', '_B'],
+            'sample1': [0.4, 0.6],
+            'sample2': [0.6, 0.4]
+        })
+        self.assertTrue(
+            
+        )
+
 # test combineVariants: java -jar /xchip/gtex/xiaoli/tools/GenomeAnalysisTK.jar --variant test.vcf --variant test2.vcf -o merged.vcf -genotypeMergeOptions UNSORTED -R test.fa -T CombineVariants --assumeIdenticalSamples
 
-
-
-
 if __name__ == '__main__':
+    os.chdir('data')
     unittest.main()
