@@ -34,9 +34,10 @@ setup(
     author='Xiao Li',
     author_email='xiaoli.cbs@gmail.com',
     license='MIT',
-    packages=['funpipe'],
+    packages=['funpipe', 'funpipe.scripts'],
     package_dir={
         'funpipe': 'src',
+        'funpipe.scripts': 'scripts'
     },
     install_requires=[
         'argparse', 'crimson', 'pandas', 'matplotlib'
