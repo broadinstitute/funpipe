@@ -1,3 +1,7 @@
+import os
+from .utils import run
+
+
 def pilon(fa, bam, prefix, ram, threads, jar):
     '''
         fa: fasta file
@@ -116,5 +120,4 @@ def get_vcf_af_miss(vcf, out_tsv):
     :param out_tsv: output tsv file name
     '''
     cmd = ''
-
     return out_tsv
