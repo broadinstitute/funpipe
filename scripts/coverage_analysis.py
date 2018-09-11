@@ -90,9 +90,9 @@ def output_density_tsv(prefix, den, legacy):
     '''
     out_den = prefix
     # output den files
-    with open(prefix+'.samples.tsv', 'w') as samples:
-        for sample in den.columns[6:].tolist():
-            samples.write(sample+'\n')
+    # with open(prefix+'.samples.tsv', 'w') as samples:
+    #     for sample in den.columns[6:].tolist():
+    #         samples.write(sample+'\n')
     if legacy:
         out_den += '.den'
         # add additional columns for den file
@@ -124,7 +124,7 @@ def cal_chr_percent(cov, min_cov):
         chr_pct_cov[sample] = []
         for i in chrs:
             total_chr_cov = (cov_ft.loc[cov_ft.chr == i, sample].sum())
-            chr_pct_cov[sample].append(total_chr_cov/sample_cov)
+            chr_pct_cov[sample].append(round(total_chr_cov/sample_cov, 4))
     chr_pct_cov_df = pd.DataFrame.from_dict(chr_pct_cov)
     chr_pct_cov_df.insert(0, 'contigs', chrs)
     return chr_pct_cov_df
@@ -145,10 +145,29 @@ def cal_subg_percent(cov, min_cov, subg):
         subg_pct_cov[sample] = []
         for i in subg:
             subg_cov = (cov_ft.loc[cov_ft.chr.str.contains(i), sample].sum())
-            subg_pct_cov[sample].append(subg_cov/sample_cov)
+            subg_pct_cov[sample].append(round(subg_cov/sample_cov, 4))
     subg_pct_cov_df = pd.DataFrame(subg_pct_cov)
     subg_pct_cov_df.insert(0, 'subg', subg)
     return subg_pct_cov_df
+
+
+def subg_plot(df, prefix):
+    """ Plot subgenome proportion
+    :param df: data frame
+    :param prefix: output prefix
+    """
+    sns.set(style="whitegrid")
+    # Initialize the matplotlib figure
+    f, ax = plt.subplots(figsize=(5, df.shape[0]*0.2))
+
+    sns.set_color_codes("pastel")
+    subp_plt = sns.barplot(x='_D', y='samples', data=df,
+                           label="Pct_D", color="g")
+    subp_fig = subp_plt.get_figure()
+    subp_fig.subplots_adjust(left=0.5)
+    subp_fig.savefig(prefix+'_subg_pct.png')
+    ax.set(xlim=(0, 1))
+    sns.despine(left=True, bottom=True)
 
 
 def coverage_plot(cov_tsv, prefix, color_csv, legacy):
@@ -168,11 +187,17 @@ def coverage_plot(cov_tsv, prefix, color_csv, legacy):
 
 def main(cov_tsv, prefix, legacy, cutoff, no_plot, g_flags):
     cov_df = combine_coverage_profiles(cov_tsv)
-    cov_df.to_csv(prefix+'.tsv', sep='\t', index=False)
+    cov_df.to_csv(prefix+'_cov.tsv', sep='\t', index=False)
+
     contig_pct_cov_df = cal_chr_percent(cov_df, cutoff)
-    contig_pct_cov_df.to_csv(prefix+'.pct_cov.tsv', sep='\t', index=False)
+    contig_pct_cov_df.to_csv(prefix+'_pct_cov.tsv', sep='\t', index=False)
+
     subg_pct_cov_df = cal_subg_percent(cov_df, cutoff, g_flags)
-    subg_pct_cov_df.to_csv(prefix+'.subg_pct.tsv', sep='\t', index=False)
+    subg_pct_cov_df.to_csv(prefix+'_subg_pct.tsv', sep='\t', index=False)
+    subg_df_t = (subg_pct_cov_df.set_index('subg').transpose()
+                 .rename_axis('samples').rename_axis(None, 1).reset_index())
+    subg_plot(subg_df_t, prefix)
+
     # calculate density
     den_df = coverage_to_density(cov_df, 'chr', g_flags)
     density_tsv = output_density_tsv(prefix, den_df, legacy)
@@ -209,7 +234,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--min_cov', help=('minimum coverage per window for it to be included'
-                           ' in the analysis'), default=0
+                           ' in the analysis'), default=0, type=float
     )
     parser.add_argument(
         '--legacy', help='output density file in legacy mode, for matlab code',
@@ -218,6 +243,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     main(
-        args.cov_tsv, args.prefix, args.legacy, args.cutoff, args.no_plot,
+        args.cov_tsv, args.prefix, args.legacy, args.min_cov, args.no_plot,
         args.g_flags
     )
