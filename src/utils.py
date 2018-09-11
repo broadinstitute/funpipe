@@ -1,6 +1,7 @@
 import os
 import sys
 import contextlib
+from subprocess import check_call
 
 
 def eprint(*args, **kwargs):

@@ -1,3 +1,6 @@
+from .utils import run
+
+
 def vcf_snp_to_fasta(invcf, prefix, max_amb=100000):
     ''' snp only vcf to fasta file
     :param invcf: input vcf file
@@ -43,6 +46,7 @@ def fasttree(fa, prefix):
     cmd = ' '.join([
         'FastTreeDP -nt', fa, '>', out_prefix+'.nwk'
     ])
+    run(cmd)
     return prefix+'.nwk'
 
 

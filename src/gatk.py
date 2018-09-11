@@ -1,3 +1,7 @@
+import os
+from .utils import run
+
+
 class gatk:
     """ Run GATK commands """
     def __init__(

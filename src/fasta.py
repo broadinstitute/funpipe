@@ -1,4 +1,5 @@
-import picard as pcd
+from .picard import picard
+from .utils import run
 # from plumbum import local
 # from plumbum.cmd import wget
 # import configparser
@@ -29,15 +30,15 @@ def index_fa(fa):
     pcd.dict(fa)
 
 
-def get_ref(ftp, md5, dir='.'):
-    """ download reference files from NCBI and perform md5sumcheck to files
-    :param ftp: ftp URL
-    :param md5: file that contains md5checksum results for
-    :param dir: destination directory
-    """
-    wget[ftp, dir]()
-    if md5:
-        with open(md5, 'r') as tsv:
-            for line in tsv:
-                checksum, file = line.strip().split()
-                check_md5(file, checksum)
+# def get_ref(ftp, md5, dir='.'):
+#     """ download reference files from NCBI and perform md5sumcheck to files
+#     :param ftp: ftp URL
+#     :param md5: file that contains md5checksum results for
+#     :param dir: destination directory
+#     """
+#     wget[ftp, dir]()
+#     if md5:
+#         with open(md5, 'r') as tsv:
+#             for line in tsv:
+#                 checksum, file = line.strip().split()
+#                 check_md5(file, checksum)

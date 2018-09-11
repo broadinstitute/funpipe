@@ -1,4 +1,8 @@
-import picard as pcd
+import os
+from .picard import picard as pcd
+from .vcf import tabix
+from .fasta import samtools_index_fa, bwa_index_fa
+from .utils import run
 
 
 def index_bam(bam):
@@ -65,7 +69,7 @@ def fastqc(bam, fq1, fq2, out_dir):
     '''
     cmd = ' '.join(['fastqc -f fastq', fq1, fq2, '-o', out_dir])
     run(cmd)
-    eprint(' - FastQc finished.')
+    print(' - FastQc finished.')
     return out_dir
 
 
@@ -90,6 +94,7 @@ def bam_sum(bam, out_txt):
     :return : output summary name
     '''
     cmd = 'samtools flagstat ' + bam + '> out_txt'
+    run(cmd)
     return out_txt
 
 
