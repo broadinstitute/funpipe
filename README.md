@@ -1,4 +1,5 @@
 FUNPIPE: a python library for building best practice fungal genomic analysis pipeline
+-----
 FUNPIPE is a python library, as well as several packaged tools to facilitate easy development of fungal genomic analysis pipelines. using state-of-the-art computational biology tools
 
 ## Requirements
