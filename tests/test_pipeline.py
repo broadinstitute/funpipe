@@ -8,7 +8,7 @@ import filecmp
 from funpipe.utils import run
 from funpipe.gatk import gatk
 from funpipe.scripts.coverage_analysis import get_contig_sets, \
-    cal_chr_percent, cal_subg_percent
+    cal_chr_percent, cal_subg_percent, chr_coverage
 # from funpipe.scripts.patch_ref_contigs import patch_fasta, patch_gff_contig
 
 
@@ -59,15 +59,11 @@ class TestCoverageAnalysis(unittest.TestCase):
     #     self.assertDictEqual(contig_map, expect_out)
 
     def test_cal_chr_percent(self):
-        min_cov = 0.25
         cov = pd.DataFrame({
             'chr': ['chr1', 'chr1', 'chr2', 'chr2'],
-            'start0': [0, 5000, 10000, 15000],
-            'end0': [5000, 10000, 15000, 20000],
-            'id': ['chr1_0', 'chr1_1', 'chr2_0', 'chr2_1'],
-            'sample1': [0.1, 1, 0.1, 1],
-            'sample2': [1, 0.2, 1, 0.2]
-        }, columns=['chr', 'start0', 'end0', 'id', 'sample1', 'sample2'])
+            'sample1': [0, 1, 0, 1],
+            'sample2': [1, 0, 1, 0]
+        }, columns=['chr', 'sample1', 'sample2'])
 
         exp_cov_df = pd.DataFrame({
             'contigs': ['chr1', 'chr2'],
@@ -75,27 +71,39 @@ class TestCoverageAnalysis(unittest.TestCase):
             'sample2': [0.5, 0.5]
         }, columns=['contigs', 'sample1', 'sample2'])
         self.assertTrue(
-            exp_cov_df.equals(cal_chr_percent(cov, min_cov))
+            exp_cov_df.equals(cal_chr_percent(cov))
         )
 
     def test_cal_subg_percent(self):
-        min_cov = 0.25
         subg = ['_A', '_B']
         cov = pd.DataFrame({
             'chr': ['chr1_A', 'chr1_B', 'chr2_A', 'chr2_B'],
-            'start0':  [0, 5000, 10000, 15000],
-            'end0': [5000, 10000, 15000, 20000],
-            'id': ['chr1_A_0', 'chr1_B_0', 'chr2_A_0', 'chr2_B_0'],
             'sample1': [0.4, 0.6, 0.4, 0.6],
             'sample2': [0.6, 0.4, 0.6, 0.4]
-        }, columns=['chr', 'start0', 'end0', 'id', 'sample1', 'sample2'])
+        }, columns=['chr', 'sample1', 'sample2'])
         exp_pct_df = pd.DataFrame({
             'subg': ['_A', '_B'],
             'sample1': [0.4, 0.6],
             'sample2': [0.6, 0.4]
         }, columns=['subg', 'sample1', 'sample2'])
         self.assertTrue(
-            exp_pct_df.equals(cal_subg_percent(cov, min_cov, subg))
+            exp_pct_df.equals(cal_subg_percent(cov, subg))
+        )
+
+    def test_chr_coverage(self):
+        cov = pd.DataFrame({
+            'chr': ['chr1_A', 'chr1_A', 'chr2_A', 'chr2_A'],
+            'sample1': [0.4, 0, 0.4, 0],
+            'sample2': [0.6, 0.4, 0.6, 0.4]
+        }, columns=['chr', 'sample1', 'sample2'])
+
+        exp_cov_df = pd.DataFrame({
+            'chr': ['chr1_A', 'chr2_A'],
+            'sample1': [0.5, 0.5],
+            'sample2': [1.0, 1.0]
+        }, columns=['chr', 'sample1', 'sample2'])
+        self.assertTrue(
+            exp_cov_df.equals(chr_coverage(cov))
         )
 
 

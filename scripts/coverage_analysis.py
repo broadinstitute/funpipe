@@ -5,7 +5,6 @@ import sys
 import argparse
 import pandas as pd
 from glob import glob
-import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 from distutils.version import LooseVersion
@@ -37,8 +36,8 @@ def get_contig_sets(all_contigs, subgenome):
     :param all_contigs: a set include all contigs
     :param subgenome: array of suffice in contigs for each subgenome
     '''
-    contig_map = {}   # a hash map between contig map and their orders
-    n_contig_set = [0] * len(subgenome)   # number of contigs in each subgenome
+    contig_map = {}  # a hash map between contig map and their orders
+    n_contig_set = [0] * len(subgenome)  # number of contigs in each subgenome
     for i in range(len(subgenome)):
         for j in all_contigs:
             if subgenome[i] in j:
@@ -107,44 +106,69 @@ def output_density_tsv(prefix, den, legacy):
     return out_den
 
 
-def cal_chr_percent(cov, min_cov):
-    ''' Calculate proportion of reads coming from each chromosome
+def filter_cov(cov, min_cov):
+    """ Filter coverage dataframe
     :param cov: coverage data.frame
     :param min_cov: minimum coverage to include a window in analysis
+    """
+    cov_ft = cov.iloc[:, 4:].applymap(lambda x: 0 if x < min_cov else x)
+    cov_ft.insert(0, 'chr', cov.chr)
+    return cov_ft
+
+
+def cal_chr_percent(cov):
+    ''' Calculate proportion of reads coming from each chromosome
+    :param cov: coverage data.frame
     :return data.frame: percentage of contig coverage.
     '''
     # filter coverage matrix to remove background coverage
-    cov_ft = cov.iloc[:, 4:].applymap(lambda x: 0 if x < min_cov else x)
-    cov_ft.insert(0, 'chr', cov.chr)
     # calculate percentage of coverage
     chr_pct_cov = {}
-    chrs = sorted(list(set(cov.chr)))   # order of contigs to compute coverage
-    for sample in cov_ft.columns.values[1:]:
-        sample_cov = cov_ft[sample].sum()   # sample coverage
+    chrs = sorted(list(set(cov.chr)))  # order contigs for pct
+    for sample in cov.columns.values[1:]:
+        sample_cov = cov[sample].sum()   # sample coverage
         chr_pct_cov[sample] = []
         for i in chrs:
-            total_chr_cov = (cov_ft.loc[cov_ft.chr == i, sample].sum())
+            total_chr_cov = (cov.loc[cov.chr == i, sample].sum())
             chr_pct_cov[sample].append(round(total_chr_cov/sample_cov, 4))
     chr_pct_cov_df = pd.DataFrame.from_dict(chr_pct_cov)
     chr_pct_cov_df.insert(0, 'contigs', chrs)
     return chr_pct_cov_df
 
 
-def cal_subg_percent(cov, min_cov, subg):
+def chr_coverage(cov):
+    """ Calculate percentage of chromosomes covered by reads, by calculating
+    proportion of bins passing minimum coverage threshold
+    :param cov: coverage data.frame
+    :rtype: pandas dataframe
+    """
+    cov_bin = cov.iloc[:, 1:].applymap(lambda x: 1 if x > 0 else 0)
+    cov_bin.insert(0, 'chr', cov.chr)
+    chrs = sorted(list(set(cov.chr)))   # order of contigs to compute coverage
+    chr_cov = {}
+    for sample in cov_bin.columns.values[1:]:
+        chr_cov[sample] = []
+        for i in chrs:
+            n_total_bin = cov_bin.loc[cov_bin.chr == i, sample].shape[0]
+            n_covered_bin = cov_bin.loc[cov_bin.chr == i, sample].sum()
+            chr_cov[sample].append(round(n_covered_bin/n_total_bin, 4))
+    chr_cov_df = pd.DataFrame.from_dict(chr_cov)
+    chr_cov_df.insert(0, 'chr', chrs)
+    return chr_cov_df
+
+
+def cal_subg_percent(cov, subg):
     ''' Calculate proportion of reads from each subgenome
     :param cov: coverage dataframe
-    :param min_cov: minimum coverage to include a window in the calculation
     :param subgneome: list that contains suffix of
     :return type: pandas dataframe
     '''
-    cov_ft = cov.iloc[:, 4:].applymap(lambda x: 0 if x < min_cov else x)
-    cov_ft.insert(0, 'chr', cov.chr)
     subg_pct_cov = {}
-    for sample in cov_ft.columns.values[1:]:
-        sample_cov = cov_ft[sample].sum()   # sample coverage
+    for sample in cov.columns.values[1:]:
+        sample_cov = cov[sample].sum()   # sample coverage
         subg_pct_cov[sample] = []
         for i in subg:
-            subg_cov = (cov_ft.loc[cov_ft.chr.str.contains(i), sample].sum())
+            subg_cov = (cov.loc[cov.chr.str.contains(i), sample].sum())
             subg_pct_cov[sample].append(round(subg_cov/sample_cov, 4))
     subg_pct_cov_df = pd.DataFrame(subg_pct_cov)
     subg_pct_cov_df.insert(0, 'subg', subg)
@@ -176,7 +200,7 @@ def coverage_plot(cov_tsv, prefix, color_csv, legacy):
     :param prefix: output prefix
     :param legacy: to do
     """
-    cmd = ' '.join(['coverage_plot.R', '-f', cov_tsv, '-p', prefix,
+    cmd = ' '.join(['coverage_plot.R', '-i', cov_tsv, '-p', prefix,
                     '-c', color_csv])
     if legacy:
         cmd += ' -l'
@@ -185,15 +209,34 @@ def coverage_plot(cov_tsv, prefix, color_csv, legacy):
     return 1
 
 
-def main(cov_tsv, prefix, legacy, cutoff, no_plot, g_flags):
+def chr_cov_plot(df, prefix):
+    """ Pct chr coverage plot """
+    df.set_index('chr', inplace=True)
+    f, ax = plt.subplots(figsize=(df.shape[1]*0.5, df.shape[0]*0.5))
+    chr_pct_fig = sns.heatmap(df, vmin=0, vmax=1,
+                              cmap="YlGnBu").get_figure()
+    chr_pct_fig.savefig(prefix+'_chr_pct_cov.png')
+    return 1
+
+
+def main(cov_tsv, prefix, legacy, min_cov, no_plot, g_flags, color_csv):
+    print('Start to process'+prefix)
     cov_df = combine_coverage_profiles(cov_tsv)
     cov_df.to_csv(prefix+'_cov.tsv', sep='\t', index=False)
 
-    contig_pct_cov_df = cal_chr_percent(cov_df, cutoff)
-    contig_pct_cov_df.to_csv(prefix+'_pct_cov.tsv', sep='\t', index=False)
+    cov_ft_df = filter_cov(cov_df, min_cov)
 
-    subg_pct_cov_df = cal_subg_percent(cov_df, cutoff, g_flags)
+    pct_cov_df = cal_chr_percent(cov_ft_df)
+    pct_cov_df.to_csv(prefix+'_pct_cov.tsv', sep='\t', index=False)
+
+    chr_pct_cov_df = chr_coverage(cov_ft_df)
+    chr_pct_cov_df.to_csv(prefix+'_chr_pct_cov.tsv', sep='\t', index=False)
+    chr_cov_plot(chr_pct_cov_df, prefix)
+
+    # subgenome proportion
+    subg_pct_cov_df = cal_subg_percent(cov_ft_df, g_flags)
     subg_pct_cov_df.to_csv(prefix+'_subg_pct.tsv', sep='\t', index=False)
+
     subg_df_t = (subg_pct_cov_df.set_index('subg').transpose()
                  .rename_axis('samples').rename_axis(None, 1).reset_index())
     subg_plot(subg_df_t, prefix)
@@ -203,7 +246,7 @@ def main(cov_tsv, prefix, legacy, cutoff, no_plot, g_flags):
     density_tsv = output_density_tsv(prefix, den_df, legacy)
     if not no_plot:
         coverage_plot(density_tsv, prefix, color_csv, legacy)
-    print(' - Finish coverage analysis.')
+    print(' - Done.')
     return 1
 
 
@@ -212,7 +255,6 @@ if __name__ == '__main__':
         description=('Aggregate coverage profiles of a sample set and generate'
                      ' coverage plot per sample')
     )
-    # required arguments
     required = parser.add_argument_group('Required arguments')
     required.add_argument(
         '-i', '--cov_tsv', required=True, help='A table-delimited file with '
@@ -221,9 +263,9 @@ if __name__ == '__main__':
     required.add_argument(
         '-p', '--prefix', help='output prefix', required=True
     )
-#    required.add_argument(
-#        '-c', '--color_csv', help='Color profile for each contig'
-#    )
+    required.add_argument(
+       '-c', '--color_csv', help='Color profile for each contig', required=True
+    )
 
     # optional arguments
     parser.add_argument(
@@ -244,5 +286,5 @@ if __name__ == '__main__':
 
     main(
         args.cov_tsv, args.prefix, args.legacy, args.min_cov, args.no_plot,
-        args.g_flags
+        args.g_flags, args.color_csv
     )

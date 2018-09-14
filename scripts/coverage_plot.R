@@ -114,7 +114,8 @@ parse_cov<- function (density, legacy, cutoff) {
 
 
 coverage_plot<- function(cov, prefix, inverse_contigs, subg1, subg2, cols) {
-  png(paste0(prefix,'.png'), width=2500, height=cov$n_sample*420, unit='px',
+  options(bitmapType='cairo')
+  png(paste0(prefix,'_cov_plot.png'), width=2500, height=cov$n_sample*420, unit='px',
       res=300)
   par(mfrow=c(cov$n_sample * 2, 1))
   for (sample in names(cov$df)[cov$sample_idx]) {
@@ -150,15 +151,15 @@ main <- function(density, prefix, color_csv, legacy, cutoff, inverse_contigs) {
 
 # main
 parser <- ArgumentParser(description='Generate coverage plot')
-parser$add_argument('-i', '--cov_tsv', help='input density tsv file', 
+parser$add_argument('-i', '--cov_tsv', help='input density tsv file',
                     required=T)
 parser$add_argument('-c', '--color', help='color file for each chromosomes',
                     required=T)
 parser$add_argument('-p', '--prefix', help='output prefix', required=T)
 parser$add_argument('-l', '--legacy', help='legacy mode', action='store_true')
-parser$add_argument('--cutoff', help='coverage cutoff to remove background', 
+parser$add_argument('--cutoff', help='coverage cutoff to remove background',
                     default=0)
-parser$add_argument('--inverse_contigs', 
+parser$add_argument('--inverse_contigs',
                     help='contigs that need to inverse positions to complementary strand',
                     default= c(3, 4, 5, 7, 8, 10, 14))
 args <- parser$parse_args()
