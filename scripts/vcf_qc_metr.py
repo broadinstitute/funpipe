@@ -5,6 +5,8 @@ import os
 import sys
 import io
 import pandas as pd
+from funpipe.gatk import gatk
+
 
 stats = {
     'CountVariants': [
@@ -17,12 +19,13 @@ stats = {
 }
 
 
-def run_variant_eval(vcf):
-    """ TO DO """
-    return 1
+def run_variant_eval(vcf, fa, prefix, RAM):
+    gatk_cmd = gatk(fa, prefix)
+    var_eval_tsv = gatk_cmd.variant_eval(vcf)
+    return var_eval_tsv
 
 
-def parse_variant_eval(eval, out_dir, out_tsv):
+def parse_variant_eval(eval, out_dir, prefix):
     """ parse variantEval file
     :param eval: input eval file f
     :param outdir:
@@ -41,7 +44,7 @@ def parse_variant_eval(eval, out_dir, out_tsv):
         if tab_name in stats.keys():
             df = df[stats[tab_name]]
             meta_df = pd.concat([meta_df, df], axis=1)
-    meta_df.to_csv(os.path.join(out_dir, out_tsv), sep='\t',
+    meta_df.to_csv(os.path.join(out_dir, prefix+'.tsv'), sep='\t',
                    compression='gzip')
     return meta_df
 
@@ -52,15 +55,24 @@ if __name__ == '__main__':
     # required arguments
     required = parser.add_argument_group('required arguments')
     required.add_argument(
-        '-e', '--eval', required=True, help='Input file')
+        '-p', '--prefix', help="Prefix of output file", required=True
+    )
+
     # optional arguments
+    parser.add_argument('-e', '--eval', help='Input file')
+    parser.add_argument('-v', '--vcf', help='Input vcf file')
+    parser.add_argument('-r', '--ref_fa', help='reference fasta file')
+    parser.add_argument('--RAM', help='RAM', type=int, default=4)
     parser.add_argument(
         '-d', '--out_dir', default='.', help='Output Directory'
     )
-    parser.add_argument(
-        '-o', '--out_tsv', help="Output tsv file",
-    )
 
     args = parser.parse_args()
-
-    parse_variant_eval(args.eval, args.out_dir, args.out_tsv)
+    if args.eval:
+        parse_variant_eval(args.eval, args.out_dir, args.prefix)
+    elif args.vcf:
+        var_eval_tsv = run_variant_eval(args.vcf, args.ref_fa, args.prefix,
+                                        args.RAM)
+        parse_variant_eval(variant_eval_tsv, args.out_dir, args.prefix)
+    else:
+        raise ValueError("Please input either an eval file or VCF file")
