@@ -36,7 +36,7 @@ setup(
     license='MIT',
     packages=['funpipe', 'funpipe.scripts'],
     package_dir={
-        'funpipe': 'src',
+        'funpipe': 'funpipe',
         'funpipe.scripts': 'scripts'
     },
     install_requires=[
