@@ -8,8 +8,8 @@ class gatk:
             self, fa, prefix='output', out_dir='.', RAM=4,
             jar='/xchip/gtex/xiaoli/tools/GenomeAnalysisTK.jar'):
         ''' VCF sample QC
-        :param vcf: vcf file
         :param fa: input Fasta
+        :param prefix: output file prefix
         :param jar: input jar file
         :param RAM: RAM usage
         :param out_dir: output directory
