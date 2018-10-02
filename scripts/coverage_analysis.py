@@ -269,7 +269,7 @@ def cal_frac_aneu(ploidy, ploidy_list):
     return frac
 
 
-def pct_aneuploidy(cov_df, max_ploidy=4):
+def pct_aneuploidy(cov_df, max_ploidy=4, prefix=None):
     """ Calculate percentage of aneuploidy per chromosome for each sample
 
     Notes
@@ -335,6 +335,9 @@ def pct_aneuploidy(cov_df, max_ploidy=4):
             print(sample_frac)
         chr_frac_df = pd.DataFrame({chr: sample_frac})
         aneu_df = pd.concat([aneu_df, chr_frac_df], axis=1, sort=False)
+
+    if prefix is not None:
+        aneu_df.to_csv(prefix+'_aneu_frac.tsv', sep='\t', index=False)
     return aneu_df
 
 
@@ -360,6 +363,7 @@ def main(cov_tsv, prefix, legacy, min_cov, no_plot, g_flags, color_csv,
     cov_ft_df = filter_cov(cov_df, min_cov)
     pct_cov_df = cal_chr_percent(cov_ft_df, prefix)
     chr_pct_cov_df = chr_coverage(cov_ft_df, prefix)
+    aneu_frac = pct_aneuploidy(cov_ft_df, prefix=prefix)
     chr_cov_heatmap(chr_pct_cov_df, prefix)
     subg_pct_cov_df = cal_subg_percent(cov_ft_df, g_flags, prefix)
 
