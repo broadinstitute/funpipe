@@ -11,24 +11,27 @@ from distutils.version import LooseVersion
 from funpipe.utils import run
 
 
-def combine_coverage_profiles(input):
+def combine_coverage_profiles(input, prefix=None):
     ''' Combine coverage fold changes profiles from samples
     :param input: input file containing sample and
+    :param perfix: optional, when provided, will output cov_df to a tsv file.
     :return Pandas DataFrame
     '''
     cov_list = pd.read_csv(
         input, sep='\t', header=None, names=('Sample', 'Path'))
-    cov = pd.DataFrame()
+    cov_df = pd.DataFrame()
     for i in range(0, cov_list.shape[0]):
         tab = (pd.read_csv(cov_list['Path'][i], sep='\t',
                            usecols=['chr', 'start0', 'end0', 'id', 'fc'])
                .rename(columns={'fc': cov_list['Sample'][i]}))
         if cov.empty:
-            cov = tab
+            cov_df = tab
         else:
-            cov = pd.merge(cov, tab, on=['chr', 'start0', 'end0', 'id'])
+            cov_df = pd.merge(cov_df, tab, on=['chr', 'start0', 'end0', 'id'])
+    if prefix is not None:
+        cov_df.to_csv(prefix+'_cov.tsv', sep='\t', index=False)
     print(' - Combine coverage profiles done.')
-    return cov
+    return cov_df
 
 
 def get_contig_sets(all_contigs, subgenome):
@@ -51,20 +54,23 @@ def get_contig_sets(all_contigs, subgenome):
     return contig_map
 
 
-def coverage_to_density(cov, contig_prefix, subgenome, split=False):
+def coverage_to_density(cov, contig_prefix, subgenome, split=False,
+                        prefix=None, legacy=False):
     ''' From coverage fold change file to density file for the
     downstream matlab ploting code
     :param cov: coverage data.frame
     :param contig_prefix: prefix of contig names
     :param subgenome: suffix of contig names, standing for different subgenomes
-    :param split: split by subgenomes, not yet implemented
+    :param split: whether to produce a density file from a subgenome
+    :param prefix: optional, when provided, will output cov_df to a tsv file.
+    :param legacy: whether output tsv in legacy mode, compatible with matlab
+                   code
     :return: a datafram with coverage entries
     '''
     # remove unused columns
     den = cov.drop(['end0', 'id'], axis=1)
     den['chr'] = den.chr.str.replace(contig_prefix, '')
-    if split:
-        # subset to only a subgenome
+    if split:  # subset to only a subgenome
         den = den[den.chr.str.contains(subgenome)]
     else:
         chrs = set(den.chr)
@@ -78,6 +84,8 @@ def coverage_to_density(cov, contig_prefix, subgenome, split=False):
         den.sort(['chr', 'start0'], axis=0, inplace=True)
     den.drop(['start0'], axis=1, inplace=True)    # reformat to den file
     den.insert(loc=1, column='id', value=range(1, den.shape[0]+1))
+    if prefix is not None:
+        density_tsv = output_density_tsv(prefix, den, legacy)
     return den
 
 
@@ -85,7 +93,8 @@ def output_density_tsv(prefix, den, legacy):
     ''' output density data structure to tsv file
     :param prefix: output Prefix
     :param den: density matrix
-    :param legacy: if output tsv in legacy mode, compatible with matlab code
+    :param legacy: output tsv in legacy mode, compatible with matlab code
+    :rtype pd dataframe
     '''
     out_den = prefix
     # output den files
@@ -116,10 +125,11 @@ def filter_cov(cov, min_cov):
     return cov_ft
 
 
-def cal_chr_percent(cov):
+def cal_chr_percent(cov, prefix=None):
     ''' Calculate proportion of reads coming from each chromosome
     :param cov: coverage data.frame
-    :return data.frame: percentage of contig coverage.
+    :param prefix: optional, when provided, will output cov_df to a tsv file.
+    :rtype data.frame: percentage of contig coverage.
     '''
     # filter coverage matrix to remove background coverage
     # calculate percentage of coverage
@@ -133,13 +143,17 @@ def cal_chr_percent(cov):
             chr_pct_cov[sample].append(round(total_chr_cov/sample_cov, 4))
     chr_pct_cov_df = pd.DataFrame.from_dict(chr_pct_cov)
     chr_pct_cov_df.insert(0, 'contigs', chrs)
+    if prefix is not None:
+        chr_pct_cov_df.to_csv(prefix+'_pct_cov.tsv', sep='\t', index=False)
+    print(" - Reads from each chromosome is calcuated.")
     return chr_pct_cov_df
 
 
-def chr_coverage(cov):
+def chr_coverage(cov, prefix=None):
     """ Calculate percentage of chromosomes covered by reads, by calculating
     proportion of bins passing minimum coverage threshold
     :param cov: coverage data.frame
+    :param prefix: optional, when provided, will output cov_df to a tsv file.
     :rtype: pandas dataframe
     """
     cov_bin = cov.iloc[:, 1:].applymap(lambda x: 1 if x > 0 else 0)
@@ -154,13 +168,16 @@ def chr_coverage(cov):
             chr_cov[sample].append(round(n_covered_bin/n_total_bin, 4))
     chr_cov_df = pd.DataFrame.from_dict(chr_cov)
     chr_cov_df.insert(0, 'chr', chrs)
+    if prefix is not None:
+        chr_cov_df.to_csv(prefix+'_chr_pct_cov.tsv', sep='\t', index=False)
     return chr_cov_df
 
 
-def cal_subg_percent(cov, subg):
+def cal_subg_percent(cov, subg, prefix=None):
     ''' Calculate proportion of reads from each subgenome
     :param cov: coverage dataframe
     :param subgneome: list that contains suffix of
+    :param prefix: optional, when provided, will output cov_df to a tsv file.
     :return type: pandas dataframe
     '''
     subg_pct_cov = {}
@@ -172,10 +189,12 @@ def cal_subg_percent(cov, subg):
             subg_pct_cov[sample].append(round(subg_cov/sample_cov, 4))
     subg_pct_cov_df = pd.DataFrame(subg_pct_cov)
     subg_pct_cov_df.insert(0, 'subg', subg)
+    if prefix is not None:
+        subg_pct_cov_df.to_csv(prefix+'_subg_pct.tsv', sep='\t', index=False)
     return subg_pct_cov_df
 
 
-def subg_plot(df, prefix):
+def subg_barplot(df, prefix):
     """ Plot subgenome proportion
     :param df: data frame
     :param prefix: output prefix
@@ -194,13 +213,13 @@ def subg_plot(df, prefix):
     sns.despine(left=True, bottom=True)
 
 
-def coverage_plot(cov_tsv, prefix, color_csv, legacy):
+def coverage_scatterplot(cov_tsv, prefix, color_csv, legacy):
     """ generate coverage plot
     :param cov_tsv: coverage profile list, first
     :param prefix: output prefix
-    :param legacy: to do
+    :param legacy: if output tsv in legacy mode, compatible with matlab code
     """
-    cmd = ' '.join(['coverage_plot.R', '-i', cov_tsv, '-p', prefix,
+    cmd = ' '.join(['coverage_scatterplot.R', '-i', cov_tsv, '-p', prefix,
                     '-c', color_csv])
     if legacy:
         cmd += ' -l'
@@ -209,43 +228,38 @@ def coverage_plot(cov_tsv, prefix, color_csv, legacy):
     return 1
 
 
-def chr_cov_plot(df, prefix):
+def chr_cov_heatmap(df, prefix, cluster=True):
     """ Pct chr coverage plot """
     df.set_index('chr', inplace=True)
     f, ax = plt.subplots(figsize=(df.shape[1]*0.5, df.shape[0]*0.5))
-    chr_pct_fig = sns.heatmap(df, vmin=0, vmax=1,
-                              cmap="YlGnBu").get_figure()
+    if cluster:
+        print(" - Cluster coverage profile.")
+        chr_pct_fig = sns.clustermap(df, row_cluster=True, col_cluster=True)
+    else:
+        print(" - Produce heatmap from coverage profile.")
+        chr_pct_fig = sns.heatmap(df, vmin=0, vmax=1,
+                                  cmap="YlGnBu").get_figure()
     chr_pct_fig.savefig(prefix+'_chr_pct_cov.png')
     return 1
 
 
-def main(cov_tsv, prefix, legacy, min_cov, no_plot, g_flags, color_csv):
-    print('Start to process'+prefix)
-    cov_df = combine_coverage_profiles(cov_tsv)
-    cov_df.to_csv(prefix+'_cov.tsv', sep='\t', index=False)
-
+def main(cov_tsv, prefix, legacy, min_cov, no_plot, g_flags, color_csv,
+         no_cluster):
+    print('Start to process '+prefix)
+    cov_df = combine_coverage_profiles(cov_tsv, prefix)
     cov_ft_df = filter_cov(cov_df, min_cov)
-
-    pct_cov_df = cal_chr_percent(cov_ft_df)
-    pct_cov_df.to_csv(prefix+'_pct_cov.tsv', sep='\t', index=False)
-
-    chr_pct_cov_df = chr_coverage(cov_ft_df)
-    chr_pct_cov_df.to_csv(prefix+'_chr_pct_cov.tsv', sep='\t', index=False)
-    chr_cov_plot(chr_pct_cov_df, prefix)
-
-    # subgenome proportion
-    subg_pct_cov_df = cal_subg_percent(cov_ft_df, g_flags)
-    subg_pct_cov_df.to_csv(prefix+'_subg_pct.tsv', sep='\t', index=False)
+    pct_cov_df = cal_chr_percent(cov_ft_df, prefix)
+    chr_pct_cov_df = chr_coverage(cov_ft_df, prefix)
+    chr_cov_heatmap(chr_pct_cov_df, prefix)
+    subg_pct_cov_df = cal_subg_percent(cov_ft_df, g_flags, prefix)
 
     subg_df_t = (subg_pct_cov_df.set_index('subg').transpose()
                  .rename_axis('samples').rename_axis(None, 1).reset_index())
-    subg_plot(subg_df_t, prefix)
-
+    subg_barplot(subg_df_t, prefix)
     # calculate density
-    den_df = coverage_to_density(cov_df, 'chr', g_flags)
-    density_tsv = output_density_tsv(prefix, den_df, legacy)
-    if not no_plot:
-        coverage_plot(density_tsv, prefix, color_csv, legacy)
+    density_tsv = coverage_to_density(cov_df, 'chr', g_flags, split=False,
+                                      prefix, legacy)
+    coverage_scatterplot(density_tsv, prefix, color_csv, legacy)
     print(' - Done.')
     return 1
 
@@ -269,9 +283,6 @@ if __name__ == '__main__':
 
     # optional arguments
     parser.add_argument(
-        '--no_plot', action='store_true', help='not generating coverage plots'
-    )
-    parser.add_argument(
         '--g_flags', help='subgenome flag', default=['_A', '_D']
     )
     parser.add_argument(
@@ -282,9 +293,17 @@ if __name__ == '__main__':
         '--legacy', help='output density file in legacy mode, for matlab code',
         action='store_true'
     )
+    parser.add_argument(
+        '--no_cluster', action='store_true',
+        help='Perform hierachical clustering for the pct chr coverage plot'
+    )
+    parser.add_argument(
+        '--split', action=store_true,
+        help='whether present only a subgenome '
+    )
     args = parser.parse_args()
 
     main(
         args.cov_tsv, args.prefix, args.legacy, args.min_cov, args.no_plot,
-        args.g_flags, args.color_csv
+        args.g_flags, args.color_csv, args.no_cluster
     )
