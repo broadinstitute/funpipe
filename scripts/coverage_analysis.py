@@ -269,7 +269,7 @@ def cal_frac_aneu(ploidy, ploidy_list):
     return frac
 
 
-def pct_aneuploidy(cov_df, max_ploidy=4):
+def pct_aneuploidy(cov_df, max_ploidy=4, prefix=None):
     """ Calculate percentage of aneuploidy per chromosome for each sample
 
     Notes
@@ -302,10 +302,16 @@ def pct_aneuploidy(cov_df, max_ploidy=4):
 
     Parameters
     ----------
-    cov_df : :obj:`dataframe`
+    cov_df : `dataframe`
         Input coverage dataframe
 
-    max_ploidy : `int` maximum ploidy in this
+    max_ploidy : `int`
+        Maximum ploidy in this
+
+    prefix : `str`
+        Optional, if given will output a tsv file containing ploidy using this
+        as prefix of output files.
+
     Returns
     -------
     aneu_df : :obj:`dataframe`
@@ -335,6 +341,8 @@ def pct_aneuploidy(cov_df, max_ploidy=4):
             print(sample_frac)
         chr_frac_df = pd.DataFrame({chr: sample_frac})
         aneu_df = pd.concat([aneu_df, chr_frac_df], axis=1, sort=False)
+    if prefix is not None:
+        aneu_df.to_csv(prefix+'_frac_aneu.tsv', sep='\t', index=False)
     return aneu_df
 
 
@@ -362,7 +370,7 @@ def main(cov_tsv, prefix, legacy, min_cov, no_plot, g_flags, color_csv,
     chr_pct_cov_df = chr_coverage(cov_ft_df, prefix)
     chr_cov_heatmap(chr_pct_cov_df, prefix)
     subg_pct_cov_df = cal_subg_percent(cov_ft_df, g_flags, prefix)
-
+    aneu_df = pct_aneuploidy(cov_ft_df, prefix=prefix)
     subg_df_t = (subg_pct_cov_df.set_index('subg').transpose()
                  .rename_axis('samples').rename_axis(None, 1).reset_index())
     subg_barplot(subg_df_t, prefix)
