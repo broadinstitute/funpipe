@@ -2,7 +2,7 @@
 library('argparse')
 
 # To do:
-#' Generalize is_D function in cov_plot
+#' Generalize is_D function in coverage_scatterplot
 #'
 
 
@@ -44,7 +44,7 @@ mid_pos <- function(pos_vec) {
 #' @param inverse_contig list of contigs need to reverse their physical postion
 #' @param is_D: whether the subgenome is a D subgenome
 #'
-cov_plot <- function (
+coverage_scatterplot <- function (
   cov, sample, cols, contigs=NULL, inverse_contigs=NULL, is_D=F) {
   cov1 <- cov[cov$chr %in% contigs, ]
   min_pos = min(cov1$pos)
@@ -115,14 +115,13 @@ parse_cov<- function (density, legacy, cutoff) {
 
 coverage_plot<- function(cov, prefix, inverse_contigs, subg1, subg2, cols) {
   options(bitmapType='cairo')
-  png(paste0(prefix,'_cov_plot.png'), width=2500, height=cov$n_sample*420, unit='px',
-      res=300)
+  png(paste0(prefix,'_coverage_scatterplot.png'), width=2500,
+      height=cov$n_sample*420, unit='px', res=300)
   par(mfrow=c(cov$n_sample * 2, 1))
   for (sample in names(cov$df)[cov$sample_idx]) {
-    print(sample)
     par(mar=c(1.5, 5, 1, 0.2))
-    cov_plot(cov$df, sample, cols, subg1, inverse_contigs)
-    cov_plot(cov$df, sample, cols, subg2, is_D=T)
+    coverage_scatterplot(cov$df, sample, cols, subg1, inverse_contigs)
+    coverage_scatterplot(cov$df, sample, cols, subg2, is_D=T)
   }
   dev.off()
   return(1)
