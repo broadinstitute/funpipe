@@ -61,15 +61,15 @@ class TestCoverageAnalysis(unittest.TestCase):
     def test_cal_chr_percent(self):
         cov = pd.DataFrame({
             'chr': ['chr1', 'chr1', 'chr2', 'chr2'],
-            'sample1': [0, 1, 0, 1],
-            'sample2': [1, 0, 1, 0]
-        }, columns=['chr', 'sample1', 'sample2'])
+            'sample0': [0, 1, 0, 1],
+            'sample1': [1, 0, 1, 0]
+        }, columns=['chr', 'sample0', 'sample1'])
 
         exp_cov_df = pd.DataFrame({
             'contigs': ['chr1', 'chr2'],
-            'sample1': [0.5, 0.5],
-            'sample2': [0.5, 0.5]
-        }, columns=['contigs', 'sample1', 'sample2'])
+            'sample0': [0.5, 0.5],
+            'sample1': [0.5, 0.5]
+        }, columns=['contigs', 'sample0', 'sample1'])
         self.assertTrue(
             exp_cov_df.equals(cal_chr_percent(cov))
         )
@@ -78,33 +78,51 @@ class TestCoverageAnalysis(unittest.TestCase):
         subg = ['_A', '_B']
         cov = pd.DataFrame({
             'chr': ['chr1_A', 'chr1_B', 'chr2_A', 'chr2_B'],
-            'sample1': [0.4, 0.6, 0.4, 0.6],
-            'sample2': [0.6, 0.4, 0.6, 0.4]
-        }, columns=['chr', 'sample1', 'sample2'])
+            'sample0': [0.4, 0.6, 0.4, 0.6],
+            'sample1': [0.6, 0.4, 0.6, 0.4]
+        }, columns=['chr', 'sample0', 'sample1'])
         exp_pct_df = pd.DataFrame({
             'subg': ['_A', '_B'],
-            'sample1': [0.4, 0.6],
-            'sample2': [0.6, 0.4]
-        }, columns=['subg', 'sample1', 'sample2'])
+            'sample0': [0.4, 0.6],
+            'sample1': [0.6, 0.4]
+        }, columns=['subg', 'sample0', 'sample1'])
         self.assertTrue(
             exp_pct_df.equals(cal_subg_percent(cov, subg))
         )
 
     def test_chr_coverage(self):
-        cov = pd.DataFrame({
+        cov_df = pd.DataFrame({
             'chr': ['chr1_A', 'chr1_A', 'chr2_A', 'chr2_A'],
-            'sample1': [0.4, 0, 0.4, 0],
-            'sample2': [0.6, 0.4, 0.6, 0.4]
-        }, columns=['chr', 'sample1', 'sample2'])
+            'sample0': [0.4, 0, 0.4, 0],
+            'sample1': [0.6, 0.4, 0.6, 0.4]
+        }, columns=['chr', 'sample0', 'sample1'])
 
         exp_cov_df = pd.DataFrame({
             'chr': ['chr1_A', 'chr2_A'],
-            'sample1': [0.5, 0.5],
-            'sample2': [1.0, 1.0]
-        }, columns=['chr', 'sample1', 'sample2'])
+            'sample0': [0.5, 0.5],
+            'sample1': [1.0, 1.0]
+        }, columns=['chr', 'sample0', 'sample1'])
         self.assertTrue(
-            exp_cov_df.equals(chr_coverage(cov))
+            exp_cov_df.equals(chr_coverage(cov_df))
         )
+
+    def test_pct_aneuploidy(self):
+        cov_df = pd.DataFrame({
+            'chr': ['chr1_A', 'chr1_A', 'chr2_A', 'chr2_A'],
+            'sample0': [0.1, 1.2, 2.6, 3],
+            'sample1': [3.9, 4.6, 2.1, 1.4]
+        }, columns=['chr', 'sample0', 'sample1'])
+
+        exp_cov_df = pd.DataFrame({
+            'sample': ['sample0', 'sample0', 'sample0', 'sample0', 'sample0',
+                       'sample1', 'sample1', 'sample1', 'sample1', 'sample1'],
+            'ploidy': [  0,   1,   2,   3,   4,   0,   1,   2,   3,   4],
+            'chr1_A': [0.5, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+            'chr2_A': [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0]
+        }, columns=['sample', 'ploidy', 'chr1_A', 'chr2_A'])
+
+        out_cov_df = pct_aneuploidy(cov_df, max_ploidy=4)
+        self.assertTrue(exp_cov_df.equals(out_cov_df))
 
 
 '''

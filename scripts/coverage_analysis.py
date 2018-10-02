@@ -209,7 +209,117 @@ def coverage_plot(cov_tsv, prefix, color_csv, legacy):
     return 1
 
 
-def chr_cov_plot(df, prefix):
+def cal_frac_aneu(ploidy, ploidy_list):
+    """
+    Calculate percentage of aneiploidy for each ploidy list
+
+    Examples
+    --------
+
+    >>> ploidy = [0, 1, 2, 4, 4]
+
+    >>> ploidy_list = [0, 1, 2, 3, 4]
+
+    >>> cal_frac_aneu(ploidy, ploidy_list)
+
+    [0.2, 0.2, 0.2, 0, 0.4]
+
+    Parameters
+    ----------
+
+    ploidy :
+        a list of ploidy
+
+    ploidy_list :
+        a list of ploidy
+
+    Returns
+    -------
+
+    a list of ploidy fractions
+
+    """
+    total = len(ploidy)
+    counts = collections.Counter(ploidy)
+    frac = []
+    for dos in ploidy_list:
+        if counts[dos]:
+            frac.append(round(counts[dos]/total, 2))
+        else:
+            frac.append(0)
+    return frac
+
+
+def pct_aneuploidy(cov_df, max_ploidy=4):
+    """ Calculate percentage of aneuploidy per chromosome for each sample
+
+    Notes
+    -----
+    Ploidy of each sliding window was rounded, and ploidy greater than
+    max_ploidy was set to max_ploidy.
+
+    Examples
+    --------
+
+    >>> cov_df = pd.DataFrame({
+            'chr': ['chr1_A', 'chr1_A', 'chr2_A', 'chr2_A'],
+            'sample0': [0.1, 1.2, 2.6, 3],
+            'sample1': [3.9, 4.6, 2.1, 1.4]
+        }, columns=['chr', 'sample0', 'sample1'])
+
+    >>> pct_aneuploidy(cov_df)
+
+        sample  ploidy  chr1_A  chr2_A
+    0  sample0       0     0.5     0.0
+    1  sample0       1     0.5     0.0
+    2  sample0       2     0.0     0.0
+    3  sample0       3     0.0     1.0
+    4  sample0       4     0.0     0.0
+    5  sample1       0     0.0     0.0
+    6  sample1       1     0.0     0.5
+    7  sample1       2     0.0     0.5
+    8  sample1       3     0.0     0.0
+    9  sample1       4     1.0     0.0
+
+    Parameters
+    ----------
+    cov_df : :obj:`dataframe`
+        Input coverage dataframe
+
+    max_ploidy : `int` maximum ploidy in this
+    Returns
+    -------
+    aneu_df : :obj:`dataframe`
+        Percent of aneuploidy for each chromosome
+
+    """
+    chrs = cov_df['chr'].unique().tolist()
+    samples = cov_df.columns[1:].tolist()
+    ploidy_list = list(range(0, max_ploidy+1))
+    # round coverage per window capped at max_ploidy
+    round_df = (cov_df.drop(['chr'], axis=1).round()
+                .apply(
+                    lambda x: [y if y < max_ploidy else max_ploidy for y in x])
+                )
+    round_df.insert(0, 'chr', cov_df['chr'])
+    # generate aneuploidy data frame
+    aneu_df = pd.DataFrame({
+        'sample': [val for val in samples for _ in range(0, len(ploidy_list))],
+        'ploidy': ploidy_list * len(samples)
+    })
+    for chr in chrs:
+        sample_frac = []
+        for sample in samples:
+            ploidy = round_df[round_df.chr == chr][sample].tolist()
+            print(ploidy)
+            sample_frac += cal_frac_aneu(ploidy, ploidy_list)
+            print(sample_frac)
+        chr_frac_df = pd.DataFrame({chr: sample_frac})
+        aneu_df = pd.concat([aneu_df, chr_frac_df], axis=1, sort=False)
+    return aneu_df
+
+
+def chr_cov_plot(cov_df, prefix):
     """ Pct chr coverage plot """
     df.set_index('chr', inplace=True)
     f, ax = plt.subplots(figsize=(df.shape[1]*0.5, df.shape[0]*0.5))
