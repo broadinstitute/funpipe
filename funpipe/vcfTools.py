@@ -3,11 +3,13 @@ import re
 import sys
 from scipy.stats import binom_test
 
+# to do: merge with vcf.py
 
 class VcfRecord:
     """
-
+    Object for each record (each line)
     """
+
     def __init__(self, vcf_line):
         self.vcf_line = vcf_line.rstrip()
 
@@ -33,45 +35,60 @@ class VcfRecord:
                     self.vcf_annot = fields[i]
 
     def is_passing(self, caller):
+        """
+        Whether the record passed Quality check
+        :param caller:
+        :return:
+        """
         if self.filter == 'PASS':
             return True
-        elif caller == 'GATK' and self.filter == '.':
+        elif caller == 'GATK' and self.filter == '.':  # not right
             return True
         else:
             return False
 
     def get_variant_type(self, caller, genotype):
+        """
+        Get Variant Type
+        :param caller: variant caller, either GATK or PILON
+        :param genotype: genotype of an individual sample
+        :return: Type
+        """
         split_alt = self.alt.split(',')
         if genotype in ['.', './.', '.|.']:
             return 'uncalled_ambiguous'
         elif genotype in ['0', '0/0', '0|0']:
             return False
         else:
-            alt = split_alt[int(genotype[-1:])-1]
+            alt = split_alt[int(genotype[-1:]) - 1]
             inequality_pattern = re.compile(r"^<\S+>$")
             if alt == '.':
                 return False
             elif caller == 'PILON' and re.search(inequality_pattern, alt):
-                return('structural')
+                return 'structural'
             elif caller == 'GATK' and re.search(inequality_pattern, alt):
-                return('inside_deletion')
+                return 'inside_deletion'
             elif len(alt) == 1 and len(self.ref) == 1:
-                return('SNP')
+                return 'SNP'
             elif len(alt) < len(self.ref):
-                return('DELETION')
+                return 'DELETION'
             elif len(alt) >= len(self.ref):
-                return('INSERTION')
+                return 'INSERTION'
             else:
-                return('unknown')
+                return 'unknown'
 
     def get_variant_length(self, genotype):
-
+        """
+        Get Variant length for a specific sample
+        :param genotype: genotype
+        :return: int, length of a variant
+        """
         if genotype in ['0', '0/0', '0|0', '.', '.|.', './.']:
             return False
         else:
             ref_length = len(self.get_ref())
-            genotype_end = re.search('(\d+)$', genotype)
-            alt_length = len(self.get_alt(genotype_end.group(1)))
+            genotype_end = re.search("(\d+)$", genotype)
+            alt_length: int = len(self.get_alt(genotype_end.group(1)))
             if ref_length > 1 or alt_length > 1:
                 return abs(alt_length - ref_length)
             else:
@@ -79,7 +96,17 @@ class VcfRecord:
 
     def get_genotype(self, index=0, min_gq=0, min_per_ad=float(0),
                      min_tot_dp=0, het_binom_p=False, return_flags=False):
-        # working on function to accomodate hets
+        """
+        Return genotypes of a record
+        :param index:
+        :param min_gq: minimum genotype quality score cutoff
+        :param min_per_ad: minimum allelic depth
+        :param min_tot_dp: minimum total depth
+        :param het_binom_p: pvalue of heterozygous binomial test
+        :param return_flags:
+        :return:
+        """
+        # working on function to accommodate hets
         genotype = self.genotypes[index]
         parsed_genotype = genotype.split(':')[0]
         dip_flag = False
@@ -130,6 +157,11 @@ class VcfRecord:
             return parsed_genotype_list
 
     def is_het(self, index=0):  # currently works only on biallelic sites
+        """
+        Whether a
+        :param index: index for GT field in genotype string
+        :return: boolean
+        """
         het = False
         genotype = self.genotypes[index]
         parsed_genotype = genotype.split(':')[0]
@@ -159,8 +191,8 @@ class VcfRecord:
             ad = gt_fields[ad_index]
             split_ad = ad.split(',')
             if split_ad[0] != '0':
-                percent_AD = (float(split_ad[1])/(float(split_ad[0])
-                                                  + float(split_ad[1])))
+                percent_AD = (float(split_ad[1]) / (float(split_ad[0])
+                                                    + float(split_ad[1])))
             elif split_ad[1] != '0':
                 percent_AD = float(1)
         except:
@@ -177,9 +209,11 @@ class VcfRecord:
             ad = gt_fields[ad_index]
             split_ad = ad.split(',')
             if split_ad[1] != '0':
-                pvalue = binom_test(int(split_ad[1]), (int(split_ad[0]) + int(split_ad[1])))
+                pvalue = binom_test(int(split_ad[1]),
+                                    (int(split_ad[0]) + int(split_ad[1])))
             elif split_ad[0] != '0':
-                pvalue = binom_test(int(split_ad[0]), (int(split_ad[1]) + int(split_ad[0])))
+                pvalue = binom_test(int(split_ad[0]),
+                                    (int(split_ad[1]) + int(split_ad[0])))
         except:
             pass
         return pvalue
@@ -256,7 +290,7 @@ class VcfRecord:
             else:
                 split_alt = self.alt.split(',')
                 genotype_end = re.search('(\d+)$', genotype)
-                index = int(genotype_end.group(1))-1
+                index = int(genotype_end.group(1)) - 1
                 return split_alt[index]
 
     def get_alt_field(self):
@@ -385,8 +419,9 @@ class VcfRecord:
 
 class VcfHeader:
     """
-
+    Vcf Header Class
     """
+
     def __init__(self, vcf_file):
         self.samples = []
         self.caller = False
@@ -396,22 +431,22 @@ class VcfHeader:
 
         comment_pattern = re.compile(r"^#")
 
-        with open(vcf_file, 'r') as file:
+        with open(vcf_file) as file:
             for full_line in file:
                 line = full_line.rstrip()
-                if (re.search(comment_pattern, line)):
-                    if (re.match('#CHROM', line)):
+                if re.search(comment_pattern, line):
+                    if re.match('#CHROM', line):
                         fields = line.split('\t')
                         for i in range(9, len(fields)):
                             self.samples.append(fields[i])
                             self.sample_columns[fields[i]] = i
-                    elif (re.match('##PILON', line)):
+                    elif re.match('##PILON', line):
                         self.caller = 'PILON'
-                    elif (re.match('##GATK', line)):
+                    elif re.match('##GATK', line):
                         self.caller = 'GATK'
-                    elif (re.match('##SnpEff', line)):
+                    elif re.match('##SnpEff', line):
                         self.snpeff = True
-                    elif (re.match('##contig', line)):
+                    elif re.match('##contig', line):
                         m = re.search('##contig=<ID=([^,]+),', line)
                         self.contigs.append(m.group(1))
                 else:
@@ -430,7 +465,7 @@ class VcfHeader:
         return self.caller
 
     def get_sample_index(self, sample):
-        index = self.sample_columns[sample]-9
+        index = self.sample_columns[sample] - 9
         return index
 
     def get_snpeff_status(self):
