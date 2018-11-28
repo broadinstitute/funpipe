@@ -4,10 +4,11 @@ import os
 from funpipe import bam.fastqc, picard, utils.eprint
 
 
-def bam_fast_qc(bam, ref_fa, out_dir, prefix):
+def bam_fast_qc(bam, ref_fa, outdir, prefix):
     ''' use FastQc for a BAM '''
-    picard_cmd = picard()
-    (fq1, fq2) = picard_cmd.bam2fqs(bam, os.path.join(out_dir, prefix))
+    ana = analysis(bam, prefix, fasta=ref_fa, outdir=outdi)
+    pic = picard(ana, jar = )  # create a picard analysis instance
+    (fq1, fq2) = pic.bam2fqs(bam, os.path.join(out_dir, prefix))
     fastqc(bam, fq1, fq2, out_dir)
     eprint(' - bam_fast_qc done.')
     return 1
