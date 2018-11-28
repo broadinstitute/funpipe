@@ -19,9 +19,9 @@ def done(job_name):
 
 @contextlib.contextmanager
 def cd(dir):
-    ''' change directory
+    """ change directory
     :param dir: new directory to change to
-    '''
+    """
     original_path = os.getcwd()
     os.chdir(dir)
     yield
@@ -30,19 +30,19 @@ def cd(dir):
 
 
 def run(cmd):
-    ''' execute a specific command
+    """ execute a specific command
     :param cmd: command to execute
-    '''
-    sys.stderr.write(cmd+"\n")
+    """
+    sys.stdout.write("Command: \n\t- "+cmd+"\n")
     check_call(cmd, shell=True)
     print(" - Done: "+cmd+"\n")
     return 1
 
 
 def rm(file):
-    ''' remove a file
+    """ remove a file
     :param file: path of file to remove
-    '''
+    """
     for i in files:
         run('rm '+file)
     return 1
