@@ -1,30 +1,34 @@
 import os
-from .utils import run
+from . import utils.run
 
 
-class picard:
-    def __init__(self, jar='/seq/software/picard/1.853/bin/picard.jar', RAM=4):
-        self.cmd = ' '.join([
-            'java -Xmx'+str(RAM)+'g -jar', jar
-        ])
+class picard(analysis):
+    def __init__(self, input, prefix=None, suffix=None, outdir='.', fasta=None,
+                 gff=None, RAM=4, threads=1,
+                 jar='/seq/software/picard/1.853/bin/picard.jar'):
+        analysis.__init__(self, input, prefix=None, suffix=None, outdir='.',
+                          fasta=None, gff=None, RAM=4, threads=1,)
+        self.cmd = ' '.join(['java -Xmx'+str(RAM)+'g -jar', jar])
 
-    def dict(self, fa, dict=None):
-        ''' build fasta dictionary '''
+    def dict(self, dict=None):
+        """ build fasta dictionary """
         if dict is None:
-            dict = os.path.splitext(fa)[0]+'.dict'
-        cmd = ' '.join([self.cmd, 'CreateSequenceDictionary', "R="+fa,
+            dict = os.path.splitext(self.fasta)[0]+'.dict'
+        cmd = ' '.join([self.cmd, 'CreateSequenceDictionary', "R="+self.fasta,
                        "O="+dict])
         run(cmd)
 
-    def bam2fqs(self, bam, prefix):
-        ''' Realign BAM file to a reference genome
-        :param bam: bam file
-        :param prefix: output prefix
-        :parma fa: fasta file
+    def bam2fqs(self, paired=True):
+        """ Realign BAM file to a reference genome
         :returns: tuple of fq file pairs
-        '''
-        fq1 = prefix+'_1.fq.gz'
-        fq2 = prefix+'_2.fq.gz'
-        cmd = ' '.join([self.cmd, 'SamToFastq', 'I='+bam, 'F='+fq1, 'F2='+fq2])
+        """
+        if paired:
+            fq1 = self.prefix+'_1.fq.gz'
+            fq2 = self.prefix+'_2.fq.gz'
+            cmd = 'F='+fq1, 'F2='+fq2
+            outs = (fq1, fq2)
+        else:
+            raise ValueError('Not yet support single end sequencing data.')
+        cmd = ' '.join([self.cmd, 'SamToFastq', 'I='+self.input, output]) + cmd
         run(cmd)
-        return(fq1, fq2)
+        return outs
