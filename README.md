@@ -1,7 +1,7 @@
 funpipe: a python library for efficient development of bioinformatic analysis pipelines
 -----
 ## Introduction
-**funpipe** is a python library designed for efficient implementation of bioinformatics pipelines. It contains wrapper functions to popular tools, customized functions for common bioinformatics analysis tasks, and command line tools developed using those functions. This was developed for fungal genomics analysis, but most of the functions are applicable to other genomic analysis as well.
+**funpipe** is a python library designed for efficient implementation of bioinformatics pipelines. It contains wrapper functions to popular tools, customized functions for common bioinformatics analysis, and command line tools developed using those functions. This package is developing initially to facilitate fungal genomic analysis, but most of the functions are generally applicable to other genomic analysis as well.
 
 ## Requirements
 * Python >= 3.7
@@ -29,12 +29,12 @@ pip install .
 
 # deactivate the environment when done
 source deactivate
+
+# completely remove the virtual environment
+conda remove -name funpipe --all
 ```
 Note:
-* `diamond=0.9.22` uses boost library, which depends on python2.7. This conflicts with funpipe's python version.
-* `FreeTree` is not yet available in Bioconda. We are in the process of submitting it to the repo, and will keep it posted here.
-
-Above two tools are not available if using the conda setup. Docker image will be created for `funpipe` to resolve this issue.
+* `diamond=0.9.22` uses boost library, which depends on python2.7. This conflicts with funpipe's python version. Docker image will be created for `funpipe` to resolve this issue.
 
 ### Synposis
 * [funpipe](./funpipe): a directory that contains python library
@@ -48,20 +48,19 @@ Below are major functionality of this pipeline, including
 * Reference genome quality evaluation with `pilon`.
 * Variant annotation using `snpEff`.
 * Phylogenetic analysis.
-* Ploidy analysis.
+* Coverage and ploidy analysis.
 
-
-List of available tools, use `toolname.py -h` to see manual
+List of available tools, use `<toolname> -h` to see manual
 ```sh
 run_pilon.py          # Evaluate reference genome quality with pilon
 run_snpeff.py         # Annotation genomic variants with snpEff
 fastqc.py             # Fastq quality control
 phylo_analysis.py     # Phylogenetic analysis
-coverage_analysis.py  # Hybrid coverage analysis
+coverage_analysis.py  # Hybrid coverage and ploidy analysis
 bam_qc_metr.py        # Quality control of BAMs
 vcf_qc_metr.py        # Quality control of VCFs
 ```
 
 The following projects uses this library:
-* [*Cryptococcus Neoformans* serotype D project](https://github.com/broadinstitute/fungal-research-projects/blob/master/docs/crypto_d.md)
-* [*Candida Auris* global project](https://github.com/broadinstitute/fungal-research-projects/blob/master/docs/cauris_global.md)
+* [*Cryptococcus neoformans* serotype D project](https://github.com/broadinstitute/fungal-research-projects/blob/master/docs/crypto_d.md)
+* [*Candida auris* global project](https://github.com/broadinstitute/fungal-research-projects/blob/master/docs/cauris_global.md)
