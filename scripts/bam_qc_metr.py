@@ -80,6 +80,7 @@ def extract_picard_metrics(qc_path_tsv, bam_qc_file, is_gp_bam):
             qc_stats[sample] = {}
             for suffix in stats:
                 stat_file = glob(join(path, sample+'.'+'*'+suffix))
+                print(stat_file)
                 if len(stat_file) == 1:
                     all_metr = get_picard_stat(stat_file[0])
                     for stat in stats[suffix]:
@@ -100,9 +101,11 @@ if __name__ == '__main__':
         )
     )
     # required arguments
-    required = parser.add_argument_group('required arguments')
+    required = parser.add_argument_group('Required arguments')
     required.add_argument(
-        '-i', '--input', required=True, help='Input list of QC metrics')
+        '-i', '--input', required=True,
+        help='Input list of path that contains QC metrics for a sample'
+    )
     required.add_argument(
         '-o', '--output', help="Name of output file")
 
