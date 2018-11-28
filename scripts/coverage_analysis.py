@@ -5,8 +5,9 @@ import sys
 import argparse
 import pandas as pd
 from glob import glob
-import matplotlib.pyplot as plt
 import seaborn as sns
+import collections
+import matplotlib.pyplot as plt
 from distutils.version import LooseVersion
 from funpipe.utils import run
 
@@ -24,7 +25,7 @@ def combine_coverage_profiles(input, prefix=None):
         tab = (pd.read_csv(cov_list['Path'][i], sep='\t',
                            usecols=['chr', 'start0', 'end0', 'id', 'fc'])
                .rename(columns={'fc': cov_list['Sample'][i]}))
-        if cov.empty:
+        if cov_df.empty:
             cov_df = tab
         else:
             cov_df = pd.merge(cov_df, tab, on=['chr', 'start0', 'end0', 'id'])
@@ -85,34 +86,35 @@ def coverage_to_density(cov, contig_prefix, subgenome, split=False,
     den.drop(['start0'], axis=1, inplace=True)    # reformat to den file
     den.insert(loc=1, column='id', value=range(1, den.shape[0]+1))
     if prefix is not None:
-        density_tsv = output_density_tsv(prefix, den, legacy)
-    return den
+        density_tsv = output_density_tsv(den, prefix, legacy)
+    return den, density_tsv
 
 
-def output_density_tsv(prefix, den, legacy):
+def output_density_tsv(den, prefix, legacy):
     ''' output density data structure to tsv file
     :param prefix: output Prefix
     :param den: density matrix
     :param legacy: output tsv in legacy mode, compatible with matlab code
     :rtype pd dataframe
     '''
-    out_den = prefix
+    print(prefix)
+    density_tsv = prefix
     # output den files
     # with open(prefix+'.samples.tsv', 'w') as samples:
     #     for sample in den.columns[6:].tolist():
     #         samples.write(sample+'\n')
     if legacy:
-        out_den += '.den'
+        density_tsv += '.den'
         # add additional columns for den file
         den.insert(loc=2, column='dos1', value=1)
         den.insert(loc=3, column='dos2', value=1.5)
         den.insert(loc=4, column='dos3', value=2)
         den.insert(loc=5, column='dos4', value=3)
-        den.to_csv(out_den, index=False, header=False, sep='\t')
+        den.to_csv(density_tsv, index=False, header=False, sep='\t')
     else:
-        out_den += '_cov_den.tsv'
-        den.to_csv(out_den, index=False, sep='\t')
-    return out_den
+        density_tsv += '_cov_den.tsv'
+        den.to_csv(density_tsv, index=False, sep='\t')
+    return density_tsv
 
 
 def filter_cov(cov, min_cov):
@@ -219,7 +221,7 @@ def coverage_scatterplot(cov_tsv, prefix, color_csv, legacy):
     :param prefix: output prefix
     :param legacy: if output tsv in legacy mode, compatible with matlab code
     """
-    cmd = ' '.join(['coverage_scatterplot.R', '-i', cov_tsv, '-p', prefix,
+    cmd = ' '.join(['coverage_barplot.R', '-i', cov_tsv, '-p', prefix,
                     '-c', color_csv])
     if legacy:
         cmd += ' -l'
@@ -302,10 +304,16 @@ def pct_aneuploidy(cov_df, max_ploidy=4, prefix=None):
 
     Parameters
     ----------
-    cov_df : :obj:`dataframe`
+    cov_df : `dataframe`
         Input coverage dataframe
 
-    max_ploidy : `int` maximum ploidy in this
+    max_ploidy : `int`
+        Maximum ploidy in this
+
+    prefix : `str`
+        Optional, if given will output a tsv file containing ploidy using this
+        as prefix of output files.
+
     Returns
     -------
     aneu_df : :obj:`dataframe`
@@ -330,9 +338,7 @@ def pct_aneuploidy(cov_df, max_ploidy=4, prefix=None):
         sample_frac = []
         for sample in samples:
             ploidy = round_df[round_df.chr == chr][sample].tolist()
-            print(ploidy)
             sample_frac += cal_frac_aneu(ploidy, ploidy_list)
-            print(sample_frac)
         chr_frac_df = pd.DataFrame({chr: sample_frac})
         aneu_df = pd.concat([aneu_df, chr_frac_df], axis=1, sort=False)
 
@@ -341,23 +347,24 @@ def pct_aneuploidy(cov_df, max_ploidy=4, prefix=None):
     return aneu_df
 
 
-def chr_cov_plot(cov_df, prefix):
+def chr_cov_plot(cov_df, prefix, no_cluster):
     """ Pct chr coverage plot """
-    df.set_index('chr', inplace=True)
-    f, ax = plt.subplots(figsize=(df.shape[1]*0.5, df.shape[0]*0.5))
-    if cluster:
+    cov_df.set_index('chr', inplace=True)
+    f, ax = plt.subplots(figsize=(cov_df.shape[1]*0.5, cov_df.shape[0]*0.5))
+    if not no_cluster:
         print(" - Cluster coverage profile.")
-        chr_pct_fig = sns.clustermap(df, row_cluster=True, col_cluster=True)
+        chr_pct_fig = sns.clustermap(cov_df, row_cluster=True,
+                                     col_cluster=True)
     else:
         print(" - Produce heatmap from coverage profile.")
-        chr_pct_fig = sns.heatmap(df, vmin=0, vmax=1,
+        chr_pct_fig = sns.heatmap(cov_df, vmin=0, vmax=1,
                                   cmap="YlGnBu").get_figure()
     chr_pct_fig.savefig(prefix+'_chr_pct_cov.png')
     return 1
 
 
-def main(cov_tsv, prefix, legacy, min_cov, no_plot, g_flags, color_csv,
-         no_cluster):
+def main(cov_tsv, color_csv, prefix, g_flags, legacy, min_cov, no_cluster,
+         split):
     print('Start to process '+prefix)
     cov_df = combine_coverage_profiles(cov_tsv, prefix)
     cov_ft_df = filter_cov(cov_df, min_cov)
@@ -365,14 +372,15 @@ def main(cov_tsv, prefix, legacy, min_cov, no_plot, g_flags, color_csv,
     chr_pct_cov_df = chr_coverage(cov_ft_df, prefix)
     aneu_frac = pct_aneuploidy(cov_ft_df, prefix=prefix)
     chr_cov_heatmap(chr_pct_cov_df, prefix)
-    subg_pct_cov_df = cal_subg_percent(cov_ft_df, g_flags, prefix)
 
+    subg_pct_cov_df = cal_subg_percent(cov_ft_df, g_flags, prefix)
+    aneu_df = pct_aneuploidy(cov_ft_df, prefix=prefix)
     subg_df_t = (subg_pct_cov_df.set_index('subg').transpose()
                  .rename_axis('samples').rename_axis(None, 1).reset_index())
     subg_barplot(subg_df_t, prefix)
     # calculate density
-    density_tsv = coverage_to_density(cov_df, 'chr', g_flags, prefix, legacy,
-                                      split=False)
+    den_df, density_tsv = coverage_to_density(
+        cov_df, 'chr', g_flags, split=False, prefix=prefix, legacy=legacy)
     coverage_scatterplot(density_tsv, prefix, color_csv, legacy)
     print(' - Done.')
     return 1
@@ -385,14 +393,14 @@ if __name__ == '__main__':
     )
     required = parser.add_argument_group('Required arguments')
     required.add_argument(
+        '-c', '--color_csv', help='Color profile of each contig', required=True
+    )
+    required.add_argument(
         '-i', '--cov_tsv', required=True, help='A table-delimited file with '
         + 'first column sample ID, second column coverage profile path'
     )
     required.add_argument(
         '-p', '--prefix', help='output prefix', required=True
-    )
-    required.add_argument(
-       '-c', '--color_csv', help='Color profile for each contig', required=True
     )
 
     # optional arguments
@@ -400,12 +408,12 @@ if __name__ == '__main__':
         '--g_flags', help='subgenome flag', default=['_A', '_D']
     )
     parser.add_argument(
-        '--min_cov', help=('minimum coverage per window for it to be included'
-                           ' in the analysis'), default=0, type=float
-    )
-    parser.add_argument(
         '--legacy', help='output density file in legacy mode, for matlab code',
         action='store_true'
+    )
+    parser.add_argument(
+        '--min_cov', help=('minimum coverage per window for it to be included'
+                           ' in the analysis'), default=0, type=float
     )
     parser.add_argument(
         '--no_cluster', action='store_true',
@@ -418,6 +426,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     main(
-        args.cov_tsv, args.prefix, args.legacy, args.min_cov, args.no_plot,
-        args.g_flags, args.color_csv, args.no_cluster
+        args.cov_tsv, args.color_csv, args.prefix, args.g_flags, args.legacy,
+        args.min_cov, args.no_cluster, args.split
     )
