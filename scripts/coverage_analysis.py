@@ -371,8 +371,8 @@ def main(cov_tsv, prefix, legacy, min_cov, no_plot, g_flags, color_csv,
                  .rename_axis('samples').rename_axis(None, 1).reset_index())
     subg_barplot(subg_df_t, prefix)
     # calculate density
-    density_tsv = coverage_to_density(cov_df, 'chr', g_flags, split=False,
-                                      prefix, legacy)
+    density_tsv = coverage_to_density(cov_df, 'chr', g_flags, prefix, legacy,
+                                      split=False)
     coverage_scatterplot(density_tsv, prefix, color_csv, legacy)
     print(' - Done.')
     return 1
@@ -412,7 +412,7 @@ if __name__ == '__main__':
         help='Perform hierachical clustering for the pct chr coverage plot'
     )
     parser.add_argument(
-        '--split', action=store_true,
+        '--split', action='store_true',
         help='whether present only a subgenome '
     )
     args = parser.parse_args()

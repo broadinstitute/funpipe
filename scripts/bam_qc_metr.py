@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 from os.path import dirname, basename, splitext, join
-import sys
 import argparse
+from typing import Any, Union
+
 from crimson import picard
-import json
 import pandas as pd
 from glob import glob
 
@@ -12,6 +12,7 @@ from glob import glob
 stats = {
     'alignment_summary_metrics':
         ['TOTAL_READS', 'PCT_PF_READS_ALIGNED', 'PCT_CHIMERAS'],
+
     'wgs_metrics': ['MEAN_COVERAGE']
 }
 
@@ -19,7 +20,16 @@ stats_list = [
     'TOTAL_READS', 'PCT_PF_READS_ALIGNED', 'PCT_CHIMERAS', 'MEAN_COVERAGE']
 
 
+def realign_bam():
+    fq1, fq2 = bam2fqs(args.bam, args.prefix, args.ram, args.picard_jar)
+    realign_bam = bwa_align(args.fa, fq1, fq2, args.prefix)
+
 def get_picard_stat(file):
+    """
+
+    :param file: input Picard file name
+    :return:
+    """
     all_metr = picard.parse(file)['metrics']['contents']
     if isinstance(all_metr, dict):
         return all_metr
@@ -27,19 +37,26 @@ def get_picard_stat(file):
         return all_metr[-1]
 
 
-def get_ref_fa(file):
-    ''' get reference sequence from "analysis files"
-    :param file: path to the bam files
-    '''
-    df = pd.read_csv('/seq/picard_aggregation/G143266/CL161/current/analysis_files.txt', header=0, sep='\t')
+def get_ref_fa(analysis_file):
+    """ get reference sequence from "analysis files"
+
+    Examples
+    --------
+
+    >>> df = get_ref_fa('/seq/picard_aggregation/G143266/CL161/current/analysis_files.txt)
+    :param analysis_file:
+    """
+    df = pd.read_csv(analysis_file, header=0, sep='\t')
+    return df
 
 
 def parse_gp_bam_path(path):
-    ''' parse on-prem BAM path from the genomic platform, to get directory,
+    """ parse on-prem BAM path from the genomic platform, to get directory,
     base name, prefix and suffix of the BAM. Prefix of the BAM is usually
     sample name.
     :param path: on-prem bam path from the genomic platform
-    '''
+    :return:
+    """
     fdir = dirname(path)          # file directory
     base = basename(path)         # base name of the bam
     prefix = splitext(base)[0]    # prefix of the bam file, usually sample name
@@ -48,10 +65,10 @@ def parse_gp_bam_path(path):
 
 
 def output_stats(qc_stats, bam_qc_file):
-    ''' output qc statistics to a file
+    """ output qc statistics to a file
     :param qc_stats: an array that contains all BAM QC statistics
     :param bam_qc_file: file path to output all the metrics
-    '''
+    """
     with open(bam_qc_file, 'w+') as bam_qc:
         # output header to the file
         bam_qc.write('\t'.join(['Sample'] + stats_list)+'\n')
@@ -64,14 +81,14 @@ def output_stats(qc_stats, bam_qc_file):
 
 
 def extract_picard_metrics(qc_path_tsv, bam_qc_file, is_gp_bam):
-    ''' process all bam files and get corresponding QC metrics and reference
+    """ process all bam files and get corresponding QC metrics and reference
     paths from Broad's Genomic Platform
-    :param bam_list_file: a list of bam files
+    :param qc_path_tsv: a list of bam files
     :param bam_qc_file: file path to output all QC metrics
     :param is_gp_bam: input is a bam path from the Broad's GP
-    '''
+    """
     qc_stats = {}
-    with open(qc_path_tsv, 'r') as qc_path:
+    with open(qc_path_tsv) as qc_path:
         # process each bam record in the bam list
         for line in qc_path:
             sample, path = line.strip().split('\t')
@@ -81,7 +98,7 @@ def extract_picard_metrics(qc_path_tsv, bam_qc_file, is_gp_bam):
             for suffix in stats:
                 stat_file = glob(join(path, sample+'.'+'*'+suffix))
                 if len(stat_file) == 1:
-                    all_metr = get_picard_stat(stat_file[0])
+                    all_metr: Union[dict, Any] = get_picard_stat(stat_file[0])
                     for stat in stats[suffix]:
                         qc_stats[sample][stat] = all_metr[stat]
                 elif len(stat_file) > 1:

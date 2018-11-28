@@ -20,7 +20,7 @@ git clone git@github.com:broadinstitute/funpipe.git
 
 # setup environment
 cd funpipe
-conda env create -f conda_env.yml  # this will take about 10 min
+conda env create -f conda_env.yml  # this will take a few mins
 conda list  # verify new environment was installed correctly
 
 # install funpipe in the virtual environment
@@ -29,26 +29,26 @@ pip install .
 
 # deactivate the environment when done
 source deactivate
+
+# to complete remove the environment
+conda remove -n funpipe --all
 ```
 Note:
-* `diamond=0.9.22` uses boost library, which depends on python2.7. This conflicts with funpipe's python version.
-* `FreeTree` is not yet available in Bioconda. We are in the process of submitting it to the repo, and will keep it posted here.
-Above two functions are not available if using the above conda setup. Docker image will be created for `funpipe` in the future, and will solve this issue.
+* `diamond=0.9.22` uses boost library, which depends on python2.7. This conflicts with funpipe's python version. Docker image will be created for `funpipe` to solve this issue.
 
 ### Synposis
-[funpipe](./funpipe): a directory that contains python library
-[scripts](./scripts): a set of executables for high level analysis
-[tests](./tests): module tests
-`setup.py`: pip setup
-`conda_env.yml`: spec file for setting up conda environment
+* [funpipe](./funpipe): a directory that contains python library
+* [scripts](./scripts): a set of executables for high level analysis
+* [tests](./tests): module tests
+* `setup.py`: pip setup
+* `conda_env.yml`: spec file for setting up conda environment
 
 ### Documentation
 Below are major functionality of this pipeline, including
-* Reference genome quality evaluation with `pilon`.
+* Reference genome quality evaluation and improvement with `pilon`.
 * Variant annotation using `snpEff`.
 * Phylogenetic analysis.
-* Ploidy analysis.
-
+* Coverage and ploidy analysis.
 
 List of available tools, use `toolname.py -h` to see manual
 ```sh
@@ -62,5 +62,5 @@ vcf_qc_metr.py        # Quality control of VCFs
 ```
 
 The following projects uses this library:
-* [*Cryptococcus Neoformans* serotype D project](https://github.com/broadinstitute/fungal-research-projects/blob/master/docs/crypto_d.md)
-* [*Candida Auris* global project](https://github.com/broadinstitute/fungal-research-projects/blob/master/docs/cauris_global.md)
+* [*Cryptococcus neoformans* serotype D project](https://github.com/broadinstitute/fungal-research-projects/blob/master/docs/crypto_d.md)
+* [*Candida auris* global project](https://github.com/broadinstitute/fungal-research-projects/blob/master/docs/cauris_global.md)

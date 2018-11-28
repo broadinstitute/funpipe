@@ -5,24 +5,13 @@ import os
 import sys
 import io
 import pandas as pd
-from funpipe.gatk import gatk
-
-
-stats = {
-    'CountVariants': [
-        'nVariantLoci', 'variantRatePerBp', 'nSNPs',
-        'nInsertions', 'nDeletions', 'nHets', 'nHomRef', 'nHomVar',
-        'hetHomRatio', 'insertionDeletionRatio'
-    ],
-    'TiTvVariantEvaluator': ['nTi', 'nTv', 'tiTvRatio'],
-    'IndelSummary': ['SNP_to_indel_ratio']
-}
+from funpipe.gatk import Gatk
+from funpipe.gatk import Eval
 
 
 def run_variant_eval(vcf, fa, prefix, RAM):
-    gatk_cmd = gatk(fa, prefix)
-    var_eval_tsv = gatk_cmd.variant_eval(vcf)
-    return var_eval_tsv
+    var_eval = Gatk(vcf, prefix=prefix, RAM=ram, fasta=fa).variant_eval()
+    return var_eval.var_eval_tsv
 
 
 def parse_variant_eval(eval, out_dir, prefix):
@@ -55,17 +44,14 @@ if __name__ == '__main__':
     # required arguments
     required = parser.add_argument_group('required arguments')
     required.add_argument(
-        '-p', '--prefix', help="Prefix of output file", required=True
-    )
-
+        '-p', '--prefix', help="Prefix of output file", required=True)
     # optional arguments
     parser.add_argument('-e', '--eval', help='Input file')
-    parser.add_argument('-v', '--vcf', help='Input vcf file')
+    parser.add_argument('-v', '--vcf', default=None, help='Input vcf file')
     parser.add_argument('-r', '--ref_fa', help='reference fasta file')
     parser.add_argument('--RAM', help='RAM', type=int, default=4)
     parser.add_argument(
-        '-d', '--out_dir', default='.', help='Output Directory'
-    )
+        '-d', '--out_dir', default='.', help='Output Directory')
 
     args = parser.parse_args()
     if args.eval:
