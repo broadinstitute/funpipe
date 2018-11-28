@@ -33,14 +33,15 @@ source deactivate
 Note:
 * `diamond=0.9.22` uses boost library, which depends on python2.7. This conflicts with funpipe's python version.
 * `FreeTree` is not yet available in Bioconda. We are in the process of submitting it to the repo, and will keep it posted here.
-Above two functions are not available if using the above conda setup. Docker image will be created for `funpipe` in the future, and will solve this issue.
+
+Above two tools are not available if using the conda setup. Docker image will be created for `funpipe` to resolve this issue.
 
 ### Synposis
-[funpipe](./funpipe): a directory that contains python library
-[scripts](./scripts): a set of executables for high level analysis
-[tests](./tests): module tests
-`setup.py`: pip setup
-`conda_env.yml`: spec file for setting up conda environment
+*[funpipe](./funpipe): a directory that contains python library
+*[scripts](./scripts): a set of executables for high level analysis
+*[tests](./tests): module tests
+*`setup.py`: pip setup
+*`conda_env.yml`: spec file for setting up conda environment
 
 ### Documentation
 Below are major functionality of this pipeline, including
