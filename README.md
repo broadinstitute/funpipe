@@ -17,14 +17,18 @@ To build functional pipelines with this library, virtual machine or virtual envi
 # conda
 
 ```
-If you only want to use the library on your current environment, you can install this package directly. FUNPIPE is not yet on PyPI yet, to install this library, clone this repo and run the following command:
-```
-pip3 install .
-```
-### Overview:
-[src](./src): a directory that contains python library for common commands
-[scripts](./scripts): a set of executables for high level fungal analysis
-[tests](./tests): module tests
+Note:
+* `diamond=0.9.22` uses boost library, which depends on python2.7. This conflicts with funpipe's python version.
+* `FreeTree` is not yet available in Bioconda. We are in the process of submitting it to the repo, and will keep it posted here.
+
+Above two tools are not available if using the conda setup. Docker image will be created for `funpipe` to resolve this issue.
+
+### Synposis
+*[funpipe](./funpipe): a directory that contains python library
+*[scripts](./scripts): a set of executables for high level analysis
+*[tests](./tests): module tests
+*`setup.py`: pip setup
+*`conda_env.yml`: spec file for setting up conda environment
 
 # Documentation
 Below are major functionality of this pipeline, including
