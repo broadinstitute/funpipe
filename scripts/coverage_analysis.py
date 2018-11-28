@@ -302,10 +302,16 @@ def pct_aneuploidy(cov_df, max_ploidy=4, prefix=None):
 
     Parameters
     ----------
-    cov_df : :obj:`dataframe`
+    cov_df : `dataframe`
         Input coverage dataframe
 
-    max_ploidy : `int` maximum ploidy in this
+    max_ploidy : `int`
+        Maximum ploidy in this
+
+    prefix : `str`
+        Optional, if given will output a tsv file containing ploidy using this
+        as prefix of output files.
+
     Returns
     -------
     aneu_df : :obj:`dataframe`
@@ -366,7 +372,7 @@ def main(cov_tsv, prefix, legacy, min_cov, no_plot, g_flags, color_csv,
     aneu_frac = pct_aneuploidy(cov_ft_df, prefix=prefix)
     chr_cov_heatmap(chr_pct_cov_df, prefix)
     subg_pct_cov_df = cal_subg_percent(cov_ft_df, g_flags, prefix)
-
+    aneu_df = pct_aneuploidy(cov_ft_df, prefix=prefix)
     subg_df_t = (subg_pct_cov_df.set_index('subg').transpose()
                  .rename_axis('samples').rename_axis(None, 1).reset_index())
     subg_barplot(subg_df_t, prefix)
