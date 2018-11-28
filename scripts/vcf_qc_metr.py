@@ -19,8 +19,8 @@ stats = {
 }
 
 
-def run_variant_eval(vcf, fa, prefix, RAM):
-    gatk_cmd = gatk(fa, prefix)
+def run_variant_eval(vcf, fa, prefix, RAM, jar):
+    gatk_cmd = gatk(fa, prefix, jar=jar)
     var_eval_tsv = gatk_cmd.variant_eval(vcf)
     return var_eval_tsv
 
@@ -53,12 +53,12 @@ def parse_filter_geno_stat(file_geno_tsv):
     return df
 
 
-def main(prefix, out_dir, eval_tsv, filter_geno_stat, fa, RAM, vcf):
+def main(prefix, out_dir, eval_tsv, filter_geno_stat, fa, RAM, vcf, jar):
     if vcf:
-        eval_tsv = run_variant_eval(vcf, ref_fa, prefix, RAM)
-        df = parse_variant_eval(eval_tsv, out_dir, prefix)
+        eval_tsv = run_variant_eval(vcf, fa, prefix, RAM, jar)
+        df = parse_variant_eval(eval_tsv)
     elif vcf:
-        df = parse_variant_eval(eval_tsv, out_dir, prefix)
+        df = parse_variant_eval(eval_tsv)
     else:
         raise ValueError("Please input either an eval file or VCF file")
 
@@ -88,8 +88,8 @@ if __name__ == '__main__':
     parser.add_argument('--fa', help='reference fasta file')
     parser.add_argument('--RAM', help='RAM', type=int, default=4)
     parser.add_argument('-v', '--vcf', help='Input vcf file')
-
+    parser.add_argument('--jar', help='GATK jar')
     args = parser.parse_args()
 
     main(args.prefix, args.out_dir, args.eval_tsv, args.filter_geno_tsv,
-         args.fa, args.RAM, args.vcf)
+         args.fa, args.RAM, args.vcf, args.jar)
