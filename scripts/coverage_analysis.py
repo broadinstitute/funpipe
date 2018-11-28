@@ -465,7 +465,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--split', action='store_true',
-        help='whether present only a subgenome'
+        help='whether present only a subgenome '
     )
     args = parser.parse_args()
 

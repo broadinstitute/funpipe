@@ -28,7 +28,7 @@ git clone git@github.com:broadinstitute/funpipe.git
 # setup conda environment
 cd funpipe
 
-conda env create -f conda_env.yml # this will take about 10 min
+conda env create -f conda_env.yml # this will take a few mins
 conda list  # verify new environment was installed correctly
 
 # activate funpipe environment
@@ -43,6 +43,9 @@ conda deactivate
 
 # completely remove the virtual environment
 conda remove -name funpipe --all
+
+# to complete remove the environment
+conda remove -n funpipe --all
 ```
 
 Note:
