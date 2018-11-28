@@ -341,8 +341,9 @@ def pct_aneuploidy(cov_df, max_ploidy=4, prefix=None):
             sample_frac += cal_frac_aneu(ploidy, ploidy_list)
         chr_frac_df = pd.DataFrame({chr: sample_frac})
         aneu_df = pd.concat([aneu_df, chr_frac_df], axis=1, sort=False)
+
     if prefix is not None:
-        aneu_df.to_csv(prefix+'_frac_aneu.tsv', sep='\t', index=False)
+        aneu_df.to_csv(prefix+'_aneu_frac.tsv', sep='\t', index=False)
     return aneu_df
 
 
@@ -369,7 +370,9 @@ def main(cov_tsv, color_csv, prefix, g_flags, legacy, min_cov, no_cluster,
     cov_ft_df = filter_cov(cov_df, min_cov)
     pct_cov_df = cal_chr_percent(cov_ft_df, prefix)
     chr_pct_cov_df = chr_coverage(cov_ft_df, prefix)
-    chr_cov_plot(chr_pct_cov_df, prefix, no_cluster)
+    aneu_frac = pct_aneuploidy(cov_ft_df, prefix=prefix)
+    chr_cov_heatmap(chr_pct_cov_df, prefix)
+
     subg_pct_cov_df = cal_subg_percent(cov_ft_df, g_flags, prefix)
     aneu_df = pct_aneuploidy(cov_ft_df, prefix=prefix)
     subg_df_t = (subg_pct_cov_df.set_index('subg').transpose()
