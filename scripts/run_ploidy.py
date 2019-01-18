@@ -30,7 +30,7 @@ def run_ploidy(out_dir, bam, faidx, bam_sorted, clean_up):
             if not bam_sorted:
                 rm(sorted_bam)
             rm(cleaned_bam)
-        eprint(" - Job finished.")
+        print(" - Job finished.")
     return 1
 
 

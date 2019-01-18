@@ -4,14 +4,6 @@ import contextlib
 from subprocess import check_call
 
 
-def eprint(*args, **kwargs):
-    """ print message to STDERR
-    example: eprint('error message')
-    """
-    print(*args, file=sys.stderr, **kwargs)
-    return 1
-
-
 def done(job_name):
     print(" - "+job_name+"is done.\n")
     return 1
@@ -48,13 +40,13 @@ def rm(file):
     return 1
 
 
-# def check_md5(file, checksum):
-#     """ perform md5 check sum
-#     :param file: file to check
-#     :param checksum: known checksum value
-#     """
-#     cmd = local['md5sum', file]
-#     if :
-#         return True
-#     else:
-#         return False
+def check_md5(file, checksum):
+    """ perform md5 check sum
+    :param file: file to check
+    :param checksum: known checksum value
+    """
+    md5 = check_call()
+    if md5 == chechsum:
+        return True
+    else:
+        return False

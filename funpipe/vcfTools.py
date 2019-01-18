@@ -88,7 +88,7 @@ class VcfRecord:
         else:
             ref_length = len(self.get_ref())
             genotype_end = re.search("(\d+)$", genotype)
-            alt_length: int = len(self.get_alt(genotype_end.group(1)))
+            alt_length = len(self.get_alt(genotype_end.group(1)))
             if ref_length > 1 or alt_length > 1:
                 return abs(alt_length - ref_length)
             else:

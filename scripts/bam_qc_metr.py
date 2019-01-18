@@ -94,9 +94,9 @@ def extract_picard_metrics(qc_path_tsv, bam_qc_file, is_gp_bam):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description=(
-            'Parse Picard metrics from a list of Picard output metrics. \n'
-            'Note that this script assume file name is composed of '
-            '<sample>.*.<suffix>'
+            ('Parse Picard metrics from a list of Picard output metrics. '
+             'Input is a list of directories, where each line is a sample '
+             'and a path containing Picard QC metrics for that sample.')
         )
     )
     # required arguments
@@ -104,13 +104,13 @@ if __name__ == '__main__':
     required.add_argument(
         '-i', '--input', required=True, help='Input list of QC metrics')
     required.add_argument(
-        '-o', '--output', help="Name of output file")
+        '-o', '--output', required=True, help="Name of output file")
 
     # optional arguments
     parser.add_argument(
         '-d', '--outdir', default='.', help='Output Directory')
     parser.add_argument(
-        '-b', '--is_gp_bam', action='store_true',
+        '--is_gp_bam', action='store_true',
         help='whether input is a list of GP bam path'
     )
     args = parser.parse_args()

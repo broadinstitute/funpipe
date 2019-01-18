@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
-from funpipe import bam.fastqc, picard, utils.eprint
+from funpipe import bam.fastqc, picard
 
 
 def bam_fast_qc(bam, ref_fa, out_dir, prefix):
@@ -9,7 +9,7 @@ def bam_fast_qc(bam, ref_fa, out_dir, prefix):
     picard_cmd = picard()
     (fq1, fq2) = picard_cmd.bam2fqs(bam, os.path.join(out_dir, prefix))
     fastqc(bam, fq1, fq2, out_dir)
-    eprint(' - bam_fast_qc done.')
+    print(' - bam_fast_qc done.')
     return 1
 
 

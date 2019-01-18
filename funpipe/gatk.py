@@ -1,12 +1,11 @@
 import os
-from .utils import run
+from funpipe.utils import run
 
 
 class gatk:
     """ Run GATK commands """
     def __init__(
-            self, fa, prefix='output', out_dir='.', RAM=4,
-            jar='/xchip/gtex/xiaoli/tools/GenomeAnalysisTK.jar'):
+            self, fa, jar, prefix='output', out_dir='.', RAM=4):
         ''' VCF sample QC
         :param fa: input Fasta
         :param prefix: output file prefix
