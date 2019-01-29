@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+"""Perform coverage analysis from a list of
+
+This scripts aggregates coverage profiles of a sample set and generate coverage
+plot per sample.
+
+"""
 
 import os
 import sys
@@ -28,7 +34,9 @@ def combine_coverage_profiles(input, prefix=None):
         if cov_df.empty:
             cov_df = tab
         else:
-            cov_df = pd.merge(cov_df, tab, on=['chr', 'start0', 'end0', 'id'])
+            cov_df = pd.merge(cov_df, tab, on=['chr', 'start0', 'end0', 'id'],
+                              how='outer')
+    cov_df.fillna(0)
     if prefix is not None:
         cov_df.to_csv(prefix+'_cov.tsv', sep='\t', index=False)
     print(' - Combine coverage profiles done.')
@@ -215,16 +223,19 @@ def subg_barplot(df, prefix):
     sns.despine(left=True, bottom=True)
 
 
-def coverage_scatterplot(cov_tsv, prefix, color_csv, legacy):
+def coverage_barplot(cov_tsv, prefix, color_csv, legacy, no_sub):
     """ generate coverage plot
     :param cov_tsv: coverage profile list, first
     :param prefix: output prefix
     :param legacy: if output tsv in legacy mode, compatible with matlab code
+    :param no_sub: boolean, whether input genome has a subgenome
     """
     cmd = ' '.join(['coverage_barplot.R', '-i', cov_tsv, '-p', prefix,
                     '-c', color_csv])
     if legacy:
         cmd += ' -l'
+    if no_sub:
+        cmd += ' -no_sub'
     run(cmd)
     print(' - Finish generating coverage plot.')
     return 1
@@ -326,14 +337,28 @@ def pct_aneuploidy(cov_df, max_ploidy=4, prefix=None):
     return aneu_df
 
 
-def chr_cov_plot(cov_df, prefix, no_cluster):
+def chr_cov_plot(cov_df, prefix, cluster='all', oneway=True, ):
     """ Pct chr coverage plot """
     cov_df.set_index('chr', inplace=True)
-    f, ax = plt.subplots(figsize=(cov_df.shape[1]*0.5, cov_df.shape[0]*0.5))
-    if not no_cluster:
-        print(" - Cluster coverage profile.")
+    f, ax = plt.subplots(figsize=(cov_df.shape[0], cov_df.shape[1]*0.1))
+    if cluster == 'all':
         chr_pct_fig = sns.clustermap(cov_df, row_cluster=True,
                                      col_cluster=True)
+
+    if oneway:
+        chr_pct_fig = sns.clustermap(cov_df, row_cluster=True,
+                                     col_cluster=False)
+
+        chr_pct_fig = sns.clustermap(cov_df, row_cluster=False,
+                                     col_cluster=True)
+    elif cluster == 'row':
+        print(0)
+    elif cluster == 'col':
+        print(0)
+    else:
+        raise ValueError("Cluster should only be all, row or col.")
+    if not no_cluster:
+        print(" - Cluster coverage profile.")
     else:
         print(" - Produce heatmap from coverage profile.")
         chr_pct_fig = sns.heatmap(cov_df, vmin=0, vmax=1,
@@ -343,7 +368,7 @@ def chr_cov_plot(cov_df, prefix, no_cluster):
 
 
 def main(cov_tsv, color_csv, prefix, g_flags, legacy, min_cov, no_cluster,
-         split):
+         no_sub, split):
     print('Start to process '+prefix)
     cov_df = combine_coverage_profiles(cov_tsv, prefix)
     cov_ft_df = filter_cov(cov_df, min_cov)
@@ -352,24 +377,24 @@ def main(cov_tsv, color_csv, prefix, g_flags, legacy, min_cov, no_cluster,
     aneu_frac = pct_aneuploidy(cov_ft_df, prefix=prefix)
     chr_cov_plot(chr_pct_cov_df, prefix, no_cluster=False)
 
-    subg_pct_cov_df = cal_subg_percent(cov_ft_df, g_flags, prefix)
-    aneu_df = pct_aneuploidy(cov_ft_df, prefix=prefix)
-    subg_df_t = (subg_pct_cov_df.set_index('subg').transpose()
-                 .rename_axis('samples').rename_axis(None, 1).reset_index())
-    subg_barplot(subg_df_t, prefix)
+    if not no_sub:
+        subg_pct_cov_df = cal_subg_percent(cov_ft_df, g_flags, prefix)
+        aneu_df = pct_aneuploidy(cov_ft_df, prefix=prefix)
+        subg_df_t = (subg_pct_cov_df.set_index('subg').transpose()
+                     .rename_axis('samples').rename_axis(None, 1)
+                     .reset_index())
+        subg_barplot(subg_df_t, prefix)
+
     # calculate density
     den_df, density_tsv = coverage_to_density(
         cov_df, 'chr', g_flags, split=False, prefix=prefix, legacy=legacy)
-    coverage_scatterplot(density_tsv, prefix, color_csv, legacy)
+    coverage_barplot(density_tsv, prefix, color_csv, legacy, no_sub)
     print(' - Done.')
     return 1
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description=('Aggregate coverage profiles of a sample set and generate'
-                     ' coverage plot per sample')
-    )
+    parser = argparse.ArgumentParser(description=__doc__)
     required = parser.add_argument_group('Required arguments')
     required.add_argument(
         '-c', '--color_csv', help='Color profile of each contig', required=True
@@ -399,12 +424,16 @@ if __name__ == '__main__':
         help='Perform hierachical clustering for the pct chr coverage plot'
     )
     parser.add_argument(
+        '--no_sub', action='store_true',
+        help='input dataset has no subgenome'
+    )
+    parser.add_argument(
         '--split', action='store_true',
-        help='whether present only a subgenome '
+        help='whether present only a subgenome'
     )
     args = parser.parse_args()
 
     main(
         args.cov_tsv, args.color_csv, args.prefix, args.g_flags, args.legacy,
-        args.min_cov, args.no_cluster, args.split
+        args.min_cov, args.no_cluster, args.split, args.no_sub
     )
