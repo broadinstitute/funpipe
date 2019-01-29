@@ -3,10 +3,10 @@
 import os
 import sys
 import argparse
-from funpipe import phylo
-from funpipe import gatk
-from funpipe import analysis
-from funpipe.utils import cd
+from biolego import phylo
+from biolego import gatk
+from biolego import analysis
+from biolego.utils import cd
 
 
 def phylo_analysis(input, prefix, max_amb, snp_only, filter_variants):

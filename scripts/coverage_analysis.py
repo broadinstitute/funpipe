@@ -8,7 +8,7 @@ from glob import glob
 import matplotlib.pyplot as plt
 import seaborn as sns
 from distutils.version import LooseVersion
-from funpipe.utils import run
+from biolego.utils import run
 
 
 def combine_coverage_profiles(input, prefix=None):

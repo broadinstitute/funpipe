@@ -3,7 +3,7 @@
 import os
 import sys
 import argparse
-from funpipe import gatk
+from biolego import gatk
 
 fa = '/gsap/garage-fungal/Crypto_neoformans_seroD_B454/assembly/NCBI_JEC21/GCF_000091045.1_ASM9104v1_genomic.patched.noMT.fasta'
 comp = ''

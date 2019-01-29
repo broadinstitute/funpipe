@@ -3,7 +3,7 @@
 from os.path import basename, splitext, join
 import sys
 import argparse
-from funpipe.utils import *
+from biolego.utils import *
 from funpipe.bam import bam_depth, depth_per_window, sort_bam, clean_bam
 
 

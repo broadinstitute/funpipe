@@ -5,8 +5,8 @@ from subprocess import check_call
 import pandas as pd
 import filecmp
 
-from funpipe.utils import run
-from funpipe.gatk import gatk
+from biolego.utils import run
+from biolego.gatk import gatk
 from scripts.coverage_analysis import get_contig_sets, \
     cal_chr_percent, cal_subg_percent, chr_coverage
 from scripts.patch_ref_contigs import patch_fasta, patch_gff_contig

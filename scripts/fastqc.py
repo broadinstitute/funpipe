@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
-from funpipe import bam.fastqc, picard, utils.eprint
+from biolego import bam.fastqc, picard, utils.eprint
 
 
 def bam_fast_qc(bam, ref_fa, outdir, prefix):
