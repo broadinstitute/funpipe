@@ -1,11 +1,14 @@
 from setuptools import setup
 from glob import glob
 import unittest
+from os import path
 
 
 def readme():
-    with open('README.md') as f:
-        return f.read()
+    this_directory = path.abspath(path.dirname(__file__))
+    with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+        long_description = f.read()
+    return long_description
 
 
 def test_suite():
@@ -16,20 +19,23 @@ def test_suite():
 
 setup(
     name='biolego',
-    version='0.1',
-    description='A pipeline for analyzing fungal genomic data',
+    version='0.0.1',
+    description='a python library for efficient development of bioinformatic analysis pipelines',
     long_description=readme(),
+    long_description_content_type='text/markdown',
+    keywords = ['bioinformatics'],
     classifiers=[
+        'Intended Audience :: Science/Research',
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.4',
-        'Topic :: Bioinformatics',
+        'Topic :: Scientific/Engineering :: Bio-Informatics',
+        'Natural Language :: English',
     ],
-    keywords=['fungal genomics processing pipeline'],
     url='https://github.com/broadinstitute/biolego',
     project_urls={
         'Bug tracker': 'https://github.com/broadinstitute/biolego/issues',
-        'Documentation': 'https://github.com/broadinstitute/biolego/README.rst'
+        'Documentation': 'https://github.com/broadinstitute/biolego/README.md'
     },
     author='Xiao Li',
     author_email='xiaoli.cbs@gmail.com',
@@ -40,7 +46,7 @@ setup(
         'biolego.scripts': 'scripts'
     },
     install_requires=[
-        'argparse', 'crimson', 'pandas', 'matplotlib'
+        'argparse', 'crimson', 'pandas', 'matplotlib',
     ],
     test_suite='setup.test_suite',
     scripts=glob('scripts/*'),
