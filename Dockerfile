@@ -63,7 +63,7 @@ RUN mkdir /opt/picard-tools && \
 
 # python modules
 RUN pip3 install --upgrade pip
-RUN pip3 install tables numpy pandas funpipe
+RUN pip3 install tables numpy pandas biolego 
 
 # clean up
 RUN apt-get clean && \

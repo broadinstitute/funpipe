@@ -1,5 +1,5 @@
 # conda environment name
-name: funpipe
+name: biolego
 # channels needed for bioconda
 channels:
   - defaults

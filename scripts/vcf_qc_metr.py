@@ -5,7 +5,7 @@ import os
 import sys
 import io
 import pandas as pd
-from funpipe.gatk import gatk
+from biolego.gatk import gatk
 
 
 stats = {

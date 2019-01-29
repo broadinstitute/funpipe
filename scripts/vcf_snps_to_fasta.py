@@ -3,7 +3,7 @@
 import argparse
 import sys
 import re
-import vcfTools
+import biolego.vcftools
 
 parser = argparse.ArgumentParser()
 parser.add_argument(

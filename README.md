@@ -1,7 +1,7 @@
-funpipe: a python library for efficient development of bioinformatic analysis pipelines
+Biolego: a python library for efficient development of bioinformatic analysis pipelines
 -----
 ## Introduction
-**funpipe** is a python library designed for efficient implementation of bioinformatics pipelines. It contains wrapper functions to popular tools, customized functions for common bioinformatics analysis, and command line tools developed using those functions. This package is developing initially to facilitate fungal genomic analysis, but most of the functions are generally applicable to other genomic analysis as well.
+**biolego** is a python library designed for efficient implementation of bioinformatics pipelines. It contains wrapper functions to popular tools, customized functions for common bioinformatics analysis, and command line tools developed using those functions. This package is developing initially to facilitate fungal genomic analysis, but most of the functions are generally applicable to other genomic analysis as well.
 
 ## Requirements
 * Python >= 3.7
@@ -11,33 +11,33 @@ funpipe: a python library for efficient development of bioinformatic analysis pi
 * A list of bioinformatics tools need to be properly installed and add to `PATH`. See here for the list and their versions `conda_env.yml`.
 
 ### Installation
-We recommend to use conda to setup `funpipe`'s dependencies. Make sure `conda` is available in your environment via `which conda`. If `conda` is not available in your system, install Python3.7 version of it [here](https://conda.io/miniconda.html). For Broad Internal users, you can use dotkit `use Anaconda3`.
+We recommend to use conda to setup `biolego`'s dependencies. Make sure `conda` is available in your environment via `which conda`. If `conda` is not available in your system, install Python3.7 version of it [here](https://conda.io/miniconda.html). For Broad Internal users, you can use dotkit `use Anaconda3`.
 
-Setup funpipe working environment.
+Setup biolego working environment.
 ```sh
-# work with the latest version of funpipe
-git clone git@github.com:broadinstitute/funpipe.git
+# work with the latest version of biolego
+git clone git@github.com:broadinstitute/biolego.git
 
 # setup environment
-cd funpipe
+cd biolego
 conda env create -f conda_env.yml  # this will take about 10 min
 conda list  # verify new environment was installed correctly
 
-# install funpipe in the virtual environment
-source activate funpipe
-pip install .  
+# install biolego in the virtual environment
+source activate biolego
+pip install .
 
 # deactivate the environment when done
 source deactivate
 
 # completely remove the virtual environment
-conda remove -name funpipe --all
+conda remove -name biolego --all
 ```
 Note:
-* `diamond=0.9.22` uses boost library, which depends on python2.7. This conflicts with funpipe's python version. Docker image will be created for `funpipe` to resolve this issue.
+* `diamond=0.9.22` uses boost library, which depends on python2.7. This conflicts with biolego's python version. Docker image will be created for `biolego` to resolve this issue.
 
 ### Synposis
-* [funpipe](./funpipe): a directory that contains python library
+* [biolego](./biolego): a directory that contains python library
 * [scripts](./scripts): a set of executables for high level analysis
 * [tests](./tests): module tests
 * `setup.py`: pip setup

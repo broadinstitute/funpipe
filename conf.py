@@ -19,7 +19,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'fungal-pipeline'
+project = 'biolego'
 copyright = '2018, Xiao Li'
 author = 'Xiao Li'
 
@@ -108,7 +108,7 @@ html_static_path = ['.static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'fungal-pipelinedoc'
+htmlhelp_basename = 'biolegodoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -135,7 +135,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'fungal-pipeline.tex', 'fungal-pipeline Documentation',
+    (master_doc, '.tex', 'biolego Documentation',
      'Xiao Li', 'manual'),
 ]
 
@@ -145,7 +145,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'fungal-pipeline', 'fungal-pipeline Documentation',
+    (master_doc, 'biolego', 'biolego Documentation',
      [author], 1)
 ]
 
@@ -156,8 +156,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'fungal-pipeline', 'fungal-pipeline Documentation',
-     author, 'fungal-pipeline', 'One line description of project.',
+    (master_doc, 'biolego', 'biolego Documentation',
+     author, 'biolego', 'One line description of project.',
      'Miscellaneous'),
 ]
 
