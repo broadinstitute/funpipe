@@ -1,4 +1,4 @@
-mport os
+import os
 from funpipe.utils import run
 
 

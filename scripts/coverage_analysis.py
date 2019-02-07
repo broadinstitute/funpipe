@@ -1,8 +1,16 @@
 #!/usr/bin/env python3
-"""Perform coverage analysis from a list of
+"""
+Perform coverage analysis from a list of coverage profiles for a sample set
 
-This scripts aggregates coverage profiles of a sample set and generate coverage
-plot per sample.
+This scripts aggregates coverage profiles of a sample set and for each sample
+it calculates (and visualize):
+
+    - Percentage of coverage for each chromosome
+    - Level of aneuploidy for each chromosome
+    - Normalized coverage for each chromosome
+
+ If there are subgenomes, it also calculates:
+    - Proportion of reads from each subgenome
 
 """
 
@@ -125,8 +133,8 @@ def output_density_tsv(den, prefix, legacy):
     return density_tsv
 
 
-def filter_cov(cov, min_cov):
-    """ Filter coverage dataframe
+def remove_background_noise(cov, min_cov):
+    """ remove coverage background noise by set bins with cov < min_cov to 0
     :param cov: coverage data.frame
     :param min_cov: minimum coverage to include a window in analysis
     """
@@ -135,7 +143,7 @@ def filter_cov(cov, min_cov):
     return cov_ft
 
 
-def cal_chr_percent(cov, prefix=None):
+def percent_reads_from_each_chr(cov, prefix=None):
     ''' Calculate proportion of reads coming from each chromosome
     :param cov: coverage data.frame
     :param prefix: optional, when provided, will output cov_df to a tsv file.
@@ -159,7 +167,7 @@ def cal_chr_percent(cov, prefix=None):
     return chr_pct_cov_df
 
 
-def chr_coverage(cov, prefix=None):
+def bin_cov_per_chr(cov, prefix=None):
     """ Calculate percentage of chromosomes covered by reads, by calculating
     proportion of bins passing minimum coverage threshold
     :param cov: coverage data.frame
@@ -190,6 +198,7 @@ def cal_subg_percent(cov, subg, prefix=None):
     :param prefix: optional, when provided, will output cov_df to a tsv file.
     :return type: pandas dataframe
     '''
+    # change dict name
     subg_pct_cov = {}
     for sample in cov.columns.values[1:]:
         sample_cov = cov[sample].sum()   # sample coverage
@@ -210,7 +219,6 @@ def subg_barplot(df, prefix):
     :param prefix: output prefix
     """
     sns.set(style="whitegrid")
-    # Initialize the matplotlib figure
     f, ax = plt.subplots(figsize=(5, df.shape[0]*0.2))
 
     sns.set_color_codes("pastel")
@@ -224,7 +232,7 @@ def subg_barplot(df, prefix):
 
 
 def coverage_barplot(cov_tsv, prefix, color_csv, legacy, no_sub):
-    """ generate coverage plot
+    """ Generate coverage barplot
     :param cov_tsv: coverage profile list, first
     :param prefix: output prefix
     :param legacy: if output tsv in legacy mode, compatible with matlab code
@@ -235,7 +243,7 @@ def coverage_barplot(cov_tsv, prefix, color_csv, legacy, no_sub):
     if legacy:
         cmd += ' -l'
     if no_sub:
-        cmd += ' -no_sub'
+        cmd += ' --nosub'
     run(cmd)
     print(' - Finish generating coverage plot.')
     return 1
@@ -244,21 +252,25 @@ def coverage_barplot(cov_tsv, prefix, color_csv, legacy, no_sub):
 def cal_frac_aneu(ploidy, ploidy_list):
     """
     Calculate percentage of aneiploidy for each ploidy list
+
     Examples
     --------
     >>> ploidy = [0, 1, 2, 4, 4]
     >>> ploidy_list = [0, 1, 2, 3, 4]
     >>> cal_frac_aneu(ploidy, ploidy_list)
     [0.2, 0.2, 0.2, 0, 0.4]
+
     Parameters
     ----------
-    ploidy :
-        a list of ploidy
-    ploidy_list :
-        a list of ploidy
+        ploidy :
+            a list of ploidy
+        ploidy_list :
+            a list of ploidy
+
     Returns
     -------
-    a list of ploidy fractions
+        a list of ploidy fractions
+
     """
     total = len(ploidy)
     counts = collections.Counter(ploidy)
@@ -273,10 +285,12 @@ def cal_frac_aneu(ploidy, ploidy_list):
 
 def pct_aneuploidy(cov_df, max_ploidy=4, prefix=None):
     """ Calculate percentage of aneuploidy per chromosome for each sample
+
     Notes
     -----
     Ploidy of each sliding window was rounded, and ploidy greater than
     max_ploidy was set to max_ploidy.
+
     Examples
     --------
     >>> cov_df = pd.DataFrame({
@@ -296,6 +310,7 @@ def pct_aneuploidy(cov_df, max_ploidy=4, prefix=None):
     7  sample1       2     0.0     0.5
     8  sample1       3     0.0     0.0
     9  sample1       4     1.0     0.0
+
     Parameters
     ----------
     cov_df : `dataframe`
@@ -305,20 +320,24 @@ def pct_aneuploidy(cov_df, max_ploidy=4, prefix=None):
     prefix : `str`
         Optional, if given will output a tsv file containing ploidy using this
         as prefix of output files.
+
     Returns
     -------
     aneu_df : :obj:`dataframe`
         Percent of aneuploidy for each chromosome
+
     """
     chrs = cov_df['chr'].unique().tolist()
     samples = cov_df.columns[1:].tolist()
     ploidy_list = list(range(0, max_ploidy+1))
+
     # round coverage per window capped at max_ploidy
     round_df = (cov_df.drop(['chr'], axis=1).round()
                 .apply(
                     lambda x: [y if y < max_ploidy else max_ploidy for y in x])
                 )
     round_df.insert(0, 'chr', cov_df['chr'])
+
     # generate aneuploidy data frame
     aneu_df = pd.DataFrame({
         'sample': [val for val in samples for _ in range(0, len(ploidy_list))],
@@ -332,65 +351,79 @@ def pct_aneuploidy(cov_df, max_ploidy=4, prefix=None):
         chr_frac_df = pd.DataFrame({chr: sample_frac})
         aneu_df = pd.concat([aneu_df, chr_frac_df], axis=1, sort=False)
 
+    # export aneuploidy fraction tsv
     if prefix is not None:
         aneu_df.to_csv(prefix+'_aneu_frac.tsv', sep='\t', index=False)
     return aneu_df
 
 
-def chr_cov_plot(cov_df, prefix, cluster='all', oneway=True, ):
-    """ Pct chr coverage plot """
+def pct_cov_heatmap(cov_df, prefix, cluster_by):
+    """ Generate Clustered or unclustered heatmaps for percenage of read
+    coverage across chromosomes
+
+    Parameters
+    ----------
+    cov_df :pandas data.frame: a coverage pandas dataframe
+    prefix :str:  output prefix used in figure names
+    cluster_by :str: one from the cluster_types
+        row: cluster by rows
+        col: cluster by columns
+        two-way: cluster by both rows and columns
+        no: no clusters
+
+    Examples
+    --------
+
+    """
+    cluster_types = ['row', 'col', 'two-way', 'no']
     cov_df.set_index('chr', inplace=True)
     f, ax = plt.subplots(figsize=(cov_df.shape[0], cov_df.shape[1]*0.1))
-    if cluster == 'all':
-        chr_pct_fig = sns.clustermap(cov_df, row_cluster=True,
-                                     col_cluster=True)
-
-    if oneway:
-        chr_pct_fig = sns.clustermap(cov_df, row_cluster=True,
-                                     col_cluster=False)
-
-        chr_pct_fig = sns.clustermap(cov_df, row_cluster=False,
-                                     col_cluster=True)
-    elif cluster == 'row':
-        print(0)
-    elif cluster == 'col':
-        print(0)
-    else:
-        raise ValueError("Cluster should only be all, row or col.")
-    if not no_cluster:
-        print(" - Cluster coverage profile.")
-    else:
-        print(" - Produce heatmap from coverage profile.")
-        chr_pct_fig = sns.heatmap(cov_df, vmin=0, vmax=1,
-                                  cmap="YlGnBu").get_figure()
-    chr_pct_fig.savefig(prefix+'_chr_pct_cov.png')
+    # generate heatmaps
+    if 'row' in cluster_by:
+        (sns.clustermap(cov_df, row_cluster=True, col_cluster=False)
+         .savefig(prefix+'_clustermap_by_chr.png'))
+    if 'col' in cluster_by:
+        (sns.clustermap(cov_df, row_cluster=False, col_cluster=True)
+         .savefig(prefix+'_clustermap_by_sample.png'))
+    if 'two-way' in cluster_by:
+        (sns.clustermap(cov_df, row_cluster=True, col_cluster=True)
+         .savefig(prefix+'_clustermap.png'))
+    if 'no' in cluster_by:
+        (sns.heatmap(cov_df, vmin=0, vmax=1, cmap="YlGnBu").get_figure()
+         .savefig(prefix+'_pct_cov_heatmap.png'))
+    print("- Finish coverage heatmap.")
     return 1
 
 
-def main(cov_tsv, color_csv, prefix, g_flags, legacy, min_cov, no_cluster,
-         no_sub, split):
-    print('Start to process '+prefix)
+def main(cov_tsv, color_csv, prefix, g_flags, legacy, min_cov, split, no_sub,
+         cluster_by):
+    print(' - Start to process '+prefix)
+    # aggregate coverage profiles and remove background noise
     cov_df = combine_coverage_profiles(cov_tsv, prefix)
-    cov_ft_df = filter_cov(cov_df, min_cov)
-    pct_cov_df = cal_chr_percent(cov_ft_df, prefix)
-    chr_pct_cov_df = chr_coverage(cov_ft_df, prefix)
-    aneu_frac = pct_aneuploidy(cov_ft_df, prefix=prefix)
-    chr_cov_plot(chr_pct_cov_df, prefix, no_cluster=False)
+    cov_ft_df = remove_background_noise(cov_df, min_cov)
 
+    # generate coverage heatmap
+    chr_pct_cov_df = bin_cov_per_chr(cov_ft_df, prefix)
+    pct_cov_heatmap(chr_pct_cov_df, prefix, cluster_by)
+
+    # calculate fracetion of aneuploidy for each chromosome
+    aneu_df = pct_aneuploidy(cov_ft_df, prefix=prefix)
+    aneu_frac = pct_aneuploidy(cov_ft_df, prefix=prefix)
+
+    # generate coverage barplot
+    den_df, density_tsv = coverage_to_density(
+        cov_df, 'chr', g_flags, split=False, prefix=prefix, legacy=legacy)
+    coverage_barplot(density_tsv, prefix, color_csv, legacy, no_sub)
+
+    # calculate proportion of subgenomes in each sample
     if not no_sub:
         subg_pct_cov_df = cal_subg_percent(cov_ft_df, g_flags, prefix)
-        aneu_df = pct_aneuploidy(cov_ft_df, prefix=prefix)
         subg_df_t = (subg_pct_cov_df.set_index('subg').transpose()
                      .rename_axis('samples').rename_axis(None, 1)
                      .reset_index())
         subg_barplot(subg_df_t, prefix)
 
-    # calculate density
-    den_df, density_tsv = coverage_to_density(
-        cov_df, 'chr', g_flags, split=False, prefix=prefix, legacy=legacy)
-    coverage_barplot(density_tsv, prefix, color_csv, legacy, no_sub)
     print(' - Done.')
-    return 1
 
 
 if __name__ == '__main__':
@@ -409,7 +442,7 @@ if __name__ == '__main__':
 
     # optional arguments
     parser.add_argument(
-        '--g_flags', help='subgenome flag', default=['_A', '_D']
+        '--g_flags', nargs='+', help='subgenome flag', default=['_A', '_D']
     )
     parser.add_argument(
         '--legacy', help='output density file in legacy mode, for matlab code',
@@ -417,11 +450,12 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--min_cov', help=('minimum coverage per window for it to be included'
-                           ' in the analysis'), default=0, type=float
+                           ' in the analysis'), default=0.25, type=float
     )
     parser.add_argument(
-        '--no_cluster', action='store_true',
-        help='Perform hierachical clustering for the pct chr coverage plot'
+        '--cluster_by', nargs='+',
+        help=('Perform hierachical clustering for the coverage heatmap'),
+        default=['row', 'col', 'two-way', 'no']
     )
     parser.add_argument(
         '--no_sub', action='store_true',
@@ -435,5 +469,5 @@ if __name__ == '__main__':
 
     main(
         args.cov_tsv, args.color_csv, args.prefix, args.g_flags, args.legacy,
-        args.min_cov, args.no_cluster, args.split, args.no_sub
+        args.min_cov, args.split, args.no_sub, args.cluster_by
     )

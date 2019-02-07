@@ -5,6 +5,7 @@ import os
 import sys
 import io
 import pandas as pd
+
 from funpipe.gatk import gatk
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -21,14 +22,8 @@ stats = {
 }
 
 
-# to-do
-def qc_scatter():
-    sns.set(style="ticks")
-    return 0
-
-
 def run_variant_eval(vcf, fa, prefix, RAM, jar):
-    gatk_cmd = gatk(fa, prefix)
+    gatk_cmd = gatk(fa, prefix, jar=jar)
     var_eval_tsv = gatk_cmd.variant_eval(vcf)
     return var_eval_tsv
 
