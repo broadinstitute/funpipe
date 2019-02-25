@@ -51,8 +51,8 @@ coverage_barplot <- function (
          xlab=NA, ylab='cov', main=sample, xlim=c(min_pos, max_pos))
   }
   # plot coverage for each contigs
-  for (i in contigs) {
-    if (is_D) {
+  for (i in 1:length(contigs)) {
+    if (is_D) {  # need to generalize this, crypto analysis assume chromosomes are integers
       chr = i - 14
     } else {
       chr = i
@@ -63,11 +63,11 @@ coverage_barplot <- function (
       mtext(paste('chr', chr, '*', sep=''), side=1,
             at=mid_pos(cov1$pos[cov1$chr==i]), cex=0.8)
     } else {
-      pos = cov1$pos[cov1$chr==i]
+      pos = cov1$pos[cov1$chr==contigs[i]]
       mtext(paste('chr', chr, sep=''), side=1,
-            at=mid_pos(cov1$pos[cov1$chr==i]), cex=0.8)
+            at=mid_pos(cov1$pos[cov1$chr==contigs[i]]), cex=0.8)
     }
-    segments(pos, 0, pos, cov1[cov1$chr==i, sample], cols[i])
+    segments(pos, 0, pos, cov1[cov1$chr==contigs[i], sample], cols[i])
     grid(NA, 5, lwd=1.5)
   }
   return(1)
@@ -147,6 +147,7 @@ create_color_vector <- function(color_tsv, contigs, use_contig_order=FALSE) {
     header=F
   )
   cols <- vector(length=length(contigs))
+  names(cols) = color$chr
   if (use_contig_order) {
     color$chr = contigs
   }
@@ -171,7 +172,7 @@ main <- function(cov_tsv, prefix, color_tsv, legacy, cutoff, inverse_contigs,
   cov <-  parse_cov(cov_tsv, legacy, cutoff)
   # separate two sub-genomes
   if (nosub) {
-    contigs <- unique(cov$df$chr)
+    contigs <- as.character(unique(cov$df$chr))
     cols <- create_color_vector(color_tsv, contigs, use_contig_order=TRUE)
     coverage_plot(cov, prefix, cols, contigs)
   } else {
