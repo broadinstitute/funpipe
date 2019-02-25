@@ -22,8 +22,9 @@ stats = {
 }
 
 
-def run_variant_eval(vcf, fa, prefix, RAM, jar):
-    gatk_cmd = gatk(fa, prefix, jar=jar)
+def run_variant_eval(vcf, jar, fa, prefix, out_dir, RAM):
+    prefix = os.path.join(out_dir, prefix)
+    gatk_cmd = gatk(fa, jar, prefix)
     var_eval_tsv = gatk_cmd.variant_eval(vcf)
     return var_eval_tsv
 
@@ -56,9 +57,9 @@ def parse_filter_geno_stat(file_geno_tsv):
     return df
 
 
-def main(prefix, out_dir, eval_tsv, filter_geno_stat, fa, RAM, vcf, jar):
+def main(prefix, jar, out_dir, eval_tsv, filter_geno_stat, fa, RAM, vcf):
     if vcf:
-        eval_tsv = run_variant_eval(vcf, fa, prefix, RAM, jar)
+        eval_tsv = run_variant_eval(vcf, jar, fa, prefix, out_dir, RAM)
         df = parse_variant_eval(eval_tsv)
     elif vcf:
         df = parse_variant_eval(eval_tsv)
@@ -77,9 +78,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Parse output of GATK variant Eval')
     # required arguments
-    required = parser.add_argument_group('required arguments')
+    required = parser.add_argument_group('Required arguments')
     required.add_argument(
         '-p', '--prefix', help="Prefix of output file", required=True)
+    required.add_argument('--jar', help='GATK jar')
+    required.add_argument('--fa', help='reference fasta file')
 
     # optional arguments
     parser.add_argument(
@@ -88,11 +91,9 @@ if __name__ == '__main__':
     parser.add_argument(
         '-f', '--filter_geno_tsv',
         help='filter summary statistics from filterGenotypes.py')
-    parser.add_argument('--fa', help='reference fasta file')
     parser.add_argument('--RAM', help='RAM', type=int, default=4)
     parser.add_argument('-v', '--vcf', help='Input vcf file')
-    parser.add_argument('--jar', help='GATK jar')
     args = parser.parse_args()
 
-    main(args.prefix, args.out_dir, args.eval_tsv, args.filter_geno_tsv,
-         args.fa, args.RAM, args.vcf, args.jar)
+    main(args.prefix, args.jar, args.out_dir, args.eval_tsv,
+         args.filter_geno_tsv, args.fa, args.RAM, args.vcf)
