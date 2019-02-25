@@ -10,11 +10,13 @@ def index_bam(bam):
     return bam+'.bai'
 
 
-def sort_bam(bam, out_dir, tmp=None):
+def sort_bam(bam, out_dir, tmp=None, RAM=2, threads=1):
     ''' sort BAM using samtools
     :param bam: input bam
     :param out_dir: output directory
     :param tmp: temporary directory for
+    :param RAM: maximum RAM usage in gigabyte
+    :param t: maximum number of threads used
     :returns: name of sorted bam
     '''
     bam_name = os.path.basename(bam)
@@ -22,7 +24,8 @@ def sort_bam(bam, out_dir, tmp=None):
     if tmp is None:
         tmp = prefix
     outfile = prefix + '.sorted.bam'
-    run('samtools sort -T '+tmp+' '+bam+' > '+outfile)
+    run(' '.join(['samtools sort -T', tmp, '-m', str(RAM)+'G',
+                  '-@', str(threads), '-o', outfile, bam]))
     return outfile
 
 
