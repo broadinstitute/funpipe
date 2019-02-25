@@ -44,7 +44,7 @@ def combine_coverage_profiles(input, prefix=None):
         else:
             cov_df = pd.merge(cov_df, tab, on=['chr', 'start0', 'end0', 'id'],
                               how='outer')
-    cov_df.fillna(0)
+    cov_df = cov_df.fillna(0)
     if prefix is not None:
         cov_df.to_csv(prefix+'_cov.tsv', sep='\t', index=False)
     print(' - Combine coverage profiles done.')
