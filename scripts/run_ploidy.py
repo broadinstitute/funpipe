@@ -7,13 +7,14 @@ from funpipe.utils import *
 from funpipe.bam import bam_depth, depth_per_window, sort_bam, clean_bam
 
 
-def run_ploidy(out_dir, bam, faidx, bam_sorted, clean_up):
+def run_ploidy(out_dir, bam, faidx, bam_sorted, clean_up, RAM):
     """ run ploidy analysis
     :param out_dir: output directory.
     :param bam: input BAM path.
     :param faidx: index of reference genome fasta.
     :param bam_sorted: whether the input BAM is sorted.
     :param chean_up: whether cleanup intemediate files.
+    :param RAM: RAM usage for sorting step
     :return 1: workflow run successfully.
     """
     with cd(out_dir):
@@ -21,7 +22,7 @@ def run_ploidy(out_dir, bam, faidx, bam_sorted, clean_up):
         out_prefix = join(out_dir, base_prefix)
         bam_to_clean = bam
         if not bam_sorted:
-            sorted_bam = sort_bam(bam, out_dir)
+            sorted_bam = sort_bam(bam, out_dir, RAM=RAM)
             bam_to_clean = sorted_bam
         cleaned_bam = clean_bam(bam_to_clean, out_prefix)
         pileup = bam_depth(cleaned_bam, out_prefix, idx=True)
@@ -61,7 +62,10 @@ if __name__ == '__main__':
         '-c', '--cleanup', help='Cleanup intermediate files, mainly BAMs',
         action='store_true', default=False
     )
+    parser.add_argument(
+        '-m', '--RAM', help='RAM for sorting BAMs'
+    )
 
     args = parser.parse_args()
     run_ploidy(args.out_dir, args.bam, args.faidx, args.bam_sorted,
-               args.cleanup)
+               args.cleanup, args.RAM)
