@@ -12,11 +12,13 @@ from glob import glob
 stats = {
     'alignment_summary_metrics':
         ['TOTAL_READS', 'PCT_PF_READS_ALIGNED', 'PCT_CHIMERAS'],
-    'wgs_metrics': ['MEAN_COVERAGE']
+    'wgs_metrics': ['MEAN_COVERAGE', 'SD_COVERAGE'],
+    'summary_metrics': ['AT_DROPOUT', 'GC_DROPOUT']
 }
 
 stats_list = [
-    'TOTAL_READS', 'PCT_PF_READS_ALIGNED', 'PCT_CHIMERAS', 'MEAN_COVERAGE']
+    'TOTAL_READS', 'PCT_PF_READS_ALIGNED', 'PCT_CHIMERAS', 'MEAN_COVERAGE',
+    'SD_COVERAGE', 'AT_DROPOUT', 'GC_DROPOUT']
 
 
 def get_picard_stat(file):
@@ -79,7 +81,7 @@ def extract_picard_metrics(qc_path_tsv, bam_qc_file, is_gp_bam):
                 fdir, fname, prefix, suffix = parse_gp_bam_path(path)
             qc_stats[sample] = {}
             for suffix in stats:
-                stat_file = glob(join(path, sample+'.'+'*'+suffix))
+                stat_file = glob(join(path, sample+'.'+suffix))
                 if len(stat_file) == 1:
                     all_metr = get_picard_stat(stat_file[0])
                     for stat in stats[suffix]:
