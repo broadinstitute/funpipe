@@ -1,141 +1,121 @@
-FUNPIPE: a python library for building best practice fungal genomic analysis pipeline
+FunPipe: a python library for building best practice fungal genomic analysis pipeline
 -----
-FUNPIPE is a python library, as well as several packaged tools to facilitate easy development of fungal genomic analysis pipelines. using state-of-the-art computational biology tools
+`FunPipe` is a python library designed for efficient implementation of bioinformatic tools and pipelines for fungal genomic analysis. It contains wrapper functions to popular tools, customized functions for specific analyses tasks, and command line tools developed using those functions. This package is developing to facilitate fungal genomics, but many of the functions are generally applicable to other genomic analysis as well.
 
 ## Requirements
-* Python >= 3.4
-* Pandas
-* [crimson](https://github.com/bow/crimson): a library for parsing outputs of bioinformatics tools
-* A list of bioinformatics tools need to be properly installed and export to `PATH`.
+* Python >= 3.7
+* Pandas >= 0.23.4
+* Matplotlib >= 3.0.2
+* [Crimson](https://github.com/bow/crimson) >= 0.4.0: a library for parsing outputs of bioinformatics tools
+* [Conda](https://conda.io/miniconda.html)
+* [Bioinformatic tool collections](./conda_env.yml)
+
+The above list of bioinformatic tools need to be properly installed and add to `PATH`. See `conda_env.yml` for the list and their versions.
 
 ### Installation
-To build functional pipelines with this library, virtual machine or virtual environment is recommended. Both `docker` and `conda` configs were provided to setup the proper environment:
+**Install with PIP**
+Part of PIP install process will use [`conda`](https://conda.io) for the bioinformatic tool collections.
+Make sure `conda` is available in your environment via `which conda`. If `conda` is not available in your system, install Python3.7 version of it [here](https://conda.io/miniconda.html).
 
+```sh
+pip install funpipe
+
+# activate conda environment
+conda activate funpipe
+
+# deactivate the environment when done
+conda deactivate
 ```
-# use docker
+Note:
+* `diamond=0.9.22` uses boost library, which depends on `python 2.7`. This conflicts with `funpipe`'s python version. Use dimond via docker.
 
-# conda
+**Setup via Conda**
+To use the latest version of funpipe, you can set it up via `conda`.
 
+```sh
+# clone this repo
+git clone git@github.com:broadinstitute/funpipe.git
+
+# setup environment
+cd funpipe
+conda env create -f conda_env.yml  # this will take about 10 min
+conda list  # verify new environment was installed correctly
+
+# install funpipe in the virtual environment
+conda activate funpipe
+pip install .   # to do: need to avoid conda installation again
+
+# deactivate the environment when done
+conda deactivate
+
+# completely remove the virtual environment
+conda remove -name funpipe --all
 ```
-If you only want to use the library on your current environment, you can install this package directly. FUNPIPE is not yet on PyPI yet, to install this library, clone this repo and run the following command:
+Note:
+* `diamond=0.9.22` uses boost library, which depends on `python 2.7`. This conflicts with funpipe's python version. To use diamond, use it via docker.
+
+**Setup via Docker**
+There's a bit more overhead using Docker, but it came along with the benefits of consistent analysis environment (including the operation systems). It's extremely useful when using `funpipe` on the cloud.
+
+To use docker:
 ```
-pip3 install .
-```
-### Overview:
-[src](./src): a directory that contains python library for common commands
-[scripts](./scripts): a set of executables for high level fungal analysis
-[tests](./tests): module tests
+# Download docker
+docker pull broadinstitute/funpipe:latest
 
-# Documentation
-Below are major functionality of this pipeline, including
-* Reference genome quality evaluation with `pilon`.
-* Variant annotation using `snpEff`.
-* Haploid variant calling `GATK`.
-* Phylogenetic analysis.
-* Ploidy analysis.
-
-The following projects uses this library:
-* [Cryptococcus neoformans serotype D project](https://github.com/broadinstitute/cneoformans_serod_analysis)
-To use this library for your own research, please cite this manuscript.
-### Evaluate reference genome quality with `pilon`: `run_pilon.py`
-
-```
-usage: run_pilon.py [-h] --prefix PREFIX --bam BAM --fa FA [--outdir OUTDIR]
-                    [--gff3 GFF3] [--ram RAM] [--threads THREADS]
-                    [--picard_jar PICARD_JAR] [--snpeff_jar SNPEFF_JAR]
-                    [--pilon_jar PILON_JAR] [--snpeff_db SNPEFF_DB]
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --gff3 GFF3           GFF3 annotation
-  --ram RAM             RAM usage of input file
-  --threads THREADS     Number of threads for pilon
-  --picard_jar PICARD_JAR
-                        Picard jar
-  --snpeff_jar SNPEFF_JAR
-                        Jar to snpeff
-  --pilon_jar PILON_JAR
-                        Pilon Jar
-  --snpeff_db SNPEFF_DB
-                        snpEff database
-
-Required arguments:
-  --prefix PREFIX       output prefix
-  --bam BAM             input bam
-  --fa FA               reference genome fasta file to evaluate
-  --outdir OUTDIR       output directory
-
-```
-
-### Annotation genomic variants with `snpEff`: `run_snpeff.py`
-
-```
-usage: run_snpeff.py [-h] -i INPUT_VCF -o OUTPUT_VCF --genome_name GENOME_NAME
-                     -c CONFIG [-m RAM] [--snpeff_jar SNPEFF_JAR]
-
-Run snpeff
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -m RAM, --ram RAM     RAM usage
-  --snpeff_jar SNPEFF_JAR
-                        jar file of snpeff
-
-required arguments:
-  -i INPUT_VCF, --input_vcf INPUT_VCF
-                        input vcf
-  -o OUTPUT_VCF, --output_vcf OUTPUT_VCF
-                        Output vcf
-  --genome_name GENOME_NAME
-                        genome name in snpeff config file
-  -c CONFIG, --config CONFIG
-                        config file for snpeff
+# Run analysis interactively
+docker run --rm -v $path_to_data/data -t broadinstitute/funpipe \
+    /bin/bash -c "/scripts/vcf_qc_metr.py \
+        -p prefix --jar /bin/GenomeAnalysisTK.jar \
+        --fa /data/reference.fa
+    "
 ```
 
-### WIDDLER wrapper
-This wrapper automatically setup virtual environment for running WDL.
-```
-widdler monitor         # monitor job
-widdler query           # query all finished jobs
-widdler abort <task id> # abort task
-task_dir <task id>      # print task directory
+You can use `Dockerfile` to compile the docker from scratch:
+```sh
+cd funpipe
+docker build funpipe .
 ```
 
-### Run GATK-WDL
-Before analysis, update `json` file to corresponding `gatk.wdl`, then launch analysis with:
-```
-widdler run gatk.wdl example.json
-```
+### Synposis
+* [funpipe](./funpipe): a directory that contains python library
+* [scripts](./scripts): a set of executables for high level analysis
+* [tests](./tests): module tests
+* `setup.py`: pip setup script
+* `conda_env.yml`: spec file for setting up conda environment
+* `Dockerfile`: docker images
 
-### Ploidy analysis
-This analysis will only work with PERL version 5.14 - 5.18.
-```
-usage: run_ploidy.py [-h] -i BAM --faidx FAIDX [--prefix PREFIX] [-o OUT_DIR]
+### Documentation
+Major analysis pipelines:
+- Quality control modules
+    - Reference genome quality evaluation with `Pilon`.
+    - FASTQ quality control with `fastqc`.
+    - BAM quality control using `Picard`.
+    - VCF quality control using `GATK VariantEval`.
+- Variant Annotation with `snpEff`.
+- Genomic Variation
+    - Coverage analysis
+    - Mating type analysis
+    - Copy number variation with `CNVnator`
+    - Structural variant analysis with `breakdancer`
+- Phylogenetic analysis
+  - Dating analysis with `BEAST`.
+  - Phylogenetic tree with `FastTree`, `RAxML` and `IQTREE`.
+- GWAS analysis with `GEMMA`.
 
-run ploidy analysis by analysing
+Here are scripts to run each of the above pipelines, use `<toolname> -h` to see manual.
+```sh
+##### Quality control #####
+run_pilon.py          # Evaluate reference genome quality with pilon
+fastqc.py             # Fastq quality control
+bam_qc_metr.py        # Quality control of BAMs
+vcf_qc_metr.py        # Quality control of VCFs
 
-optional arguments:
-  -h, --help            show this help message and exit
-  --prefix PREFIX       Prefix of output files
-  -o OUT_DIR, --out_dir OUT_DIR
-                        Output file
+##### Variant Annotation #####
+run_snpeff.py         # Annotation genomic variants with snpEff
+phylo_analysis.py     # Phylogenetic analysis
 
-required arguments:
-  -i BAM, --bam BAM     Input file
-  --faidx FAIDX         fasta index
-```
-
-### Phylogenetic analysis
-Phylogenetic analysis was performed firstly .
-```
+##### Genomic Variations #####
+coverage_analysis.py  # Hybrid coverage and ploidy analysis
 
 ```
-
-### Utility tools
-There are several utility tools to facilitate the analysis, they locate under `utils` subdirectory.
-`task_dir` returns the task directory of a specific on-prem submission.
-```
-task_dir <job ID>
-```
-`uges` will help login UGES queue.
-`widdler` is a wrapper around `widdler.py` from Broad-BTL for easier utility. It automatically setup environment to run the job.
+You can also use out APIs to build your customized analysis scripts or pipelines. Checkout documents at: https://funpipe.readthedocs.io
