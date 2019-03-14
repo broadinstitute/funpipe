@@ -68,6 +68,8 @@ def get_contig_sets(all_contigs, subgenome):
                     contig_map[j] = n_sub_cont
                 else:
                     contig_map[j] = int(j.replace(subgenome[i], ''))
+        if i > 0:
+            n_contig_set[i] += n_contig_set[i-1]
     return contig_map
 
 
