@@ -221,7 +221,7 @@ class vcf:
     def samples_concord(self, s1_idx, s2_idx, na_ignore=False):
         """ For each callset, compare SNP sharing between sample pairs """
         gt = gt_pair(self._dosage_matrix[s1_idx], self._dosage_matrix[s2_idx],
-                     na_ignore)
+                     na_ignore).get_n_unique()
         return gt.n_share, gt.n_unique
 
     def pairwise_concord(self, na_ignore=False):
