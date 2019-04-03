@@ -1,49 +1,51 @@
-FunPipe: a python library for building best practice fungal genomic analysis pipeline
------
+# FunPipe: a python library for building best practice fungal genomic analysis pipeline
+
 `FunPipe` is a python library designed for efficient implementation of bioinformatic tools and pipelines for fungal genomic analysis. It contains wrapper functions to popular tools, customized functions for specific analyses tasks, and command line tools developed using those functions. This package is developing to facilitate fungal genomics, but many of the functions are generally applicable to other genomic analysis as well.
 
 ## Requirements
 * Python >= 3.7
-* Pandas >= 0.23.4
-* Matplotlib >= 3.0.2
-* [Crimson](https://github.com/bow/crimson) >= 0.4.0: a library for parsing outputs of bioinformatics tools
-* [Conda](https://conda.io/miniconda.html)
-* [Bioinformatic tool collections](./conda_env.yml)
+* Bioinformatic tool collections: can be automatically installed via conda [here](#CONDA)
+    * Basic functions:
+        - samtools>=1.9
+        - bwa>=0.7.8
+        - gatk>=3.8
+        - picard>=2.18.17
+    * Phylogenetics:
+        - raxml>=8.2.12
+        - readseq>=2.1.30
+    * CNV:
+        - breakdancer>=1.4.5
+        - cnvator>=0.3
+        - covisr>=0.1
+    * Microbiome:
+        - pilon>=1.23
+        - diamond>=0.9.22
 
-The above list of bioinformatic tools need to be properly installed and add to `PATH`. See `conda_env.yml` for the list and their versions.
+The above list of bioinformatic tools need to be properly installed and add to `PATH`. Path to Java tools (JARs) need to be specified when evocaking specific functions.
 
 ### Installation
-**Install with PIP**
-Part of PIP install process will use [`conda`](https://conda.io) for the bioinformatic tool collections.
-Make sure `conda` is available in your environment via `which conda`. If `conda` is not available in your system, install Python3.7 version of it [here](https://conda.io/miniconda.html).
+**<a name='CONDA'>Install with Conda</a>**
+It is recommended to install funpipe via conda, as it automatically setup all required bioinformatic tools. This is extremely useful on servers or
+clusters without root privilage. Make sure `conda` is available in your environment via `which conda`. If `conda` is not available in your system, install Python3.7 version of it [here](https://conda.io/miniconda.html).
 
-```sh
-pip install funpipe
-
-# activate conda environment
-conda activate funpipe
-
-# deactivate the environment when done
-conda deactivate
-```
-Note:
-* `diamond=0.9.22` uses boost library, which depends on `python 2.7`. This conflicts with `funpipe`'s python version. Use dimond via docker.
-
-**Setup via Conda**
-To use the latest version of funpipe, you can set it up via `conda`.
+HTTP errors sometimes occur when creating the conda environment, simply rerun the `conda env create -f conda_env.yml` to continue creating the environment.
 
 ```sh
 # clone this repo
 git clone git@github.com:broadinstitute/funpipe.git
 
-# setup environment
+# setup conda environment
 cd funpipe
-conda env create -f conda_env.yml  # this will take about 10 min
+
+conda env create -f conda_env.yml # this will take about 10 min
 conda list  # verify new environment was installed correctly
 
-# install funpipe in the virtual environment
+# activate funpipe environment
 conda activate funpipe
-pip install .   # to do: need to avoid conda installation again
+
+# the latest stable version of funpipe is available in this environment
+# to use the latest funpipe version, do
+pip install .
 
 # deactivate the environment when done
 conda deactivate
@@ -52,10 +54,29 @@ conda deactivate
 conda remove -name funpipe --all
 ```
 Note:
-* `diamond=0.9.22` uses boost library, which depends on `python 2.7`. This conflicts with funpipe's python version. To use diamond, use it via docker.
+* `diamond=0.9.22` uses boost library, which depends on `python 2.7`. This conflicts with funpipe's python version. To use diamond, use it via [docker](#DOCKER).
 
-**Setup via Docker**
-There's a bit more overhead using Docker, but it came along with the benefits of consistent analysis environment (including the operation systems). It's extremely useful when using `funpipe` on the cloud.
+
+**Install with PIP**
+PIP can be used to install funpipe.
+```sh
+# install latest stable release
+pip install funpipe
+
+# install a specific version
+pip install funpipe==0.1.0
+```
+
+To install the latest version: funpipe
+```sh
+git clone git@github.com:broadinstitute/funpipe.git
+cd funpipe
+pip install .
+```
+
+**<a name='DOCKER'>Install via Docker</a>**
+
+There's a bit more overhead using Docker, but it came along with the benefits of consistent  environment (i.e.: including the operation systems). It's very useful when using `funpipe` on the cloud.
 
 To use docker:
 ```
@@ -80,6 +101,7 @@ docker build funpipe .
 * [funpipe](./funpipe): a directory that contains python library
 * [scripts](./scripts): a set of executables for high level analysis
 * [tests](./tests): module tests
+* [docs](./docs): documentation
 * `setup.py`: pip setup script
 * `conda_env.yml`: spec file for setting up conda environment
 * `Dockerfile`: docker images

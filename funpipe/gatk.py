@@ -85,11 +85,12 @@ class gatk:
         run(cmd)
         return output
 
-    def genotype_concordance(self, comp, eval):
+    def genotype_concordance(self, comp, eval, hap=False):
         ''' comppare
         :param comp: VCF file for comparison
         :parma eval: VCF file for evaluation
         :param out: output evaluation results
+        :param hap: whether input is haploid VCF
         '''
         out = self.out_dir+'/'+self.prefix+'.txt'
         cmd = ' '.join([

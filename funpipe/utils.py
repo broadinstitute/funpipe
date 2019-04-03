@@ -18,7 +18,6 @@ def cd(dir):
     os.chdir(dir)
     yield
     os.chdir(original_path)
-    return 1
 
 
 def run(cmd):

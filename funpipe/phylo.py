@@ -1,12 +1,14 @@
-from .utils import run
+from funpipe.utils import run
 
 
-def vcf_snp_to_fasta(invcf, prefix, max_amb=100000):
+def vcf_snp_to_fasta(invcf, prefix, max_amb=10):
     ''' snp only vcf to fasta file
     :param invcf: input vcf file
     :param prefix: output file prefix
     :param max_amb: maximum number of samples with ambiguous calls for a site
-                    to be included, recommended number of samples 10%
+                    to be included, recommended number of samples 10%, use
+                    a very large number to disable this function 100000 (
+                    legacy options and will not be maintained.)
     '''
     cmd = ' '.join(['vcfSnpsToFasta.py --max_amb_samples', max_amb, invcf, '>',
                    prefix+'.fasta'])
@@ -14,7 +16,20 @@ def vcf_snp_to_fasta(invcf, prefix, max_amb=100000):
     return prefix+'.fasta'
 
 
-def fa2phylip(fa, out_prefix, jar):
+def pairwise_snp_counts(fas, out_tsv):
+    """ calculate pairwise snp overlap amongst a list of fasta using multiple
+    alignment
+
+    Parameters
+    ----------
+    fas: list
+        a list of fasta files
+    out_tsv: str
+        output path of the pairwise SNP matrix
+    """
+
+
+def fa2phylip(fa, output, jar):
     ''' transfer fasta file to phylip with java tool readSeq
     :param fa: fasta file
     :param jar: path to readseq.jar
@@ -22,7 +37,7 @@ def fa2phylip(fa, out_prefix, jar):
     '''
     cmd = ' '.join(['java -cp', jar, 'run -f 12', fa])
     run(cmd)
-    return
+    return output
 
 
 def ramxl(phylip, output, threads):
@@ -60,3 +75,11 @@ def FastTreeDP(in_fa, out_prefix):
     cmd = 'FastTreeDP -nt '+in_fa+' > ' + out_nwk
     run(cmd)
     return out_nwk
+
+# To do
+def phyml(phylip, output):
+    """ Phylogenetic tree with parsimonies """
+    cmd = ' '.join([
+        'phyml -i', phylip
+    ])
+    return output

@@ -8,8 +8,9 @@ import filecmp
 from funpipe.utils import run
 from funpipe.gatk import gatk
 from scripts.coverage_analysis import get_contig_sets, \
-    cal_chr_percent, cal_subg_percent, chr_coverage
+     cal_chr_percent, cal_subg_percent, chr_coverage
 from scripts.patch_ref_contigs import patch_fasta, patch_gff_contig
+
 
 """
 class TestGATK(unittest.TestCase):
@@ -45,6 +46,7 @@ class TestPatchRefContigs(unittest.TestCase):
             filecmp.cmp('expNoMt.gff', 'outNoMt.gff'),
             'Output file not same as expected.')
 """
+
 
 class TestCoverageAnalysis(unittest.TestCase):
 

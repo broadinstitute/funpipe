@@ -1,4 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+""" Perform genotype filters on GATK generated VCF
+
+Note that this is a piece of legacy code from the Broad's fungal group, and is
+provided as is, without optimizing the performance, code style and
+documentation etc. Only minimal changes were introduced to ensure compatibility
+with the funpipe package.
+
+"""
 
 from __future__ import print_function
 from __future__ import division
@@ -6,7 +14,7 @@ from __future__ import division
 import sys
 import re
 import argparse
-import vcfTools
+import funpipe.vcftools
 
 parser = argparse.ArgumentParser()
 parser.add_argument('infile', help='VCF filename', type=str)
@@ -48,7 +56,7 @@ comment_pattern = re.compile(r"^#")
 
 genome_list = []
 
-header = vcfTools.VcfHeader(infile)
+header = vcftools.VcfHeader(infile)
 caller = header.get_caller()
 samples = header.get_samples()
 
@@ -77,7 +85,7 @@ with open(infile, 'r') as vcf_file:
         if (re.search(comment_pattern, vcf_line)):
             print(vcf_line, end="")
         else:
-            record = vcfTools.VcfRecord(vcf_line)
+            record = vcftools.VcfRecord(vcf_line)
             new_vcf_line = "\t".join([str(record.get_chrom()),
                                      str(record.get_pos()),
                                      str(record.get_id()),
