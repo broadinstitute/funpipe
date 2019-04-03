@@ -16,7 +16,7 @@ def test_suite():
 
 setup(
     name='funpipe',
-    version='0.1',
+    version='0.1.0',
     description='A pipeline for analyzing fungal genomic data',
     long_description=readme(),
     classifiers=[
@@ -29,10 +29,10 @@ setup(
     url='https://github.com/broadinstitute/funpipe',
     project_urls={
         'Bug tracker': 'https://github.com/broadinstitute/funpipe/issues',
-        'Documentation': 'https://github.com/broadinstitute/funpipe/README.rst'
+        'Documentation': 'https://github.com/broadinstitute/funpipe/README.md'
     },
     author='Xiao Li',
-    author_email='xiaoli.cbs@gmail.com',
+    author_email='xiaoli@broadinstitute.org',
     license='MIT',
     packages=['funpipe', 'funpipe.scripts'],
     package_dir={
@@ -40,7 +40,8 @@ setup(
         'funpipe.scripts': 'scripts'
     },
     install_requires=[
-        'argparse', 'crimson', 'pandas', 'matplotlib'
+        'argparse>=1.1', 'crimson>=0.4.0', 'pandas>=0.23.4',
+        'matplotlib>=3.0.2', 'seaborn>=0.9.0'
     ],
     test_suite='setup.test_suite',
     scripts=glob('scripts/*'),

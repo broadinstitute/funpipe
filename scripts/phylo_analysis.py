@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+""" Perform phylogenetic analysis with FreeTree """
 
 import os
 import sys
@@ -16,19 +17,19 @@ def phylo_analysis(input, prefix, max_amb):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description='Perform phylogenetic analysis with FreeTree')
+    parser = argparse.ArgumentParser(description=__doc__)
     # required arguments
     required = parser.add_argument_group('required arguments')
     required.add_argument(
-        '-i', '--input', required=True, help='Input vcf', nargs='+')
+        '-v', '--vcf', required=True, help='Input vcf', nargs='+')
     required.add_argument(
-        '--max_amb', required=True,
+        '-r', '--fasta', required=True, help='input reference fasta file')
+
+    # optional arguments
+    parser.add_argument(
+        '--max_amb', default=10,
         help='maximum number of samples with ambiguous calls for a site to be'
              + ' included, recommended number of samples 10%')
-    required.add_argument(
-        '--fasta', required=True, help='input reference fasta file')
-    # optional arguments
     parser.add_argument('--ram', help='RAM usage for GATK')
     parser.add_argument(
         '-d', '--outdir', default='.', help='Output Directory')

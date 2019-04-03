@@ -1,0 +1,26 @@
+# conda environment name
+name: funpipe
+# channels needed for bioconda
+channels:
+  - defaults
+  - bioconda
+  - conda-forge
+# funpipe dependencies
+dependencies:
+# third party tools
+  - pilon=1.23
+  - samtools=1.9
+  - bwa=0.7.8
+  - gatk=3.8
+  - readseq=2.1.30
+  - raxml=8.2.12
+  - picard=2.18.17
+  - breakdancer=1.4.5
+# python libraries
+  - pip:
+    - funpipe==0.1.0
+    - numpy==1.15.4
+    - pandas==0.23.4
+    - crimson==0.4.0
+    - matplotlib==3.0.2
+    - seaborn==0.9.0
