@@ -20,12 +20,14 @@ setup(
     description='A pipeline for analyzing fungal genomic data',
     long_description=readme(),
     classifiers=[
+        'Intended Audience :: Science/Research',
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.4',
-        'Topic :: Bioinformatics',
+        'Topic :: Scientific/Engineering :: Bio-Informatics',
+        'Natural Language :: English'
     ],
-    keywords=['fungal genomics processing pipeline'],
+    keywords=['bioinformatics'],
     url='https://github.com/broadinstitute/funpipe',
     project_urls={
         'Bug tracker': 'https://github.com/broadinstitute/funpipe/issues',
