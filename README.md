@@ -2,30 +2,21 @@
 
 `FunPipe` is a python library designed for efficient implementation of bioinformatic tools and pipelines for fungal genomic analysis. It contains wrapper functions to popular tools, customized functions for specific analyses tasks, and command line tools developed using those functions. This package is developing to facilitate fungal genomics, but many of the functions are generally applicable to other genomic analysis as well.
 
-## Requirements
-* Python >= 3.7
-* Bioinformatic tool collections: can be automatically installed via conda [here](#CONDA)
-    * Basic functions:
-        - samtools>=1.9
-        - bwa>=0.7.8
-        - gatk>=3.8
-        - picard>=2.18.17
-    * Phylogenetics:
-        - raxml>=8.2.12
-        - readseq>=2.1.30
-    * CNV:
-        - breakdancer>=1.4.5
-        - cnvator>=0.3
-        - covisr>=0.1
-    * Microbiome:
-        - pilon>=1.23
-        - diamond>=0.9.22
+## Synposis
+* [funpipe](./funpipe): a directory that contains python library
+* [scripts](./scripts): tools and established pipelines, doc [here](#DOC)
+* [tests](./tests): unit tests
+* [docs](./docs): API documentation
+* `README.md`: this file
+* `setup.py`: pip setup script
+* `conda_env.yml`: spec file for setting up conda environment
+* `Dockerfile`: docker images
+* `requirements.txt`: sphinx requirement file (not requirement for this package)
+* `LICENSE`: MIT license
 
-The above list of bioinformatic tools need to be properly installed and add to `PATH`. Path to Java tools (JARs) need to be specified when evocaking specific functions.
-
-### Installation
-**<a name='CONDA'>Install with Conda</a>**
-It is recommended to install funpipe via conda, as it automatically setup all required bioinformatic tools. This is extremely useful on servers or
+## Installation
+### **<a name='CONDA'>Install with Conda</a>**
+It is recommended to install funpipe via `conda`, as it automatically setup all required bioinformatic tools. This is very useful on servers or
 clusters without root privilage. Make sure `conda` is available in your environment via `which conda`. If `conda` is not available in your system, install Python3.7 version of it [here](https://conda.io/miniconda.html).
 
 HTTP errors sometimes occur when creating the conda environment, simply rerun the `conda env create -f conda_env.yml` to continue creating the environment.
@@ -53,29 +44,11 @@ conda deactivate
 # completely remove the virtual environment
 conda remove -name funpipe --all
 ```
+
 Note:
 * `diamond=0.9.22` uses boost library, which depends on `python 2.7`. This conflicts with funpipe's python version. To use diamond, use it via [docker](#DOCKER).
 
-
-**Install with PIP**
-PIP can be used to install funpipe.
-```sh
-# install latest stable release
-pip install funpipe
-
-# install a specific version
-pip install funpipe==0.1.0
-```
-
-To install the latest version: funpipe
-```sh
-git clone git@github.com:broadinstitute/funpipe.git
-cd funpipe
-pip install .
-```
-
-**<a name='DOCKER'>Install via Docker</a>**
-
+### **<a name='DOCKER'>Install via Docker</a>**
 There's a bit more overhead using Docker, but it came along with the benefits of consistent  environment (i.e.: including the operation systems). It's very useful when using `funpipe` on the cloud.
 
 To use docker:
@@ -97,17 +70,45 @@ cd funpipe
 docker build funpipe .
 ```
 
-### Synposis
-* [funpipe](./funpipe): a directory that contains python library
-* [scripts](./scripts): a set of executables for high level analysis
-* [tests](./tests): module tests
-* [docs](./docs): documentation
-* `setup.py`: pip setup script
-* `conda_env.yml`: spec file for setting up conda environment
-* `Dockerfile`: docker images
+### **Install with PIP**
+This approach is for advanced users who don't like conda and want to integrate funpipe into their current working environment. Before starting pip installation, make sure the following list of bioinformatic tools (or a subset of tools of interest) are properly installed and add to your `PATH`. Path to Java tools (JARs) need to be specified when evocaking specific functions.
 
-### Documentation
-Major analysis pipelines:
+**Requirements**
+* Python >= 3.7
+* Bioinformatic tool collections: can be automatically installed via conda [here](#CONDA)
+    * Basic functions:
+        - samtools>=1.9
+        - bwa>=0.7.8
+        - gatk>=3.8
+        - picard>=2.18.17
+    * Phylogenetics:
+        - raxml>=8.2.12
+        - readseq>=2.1.30
+    * CNV:
+        - breakdancer>=1.4.5
+        - cnvnator>=0.3
+    * Microbiome:
+        - pilon>=1.23
+        - diamond>=0.9.22
+
+To install with pip:
+```sh
+# install latest stable release
+pip install funpipe
+
+# install a specific version
+pip install funpipe==0.1.0
+```
+
+To install the latest version: funpipe
+```sh
+git clone git@github.com:broadinstitute/funpipe.git
+cd funpipe
+pip install .
+```
+
+## <a name='DOC'>Documentation</a>
+Major analysis pipelines/tools:
 - Quality control modules
     - Reference genome quality evaluation with `Pilon`.
     - FASTQ quality control with `fastqc`.
@@ -118,13 +119,12 @@ Major analysis pipelines:
     - Coverage analysis
     - Mating type analysis
     - Copy number variation with `CNVnator`
-    - Structural variant analysis with `breakdancer`
 - Phylogenetic analysis
   - Dating analysis with `BEAST`.
   - Phylogenetic tree with `FastTree`, `RAxML` and `IQTREE`.
 - GWAS analysis with `GEMMA`.
 
-Here are scripts to run each of the above pipelines, use `<toolname> -h` to see manual.
+Here are scripts to run each of the above pipelines, use `<toolname> -h` to see the manuals.
 ```sh
 ##### Quality control #####
 run_pilon.py          # Evaluate reference genome quality with pilon
@@ -140,4 +140,4 @@ phylo_analysis.py     # Phylogenetic analysis
 coverage_analysis.py  # Hybrid coverage and ploidy analysis
 
 ```
-You can also use out APIs to build your customized analysis scripts or pipelines. Checkout documents at: https://funpipe.readthedocs.io
+You can also use out APIs to build your customized analysis scripts or pipelines. The docs will be available here: https://funpipe.readthedocs.io
