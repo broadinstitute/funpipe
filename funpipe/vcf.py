@@ -88,6 +88,31 @@ class vcf:
             self._vcf, '| bgzip >', self.ann_vcf]))
         return self
 
+    def import_snpeff(self, snpeff_tsv=None):
+        if snpeff_tsv is None:
+            info_fields = [
+                'AF', 'AN', 'AC',
+                'SNPEFF_AMINO_ACID_CHANGE',
+                'SNPEFF_CODON_CHANGE',
+                'SNPEFF_EFFECT',
+                'SNPEFF_EXON_ID',
+                'SNPEFF_FUNCTIONAL_CLASS',
+                'SNPEFF_GENE_BIOTYPE',
+                'SNPEFF_GENE_NAME',
+                'SNPEFF_IMPACT',
+                'SNPEFF_TRANSCRIPT_ID'
+            ]
+            snpeff_tsv = self._prefix+'.snpeff.tsv'
+            query = ('\'%CHROM\t%POS\t%REF\t%ALT\t'
+                     + '\t'.join(['%INFO/'+i for i in info_fields])
+                     + '\n\'')
+            run('bcftools query -f {} '.format(query)
+                + self._vcf+'> '+snpeff_tsv)
+        self._site_info = pd.read_csv(
+            snpeff_tsv, sep='\t', header=None,
+            names=['CHR', 'POS', 'REF', 'ALT']+info_fields)
+        return self
+
     def af():
         """ get allele frequencies using vcftools """
         run("vcftools --gzvcf "+self._vcf + " --freq2 --out tmp")
