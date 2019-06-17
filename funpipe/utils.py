@@ -24,7 +24,6 @@ def run(cmd):
     ''' execute a specific command
     :param cmd: command to execute
     '''
-    sys.stderr.write(cmd+"\n")
     check_call(cmd, shell=True)
     print(" - Done: "+cmd+"\n")
     return 1
