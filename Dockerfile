@@ -1,5 +1,9 @@
+FROM opencpu/base
+
 FROM ubuntu:16.04
 MAINTAINER Xiao Li
+
+#RUN R -e 'install.packages("https://cran.r-project.org/src/contrib/argparse_2.0.1.tar.gz")'
 
 RUN apt-get update && apt-get install -y software-properties-common && add-apt-repository -y ppa:openjdk-r/ppa && \
     apt-get update && apt-get install -y \
@@ -20,12 +24,15 @@ RUN apt-get update && apt-get install -y software-properties-common && add-apt-r
         vim-common \
         wget \
         zlib1g-dev \
+        r-base \
     && rm -rf /var/lib/apt/lists/*
 
 
 #-----------------------------
 # Pipeline components
 #-----------------------------
+
+RUN R -e 'install.packages("argparse",repos=structure(c(CRAN="https://mirrors.tuna.tsinghua.edu.cn/CRAN/")),dependencies=TRUE)'
 
 # htslib
 RUN cd /opt && \
@@ -63,7 +70,7 @@ RUN mkdir /opt/picard-tools && \
 
 # python modules
 RUN pip3 install --upgrade pip
-RUN pip3 install tables numpy pandas funpipe
+RUN pip3 install numpy pandas funpipe
 
 # clean up
 RUN apt-get clean && \
