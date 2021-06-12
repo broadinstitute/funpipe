@@ -1,71 +1,32 @@
 import os
-import pandas as pd
-from . import utils.run
+from funpipe.utils import run
 
 
-class eval(analysis):
-    def __init__(self, eval, out_dir, prefix, stats=None):
-        """
-        :param eval: input eval file f
-        :param outdir:
-        :param outfile: output file
-        :param stats: Tables and statistics
-        """
-        if stats is None:
-            stats = {
-                'CountVariants': [
-                    'nVariantLoci', 'variantRatePerBp', 'nSNPs',
-                    'nInsertions', 'nDeletions', 'nHets', 'nHomRef', 'nHomVar',
-                    'hetHomRatio', 'insertionDeletionRatio'
-                ],
-                'TiTvVariantEvaluator': ['nTi', 'nTv', 'tiTvRatio'],
-                'IndelSummary': ['SNP_to_indel_ratio']
-            }
-
-    def parse_variant_eval(self):
-        """ parse variantEval file
-        :rtype
-        """
-        with open(self.eval, 'r') as fh:
-            data = fh.read()
-        tabs = data.rstrip().split('\n\n')
-
-        meta_df = pd.DataFrame()
-        for i in tabs:
-            df = pd.read_csv(io.StringIO(i), comment='#', sep='\s+',
-                             index_col='Sample')
-            tab_name = df.columns[0]
-            if tab_name in self.stats.keys():
-                df = df[self.stats[tab_name]]
-                meta_df = pd.concat([meta_df, df], axis=1)
-        meta_df.to_csv(os.path.join(self.out_dir, self.prefix+'.tsv'),
-                       sep='\t', compression='gzip')
-        return meta_df
-
-
-class gatk(analysis):
+class gatk:
     """ Run GATK commands """
     def __init__(
-            self, jar, prefix, out_dir='.', RAM=4,
-            ):
-        """
-        :param jar: input GATK jar file
-        """
-        analysis.__init__(self, input, prefix='output', outdir='.', fasta=None,
-                          gff=None, RAM=4, threads=1)
-        self.cmd = ' '.join(['java -Xmx'+str(self.RAM)+'g -jar', jar,
-                             '-R', self.fasta
+            self, fa, jar, prefix='output', out_dir='.', RAM=4):
+        ''' VCF sample QC
+        :param fa: input Fasta
+        :param prefix: output file prefix
+        :param jar: input jar file
+        :param RAM: RAM usage
+        :param out_dir: output directory
+        '''
+        self.out_dir = out_dir
+        self.cmd = ' '.join([
+            'java -Xmx'+str(RAM)+'g -jar', jar, '-R', fa
         ])
         self.prefix = prefix
 
     def variant_eval(self, vcf, titv=True, samp=True, indel=True, multi=True):
-        """ VCF sample QC by different stratifications
+        ''' VCF sample QC by different stratifications
         :param vcf: input vcf
         :param titv: use TiTv Evaluator
         :param indel: use InDel Evaluator
         :param multi: summarize multiallelic sites
         :param samp: stratify by samples
-        """
+        '''
         out = os.path.join(self.out_dir, self.prefix+'.eval')
         cmd = ' '.join([self.cmd, '-T VariantEval', '--eval', vcf,
                         '-o', out, '-noEV -noST -EV CountVariants'])
@@ -81,13 +42,13 @@ class gatk(analysis):
         return out
 
     def combine_var(self, vcf_dict, option, priority=None):
-        """
+        '''
         :param vcf_dict: dictionary of vcf files, with key abbreviation of
                          each vcf
         :param prefix: output prefix
         :param option: merging options
         :param priority:
-        """
+        '''
         out_vcf = self.prefix+'.vcf.gz'
         options = ['UNIQUIFY', 'PRIORITIZE', 'UNSORTED']
         if option not in options:
@@ -108,11 +69,11 @@ class gatk(analysis):
         return out_vcf
 
     def select_var(self, in_vcf, xl=None, il=None):
-        """ select variants
+        ''' select variants
         :param in_vcf: input vcf
         :param xl: intervals to exclude
         :param il: intervals to include
-        """
+        '''
         output = self.prefix+'.vcf.gz'
         cmd = ' '.join([
             self.cmd, '-T SelectVariants', '--variant', in_vcf,
@@ -124,16 +85,13 @@ class gatk(analysis):
         run(cmd)
         return output
 
-
-    def select_snps():
-
-
-    def genotype_concordance(self, comp, eval):
-        """ comppare
+    def genotype_concordance(self, comp, eval, hap=False):
+        ''' comppare
         :param comp: VCF file for comparison
         :parma eval: VCF file for evaluation
         :param out: output evaluation results
-        """
+        :param hap: whether input is haploid VCF
+        '''
         out = self.out_dir+'/'+self.prefix+'.txt'
         cmd = ' '.join([
             self.cmd, '-T GenotypeConcordance', '--comp', comp, '--eval', eval,

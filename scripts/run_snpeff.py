@@ -5,6 +5,7 @@ import sys
 import argparse
 from funpipe import *
 
+
 def main(arguments):
     parser = argparse.ArgumentParser(
         description='Run snpeff')

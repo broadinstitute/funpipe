@@ -19,14 +19,14 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'fungal-pipeline'
-copyright = '2018, Xiao Li'
+project = 'funpipe'
+copyright = '2018, The Broad Institute of MIT and Harvard'
 author = 'Xiao Li'
 
 # The short X.Y version
 version = 'v0.1'
 # The full version, including alpha/beta/rc tags
-release = 'pre-alpha'
+release = 'alpha'
 
 
 # -- General configuration ---------------------------------------------------
@@ -108,7 +108,7 @@ html_static_path = ['.static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'fungal-pipelinedoc'
+htmlhelp_basename = 'funpipedoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -135,7 +135,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'fungal-pipeline.tex', 'fungal-pipeline Documentation',
+    (master_doc, 'funpipe.tex', 'funpipe Documentation',
      'Xiao Li', 'manual'),
 ]
 
@@ -145,7 +145,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'fungal-pipeline', 'fungal-pipeline Documentation',
+    (master_doc, 'funpipe', 'funpipe Documentation',
      [author], 1)
 ]
 
@@ -156,8 +156,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'fungal-pipeline', 'fungal-pipeline Documentation',
-     author, 'fungal-pipeline', 'One line description of project.',
+    (master_doc, 'funpipe', 'funpipe Documentation',
+     author, 'funpipe', 'One line description of project.',
      'Miscellaneous'),
 ]
 
