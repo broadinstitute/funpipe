@@ -8,144 +8,43 @@ from funpipe.utils import run
 import subprocess as sp
 
 
-def pilon(fa, bam, prefix, ram, threads, jar):
-    """ Run pilon commands
-
-    Parameters
-    ----------
-        fa: :obj:`str` fasta file
-        bam: :obj:`str` input bam path
-        prefix: :obj:`str` output prefix
-        ram: :obj:`int` input ram
-        threads: :obj:`int` threads for pilon
-        outdir: :obj:`str` output directory
-
-    Returns
-    -------
-
-
-    """
-    cmd = ' '.join([
-        'java -Xmx'+str(ram)+'g',
-        '-jar', jar,
-        '--genome', fa,
-        '--frags', bam,
-        '--output', prefix,
-        '--threads', str(threads),
-        '--vcf --changes --tracks --verbose > '+prefix+'.pilon.log 2>&1'])
-    run(cmd)
-    return cmd
-
-
-def process_pilon_out(log, outdir, prefix):
-    """ process pilon output
-        log: logfile
-        outdir: output directory
-    """
-    cmd = ' '.join(
-         ['pilon_metrics', '-d', outdir, '-l', log, '--out_prefix', prefix])
-    run(cmd)
-    return cmd
-
-
-def snpeff(invcf, outvcf, jar, config, genome, ram):
-    """ run SNPEFF on a vcf
-    invcf: input vcf
-    outvcf: output vcf
-    jar: snpeff jar
-    genome: tag of genome name
-    ram: memory in GB
-    config: configuration file
-    """
-    cmd = ' '.join([
-        'java -Xmx'+str(ram)+'g',
-        '-jar', jar,
-        'eff', '-v',
-        '-c', config,
-        '-onlyCoding False',
-        '-i vcf -o vcf', genome, invcf, '>', outvcf])
-    run(cmd)
-    return cmd
-
-
-def snpeff_db(gff3, dir, genome, config, prefix, ram, jar, ref_fa):
-    """ Create snpEff database
-    gff3: gff file of gene annotation
-    genome: name of the reference genome
-    config: snpEff config files
-    prefix: output Prefix
-    ram: RAM in GB
-    jar: snpEff jar
-    ref_fa: reference fasta file
-    """
-    snpeff_dir = os.path.dirname(jar)
-    cmd = ' '.join(['sh snpeff_db.sh', dir, snpeff_dir, genome, ref_fa, gff3,
-                    ram])
-    run(cmd)
-    return cmd
-
-
-def tabix(file, type=None):
-    """ Index tabix file
-    :param file: input file
-    :param type: file type, vcf
-    """
-    cmd = 'tabix '+file
-    if type:
-        cmd += ' -p '+type
-    run(cmd)
-    return file+'.tbi'
-
-
-def filterGatkGenotypes(vcf, out_prefix):
-    """ filter Gatk output vcf
-    :param vcf: input vcf file
-    :param out_prefix: output prefix
-    """
-    outfile = out_prefix+'_GQ50_AD08_DP10.vcf'
-    cmd = ' '.join([
-        'filterGatkGenotypes.py --min_GQ 50 --min_percent_alt_in_AD 0.8',
-        '--min_total_DP 10', vcf, '>', outfile
-    ])
-    run(cmd)
-    return outfile
-
-
-def filter_variants(invcf, outvcf, min_GQ=50, AD=0.8, DP=10):
-    """ apply variant filtering using GQ, AD and DP
-    :param invcf: input vcf
-    :param outvcf: output vcf
-    :param min_GQ: minimum GQ cutoff
-    :param AD: allelic depth cutoff
-    :param DP: depth cutoff
-    """
-    cmd = ' '.join(['filterGatkGenotypes.py', '--min_GQ', str(min_GQ),
-                    '--min_percent_alt_in_AD', str(AD),
-                    '--min_total_DP', str(DP), invcf, '>', outvcf])
-    run(cmd)
-    return outvcf
-
-
 class vcf:
     """ vcf class command """
-    def __init__(self, vcf, prefix='output', outdir='.'):
-        self._vcf = vcf
+    def __init__(self, vcf_file, prefix='output', outdir='.', fasta=''):
+        self._vcf = vcf_file
         self._prefix = prefix
         self._outdir = outdir
         self._pairwise_share = None
         self._pairwise_unique = None
         self._var_counts = None
-        self.n_samples = int(sp.check_output(
-            'bcftools query -l '+vcf+' | wc -l', shell=True).decode().strip())
+        self._n_samples = int(
+            sp.check_output(
+                'bcftools query -l '+vcf_file+' | wc -l', shell=True)
+            .decode().strip())
         self._dosage_matrix = None
+        self._af = None
+        self.ann_vcf = None
+        self._site_info = pd.DataFrame()
+        self._site_info_tsv = prefix + '.site_info.tsv'
+        self._sample_info = pd.DataFrame()
+        self._sample_info_tsv = prefix + '.sample_info.tsv'
+        self._fasta = fasta
 
     @property
-    def nsamples(self):
-        return self.n_samples
+    def info(self):
+        """ Get site info dataframe"""
+        if self._site_info.empty():
+            warnings.warn(
+                "VCF info dataframe is empty, get info using 'get_info' function")
+        return self._site_info
 
     @property
-    def pairwise_concord(self):
-        return self._pairwise_concord
+    def n_samples(self):
+        return self._n_samples
+
+    @property
+    def pairwise_share(self):
+        return self._pairwise_share
 
     @property
     def pairwise_unique(self):
@@ -158,6 +57,68 @@ class vcf:
     @property
     def dosage_matrix(self):
         return self._dosage_matrix
+
+    @staticmethod
+    def create_snpeff_db(gff3, dir, genome, config, prefix, ram, jar, ref_fa):
+        """ Create snpEff database
+        gff3: gff file of gene annotation
+        genome: name of the reference genome
+        config: snpEff config files
+        prefix: output Prefix
+        ram: RAM in GB
+        jar: snpEff jar
+        ref_fa: reference fasta file
+        """
+        run(' '.join(['snpeff_db.sh', dir, jar, genome, ref_fa, gff3, ram]))
+        return cmd
+
+    def snpeff_annot(self, jar, config, genome, ram):
+        """ run SNPEFF on a vcf
+        invcf: input vcf
+        outvcf: output vcf
+        jar: snpeff jar
+        genome: tag of genome name
+        ram: memory in GB
+        config: configuration file
+        """
+        self.ann_vcf = os.path.basename(self._vcf).replace('vcf', 'snpeff.vcf')
+        run(' '.join([
+            'java -Xmx'+str(ram)+'g', '-jar', jar, 'ann', '-v',
+            '-c', config, '-i vcf -o vcf', genome,
+            self._vcf, '| bgzip >', self.ann_vcf]))
+        return self
+
+    def import_snpeff(self, snpeff_tsv=None):
+        if snpeff_tsv is None:
+            info_fields = [
+                'AF', 'AN', 'AC',
+                'SNPEFF_AMINO_ACID_CHANGE',
+                'SNPEFF_CODON_CHANGE',
+                'SNPEFF_EFFECT',
+                'SNPEFF_EXON_ID',
+                'SNPEFF_FUNCTIONAL_CLASS',
+                'SNPEFF_GENE_BIOTYPE',
+                'SNPEFF_GENE_NAME',
+                'SNPEFF_IMPACT',
+                'SNPEFF_TRANSCRIPT_ID'
+            ]
+            snpeff_tsv = self._prefix+'.snpeff.tsv'
+            query = ('\'%CHROM\t%POS\t%REF\t%ALT\t'
+                     + '\t'.join(['%INFO/'+i for i in info_fields])
+                     + '\n\'')
+            run('bcftools query -f {} '.format(query)
+                + self._vcf+'> '+snpeff_tsv)
+        self._site_info = pd.read_csv(
+            snpeff_tsv, sep='\t', header=None,
+            names=['CHR', 'POS', 'REF', 'ALT']+info_fields)
+        return self
+
+    def af():
+        """ get allele frequencies using vcftools """
+        run("vcftools --gzvcf "+self._vcf + " --freq2 --out tmp")
+        self._af = pd.read_csv('tmp.frq', sep='\t', header=0)
+        rm('tmp.frq')
+        return self
 
     def get_sample_index():
         """ return sample index from the VCF """
@@ -238,12 +199,118 @@ class vcf:
                 self._pairwise_unique[i, j] = gt.n_unique
         return self
 
+    # site level APIs
+    def has_info(self, info, type=['site', 'sample']):
+        "Whether an info field is presented in the object "
+        has_info = False
+        if type == 'site':
+            has_info = (info in self._site_info.columns)
+        elif type == 'sample':
+            has_info = (info in self._sample_info.columns)
+        else:
+            raise ValueError("No such type")
+        if not has_info:
+            raise ValueError(
+                info+" is not presented in the site info column names.")
+
+    def get_info(self, info=['AF']):
+        """ Get variant site level info of interest """
+        header = ['CHR', 'ID'] + info
+        query_string = '\'%CHROM\t%CHROM-%POS-%REF-%ALT{0}\t'
+        query_string += '\t'.join([('%'+i) for i in info])+'\''
+        cmd = ' '.join([
+            "bcftools query -f ", query_string, self._vcf, '>',
+            self._site_info_tsv])
+        run(cmd)
+        self._site_info = pd.read_csv(self._site_info_tsv, sep='\t',
+                                      header=None, names=header)
+
+    def cal_maf(self, af_name='AF'):
+        """ calculate MAF
+        :param df: data.frame containing allele frequencies
+        :param AFname: column name for allele frequencies
+        :rtype pandas dataframe
+        """
+        self.has_info(af_name, 'site')
+        self._site_info['MAF'] = self._df[af_name]
+        self._site_info.ix[self._df[af_name] > 0.5, 'MAF'] = (
+            1 - self._df.ix[self._df[af_name] > 0.5, 'MAF'])
+        return self
+
+    def cal_miss(self, name='miss'):
+        """ Calculate missingness of all sites"""
+        # TO DO
+        self.get_plink()
+        run('plink --bfile '+self._plink+' --missing --allow-extra-chr --out '
+            +self._prefix)
+        return self
+
+    def plot_info(self, info, bins=100, normed=True):
+        """ plot minor allele frequencies
+        :param info: info field in the site
+        :param df: pandas dataframe containing VCF minor allele frequence fields
+        :param label: plot labels
+        """
+        self.has_info(info, site)
+
+        plt.hist(df[info], bins=bins, normed=normed, label=label)
+        plt.legend()
+        plt.xlabel(info)
+        plt.ylabel('# sites')
+
+        return self
+
+    def genome_dist(self, info, pdf=None, window_size=2000000, ymax=12000, built='hg38',
+                    centro_tsv='/xchip/gtex/xiaoli/resources/centromeres.txt.tz'):
+        """ distribution of genomic elements across the genome
+        :param df: pandas dataframe containing
+        :param pdf: output pdf name
+        :param centro_tsv: tsv containing centromere positions
+        :param window_size: sliding windong size
+        :param ymax: y axis maximum
+        :param build: human genome build
+        :rtype boolean
+        """
+        has_info(info, 'site')
+
+#         centr = pd.read_csv(centro_tsv, header=None, sep='\t')
+        plt.figure(1)
+        for i in range(len(chrs)):
+            plt.subplot(4, 6, i+1)
+            pos = df.ix[df.contig == chrs[i], 'pos'].astype(float)
+            plt.ylim(0, ymax)
+            pos.hist(bins=int(ceil(max(pos)/window_size)))
+            plt.title(chrs[i])
+#             centrStart = min(centr.loc[centr[0] == chrs[i], 1])
+#             centrEnd = max(centr.loc[centr[0] == chrs[i], 2])
+#             plt.axvline(x=centrStart, color='r')
+#             plt.axvline(x=centrEnd, color='r')
+        if pdf is not None:
+            plt.savefig(pdf)
+        else:
+            plt.show()
+        return(1)
+
+    # sample level APIs
+    def plot_sample_info(info):
+        has_info(info, 'sample')
+        return self
+
+    # formating
+    def get_plink(self):
+        """ Get plink format files """
+        cmd = ' '.join('plink --vcf', self._vcf, '--allow-extra-chr', '--out',
+        self._prefix)
+        run(cmd)
+        self._plink = self._prefix
+        return self
+
 
 class siteinfo:
     """ A table contain site level information """
-    def __init__(self, ):
-        self._vcf = ''
+    def __init__(self):
         self._df = pd.DataFrame()
+        self._vcf = ''
         self._tsv = ''
         return self
 
@@ -263,7 +330,7 @@ class siteinfo:
     def import_tsv(self, tsv):
         return 0
 
-    def import_vcf(self, vcf, info=['AF', 'AN', 'AC']):
+    def import_vcf(self, info=['AF', 'AN', 'AC']):
         """ Import info from a VCF
 
         Description
@@ -292,11 +359,7 @@ class siteinfo:
         self._df = pd.read_csv(out_tsv, sep='\t', header=None, names=header)
         return self
 
-    # def maf(self, ):
-    #     """ calculate minor allele frequences """
-    #
-    # def miss(self,):
-    #     """ calculate missingness """
+
     # # to do
     # def export_tsv(self,):
     #     return
@@ -310,10 +373,6 @@ class siteinfo:
         self._df['MAF'] = self._df[af_name]
         self._df.ix[self._df[af_name] > 0.5, 'MAF'] = (
             1 - self._df.ix[self._df[af_name] > 0.5, 'MAF'])
-        return self
-
-    def export_tsv(self, tsv):
-        self._df.to_csv(tsv, sep='\t', index=False)
         return self
 
     # def dist_contrast(vec1, vec2, xlabel, ylabel, labels, pdf, bins=100):
@@ -351,55 +410,7 @@ class siteinfo:
     #     return(df)
     #
     #
-    # def genome_dist(df, pdf=None, window_size=2000000, ymax=12000, built='hg38',
-    #                 centro_tsv='/xchip/gtex/xiaoli/resources/centromeres.txt.tz'):
-    #     """ distribution of genomic elements across the genome
-    #     :param df: pandas dataframe containing
-    #     :param pdf: output pdf name
-    #     :param centro_tsv: tsv containing centromere positions
-    #     :param window_size: sliding windong size
-    #     :param ymax: y axis maximum
-    #     :param build: human genome build
-    #     :rtype boolean
-    #     """
-    #     centr = pd.read_csv(centro_tsv, header=None, sep='\t')
-    #     if built == 'hg38':
-    #         chrs = ['chr{0}'.format(i) for i in range(1, 23)]
-    #         chrs.append('chrX')
-    #     else:
-    #         chrs = [format(i) for i in range(1, 23)]
-    #         chrs.append('X')
-    #     plt.figure(1)
-    #     for i in range(len(chrs)):
-    #         plt.subplot(4, 6, i+1)
-    #         pos = df.ix[df.contig == chrs[i], 'pos'].astype(float)
-    #         plt.ylim(0, ymax)
-    #         pos.hist(bins=int(ceil(max(pos)/window_size)))
-    #         plt.title(chrs[i])
-    #         centrStart = min(centr.loc[centr[0] == chrs[i], 1])
-    #         centrEnd = max(centr.loc[centr[0] == chrs[i], 2])
-    #         plt.axvline(x=centrStart, color='r')
-    #         plt.axvline(x=centrEnd, color='r')
-    #     if pdf is not None:
-    #         plt.savefig(pdf)
-    #     else:
-    #         plt.show()
-    #     return(1)
     #
-    #
-    # def maf_plot(df, label='plot'):
-    #     """ plot minor allele frequencies
-    #     :param df: pandas dataframe containing VCF minor allele frequence fields
-    #     :param label: plot labels
-    #     """
-    #     plt.figure()
-    #     plt.hist(df.MAF,  bins=100, normed=True, label=label)
-    #     plt.legend()
-    #     plt.xlabel('MAF')
-    #     plt.ylabel('# sites')
-    #     plt.savefig(label+'.pdf')
-    #     plt.close()
-    #     return(1)
 
 
 def _gt_type(gt):
@@ -537,3 +548,122 @@ class gt_pair:
             self = self.get_n_share()
         self.n_unique = self.n_total - self.n_share
         return self
+
+
+# legacy methods for backward compatibility
+def pilon(fa, bam, prefix, ram, threads, jar):
+    """ Run pilon commands
+
+    Parameters
+    ----------
+        fa: :obj:`str` fasta file
+        bam: :obj:`str` input bam path
+        prefix: :obj:`str` output prefix
+        ram: :obj:`int` input ram
+        threads: :obj:`int` threads for pilon
+        outdir: :obj:`str` output directory
+
+    Returns
+    -------
+
+
+    """
+    cmd = ' '.join([
+        'java -Xmx'+str(ram)+'g',
+        '-jar', jar,
+        '--genome', fa,
+        '--frags', bam,
+        '--output', prefix,
+        '--threads', str(threads),
+        '--vcf --changes --tracks --verbose > '+prefix+'.pilon.log 2>&1'])
+    run(cmd)
+    return cmd
+
+
+def process_pilon_out(log, outdir, prefix):
+    """ process pilon output
+        log: logfile
+        outdir: output directory
+    """
+    cmd = ' '.join(
+         ['pilon_metrics', '-d', outdir, '-l', log, '--out_prefix', prefix])
+    run(cmd)
+    return cmd
+
+
+def snpeff(invcf, outvcf, jar, config, genome, ram):
+    """ run SNPEFF on a vcf
+    invcf: input vcf
+    outvcf: output vcf
+    jar: snpeff jar
+    genome: tag of genome name
+    ram: memory in GB
+    config: configuration file
+    """
+    cmd = ' '.join([
+        'java -Xmx'+str(ram)+'g',
+        '-jar', jar,
+        'eff', '-v',
+        '-c', config,
+        '-onlyCoding False',
+        '-i vcf -o vcf', genome, invcf, '>', outvcf])
+    run(cmd)
+    return cmd
+
+
+def snpeff_db(gff3, dir, genome, config, prefix, ram, jar, ref_fa):
+    """ Create snpEff database
+    gff3: gff file of gene annotation
+    genome: name of the reference genome
+    config: snpEff config files
+    prefix: output Prefix
+    ram: RAM in GB
+    jar: snpEff jar
+    ref_fa: reference fasta file
+    """
+    snpeff_dir = os.path.dirname(jar)
+    cmd = ' '.join(['sh snpeff_db.sh', dir, snpeff_dir, genome, ref_fa, gff3,
+                    ram])
+    run(cmd)
+    return cmd
+
+
+def tabix(file, type=None):
+    """ Index tabix file
+    :param file: input file
+    :param type: file type, vcf
+    """
+    cmd = 'tabix '+file
+    if type:
+        cmd += ' -p '+type
+    run(cmd)
+    return file+'.tbi'
+
+
+def filterGatkGenotypes(vcf, out_prefix):
+    """ filter Gatk output vcf
+    :param vcf: input vcf file
+    :param out_prefix: output prefix
+    """
+    outfile = out_prefix+'_GQ50_AD08_DP10.vcf'
+    cmd = ' '.join([
+        'filterGatkGenotypes.py --min_GQ 50 --min_percent_alt_in_AD 0.8',
+        '--min_total_DP 10', vcf, '>', outfile
+    ])
+    run(cmd)
+    return outfile
+
+
+def filter_variants(invcf, outvcf, min_GQ=50, AD=0.8, DP=10):
+    """ apply variant filtering using GQ, AD and DP
+    :param invcf: input vcf
+    :param outvcf: output vcf
+    :param min_GQ: minimum GQ cutoff
+    :param AD: allelic depth cutoff
+    :param DP: depth cutoff
+    """
+    cmd = ' '.join(['filterGatkGenotypes.py', '--min_GQ', str(min_GQ),
+                    '--min_percent_alt_in_AD', str(AD),
+                    '--min_total_DP', str(DP), invcf, '>', outvcf])
+    run(cmd)
+    return outvcf
