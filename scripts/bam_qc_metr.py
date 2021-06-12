@@ -12,12 +12,13 @@ from glob import glob
 stats = {
     'alignment_summary_metrics':
         ['TOTAL_READS', 'PCT_PF_READS_ALIGNED', 'PCT_CHIMERAS'],
-
-    'wgs_metrics': ['MEAN_COVERAGE']
+    'wgs_metrics': ['MEAN_COVERAGE', 'SD_COVERAGE'],
+    'summary_metrics': ['AT_DROPOUT', 'GC_DROPOUT']
 }
 
 stats_list = [
-    'TOTAL_READS', 'PCT_PF_READS_ALIGNED', 'PCT_CHIMERAS', 'MEAN_COVERAGE']
+    'TOTAL_READS', 'PCT_PF_READS_ALIGNED', 'PCT_CHIMERAS', 'MEAN_COVERAGE',
+    'SD_COVERAGE', 'AT_DROPOUT', 'GC_DROPOUT']
 
 
 def realign_bam():
@@ -96,7 +97,7 @@ def extract_picard_metrics(qc_path_tsv, bam_qc_file, is_gp_bam):
                 fdir, fname, prefix, suffix = parse_gp_bam_path(path)
             qc_stats[sample] = {}
             for suffix in stats:
-                stat_file = glob(join(path, sample+'.'+'*'+suffix))
+                stat_file = glob(join(path, sample+'.'+suffix))
                 if len(stat_file) == 1:
                     all_metr: Union[dict, Any] = get_picard_stat(stat_file[0])
                     for stat in stats[suffix]:
@@ -111,9 +112,9 @@ def extract_picard_metrics(qc_path_tsv, bam_qc_file, is_gp_bam):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description=(
-            'Parse Picard metrics from a list of Picard output metrics. \n'
-            'Note that this script assume file name is composed of '
-            '<sample>.*.<suffix>'
+            ('Parse Picard metrics from a list of Picard output metrics. '
+             'Input is a list of directories, where each line is a sample '
+             'and a path containing Picard QC metrics for that sample.')
         )
     )
     # required arguments
@@ -121,13 +122,13 @@ if __name__ == '__main__':
     required.add_argument(
         '-i', '--input', required=True, help='Input list of QC metrics')
     required.add_argument(
-        '-o', '--output', help="Name of output file")
+        '-o', '--output', required=True, help="Name of output file")
 
     # optional arguments
     parser.add_argument(
         '-d', '--outdir', default='.', help='Output Directory')
     parser.add_argument(
-        '-b', '--is_gp_bam', action='store_true',
+        '--is_gp_bam', action='store_true',
         help='whether input is a list of GP bam path'
     )
     args = parser.parse_args()

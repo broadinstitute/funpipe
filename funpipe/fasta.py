@@ -1,63 +1,33 @@
 from .picard import picard
 from .utils import run
+# from plumbum import local
+# from plumbum.cmd import wget
+# import configparser
 
 
-class fasta(analysis):
-    def __init__(self, ):
-        analysis.__init__()
-        self.fa = fa
-        return
+def bwa_index_fa(fa):
+    run('bwa index '+fa)
+    return fa+'.fai'
 
-    def bwa_index_fa(self):
-        """Index a BWA file
 
-        Examples
-        --------
+def samtools_index_fa(fa):
+    ''' index a fasta file in place
+    :param fa: fasta file
+    :returns: index file name
+    '''
+    run('samtools faidx '+fa)
+    return fa+'.fai'
 
-        >>> bwa_index_fa('~/examples/a.fa')  # doctest: +SKIP
 
-        Parameters
-        ----------
-        fa : :obj:`str`
-            fasta file
-
-        Returns
-        -------
-        :obj:`str`
-            Index file name
-        """
-        run('bwa index '+self.fa)
-        return self.fa+'.fai'
-
-    def samtools_index_fa(self):
-        """Index a fasta file in place
-
-        Examples
-        --------
-
-        >>> samtools_index_fa('~/examples/a.fa')  # doctest: +SKIP
-
-        Parameters
-        ----------
-        fa : :obj:`str`
-            fasta file
-
-        Returns
-        -------
-            index file name
-        """
-        run('samtools faidx '+fa)
-        return fa+'.fai'
-
-    def index_fa(self):
-        """Index fasta file with common genomic tools
-        :param fa: fasta file
-        :returns: None
-        """
-        samtools_index_fa(self.fa)
-        bwa_index_fa(self.fa)
-        pcd = picard()
-        pcd.dict(self.fa)
+def index_fa(fa):
+    ''' index fasta file with common genomic tools
+    :param fa: fasta file
+    :returns: None
+    '''
+    samtools_index_fa(fa)
+    bwa_index_fa(fa)
+    pcd = picard()
+    pcd.dict(fa)
 
 
 # def get_ref(ftp, md5, dir='.'):
