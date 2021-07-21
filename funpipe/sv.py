@@ -1,11 +1,23 @@
 from .utils import run
-
+"""
+Breakdancer
+===========
+"""
 
 def breakdancer(bam_file, prefix):
     ''' Detect structural variation using breakdancer
-    :param bam_file: input bam file
-    :param prefix: output prefix
-    :return
+    
+    Parameters
+    ----------
+    arg1: string
+        bam_file: input bam file
+    arg2: string
+        prefix: output prefix
+        
+    Returns
+    -------
+    string
+        contig file
     '''
     # create config files
     cfg_file = prefix+'.cfg'
