@@ -14,8 +14,8 @@ class bam:
         
         Parameters
         ----------
-        arg1 : string
-            filename:path to the bam file.
+        filename: string
+            path to the bam file.
         '''
         self.fname = file_name
         
@@ -37,14 +37,14 @@ class bam:
         
         Parameters
         ----------
-        arg1: string
-            out_dir: output directory
-        arg2: string
-            tmp: temporary directory for the bam file, default is None
-        arg3: int
-            RAM: maximum RAM usage in gigabyte
-        arg4: int
-            threads: maximum number of threads used
+        out_dir: string
+            output directory
+        tmp: string
+            temporary directory for the bam file, default is None
+        RAM: int
+            maximum RAM usage in gigabyte
+        threads: int
+            maximum number of threads used
         
         Returns
         -------
@@ -87,15 +87,16 @@ class bam:
         
         Parameters
         ----------
-        arg1: string
-            out_prefix: output Prefix, could include output path
-        arg2: bool
-            idx: whether to index output mpileup file or not, default is false
+        out_prefix: string
+            output prefix, could include output path
+        idx: bool
+            whether to index output mpileup file or not, default is false
             
         Returns
         -------
         string
             The name of bam depth file
+            
         '''
         outfile = out_prefix+'.depth.gz'
         cmd = 'samtools depth '+ self.fname +' | bgzip > '+outfile
@@ -124,19 +125,19 @@ class bam:
         
         Parameters
         ----------
-        arg1: string
-            pileup: pileup file from samtools
-        arg2: string
-            out_prefix:
-        arg3: bool
-            faidx:
-        arg4: int
-            window: window size in basepair
+        pileup: string
+            pileup file from samtools
+        out_prefix: string
+            output prefix
+        faidx: bool
+            fasta index file name
+        window: int
+            window size in basepair
             
         Returns
         -------
         string
-            cmd
+            command line executed
         '''
         cmd = ' '.join([
             'dep_per_win.pl -m', pileup,
@@ -152,8 +153,8 @@ class bam:
         
         Parameters
         ----------
-        arg1: string
-            out_txt: output file name
+        out_txt: string
+            output file name
         
         Returns
         -------
@@ -170,8 +171,8 @@ class bam:
         
         Parameters
         ----------
-        arg1: string
-            out_prefix: output prefix
+        out_prefix: string
+            output prefix
             
         Returns
         -------

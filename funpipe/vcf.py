@@ -1,4 +1,7 @@
-""" fungal analysis with a VCF file """
+""" 
+Fungal analysis with a VCF file
+===============================
+"""
 import os
 from math import ceil
 import pandas as pd

@@ -9,10 +9,10 @@ def breakdancer(bam_file, prefix):
     
     Parameters
     ----------
-    arg1: string
-        bam_file: input bam file
-    arg2: string
-        prefix: output prefix
+    bam_file: string
+        input bam file
+    prefix: string
+        output prefix
         
     Returns
     -------
@@ -24,4 +24,4 @@ def breakdancer(bam_file, prefix):
     run('bam2cfg.pl -g -h'+bam_file+'> '+prefix+'.cfg')
     # Detect chromosomal structural variants using breakdancer-max
     run('brakdancer-max -q 40 -r 20 -y 90 '+cfg_file)
-    return
+    return cfg_file
