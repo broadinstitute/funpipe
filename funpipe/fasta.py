@@ -15,8 +15,8 @@ class fasta:
         
         Parameters
         ----------
-        arg1: string
-            fa_name: the name of fasta file
+        fa_name: string
+            the name of fasta file
         '''
         self.fa_name = fa_name
         self.picard_index = None
@@ -90,10 +90,10 @@ class fastq:
         
         Parameters
         ----------
-        arg1: tuple of string
-            names: name(s) of fastq file(s)
-        arg2: bool
-            is_paired: True if there is a pair of fq files, else False.
+        names: tuple of strings
+            name(s) of fastq file(s)
+        is_paired: bool
+            True if there is a pair of fastq files, else False.
             
         '''
         self.is_paired = is_paired
@@ -105,8 +105,8 @@ class fastq:
         
         Parameters
         ----------
-        arg1: string
-            out_dir: output directory
+        out_dir: string
+            output directory
             
         Returns
         -------
@@ -132,10 +132,10 @@ class fastq:
         
         Parameters
         ----------
-        arg1: string
-            fa: fasta file
-        arg2: string
-            prefix: output file prefix
+        fa: string
+            fasta file
+        prefix: string
+            output file prefix
             
         Returns
         -------

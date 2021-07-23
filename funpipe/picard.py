@@ -10,10 +10,10 @@ class picard:
         
         Parameters
         ----------
-        arg1: string
-            jar: jar path of picard tools, default = '/seq/software/picard/1.853/bin/picard.jar'
-        arg2: int
-            RAM: RAM usage, default = 4
+        jar: string
+            jar path of picard tools, default = '/seq/software/picard/1.853/bin/picard.jar'
+        RAM: int
+            maximum RAM usage in gigabytes, default = 4
             
         '''
         self.cmd = ' '.join([
@@ -25,10 +25,10 @@ class picard:
         
         Parameters
         ----------
-        arg1: string
-            fa: fasta file
-        arg2: string
-            dictionary: dictionary file, default = None
+        fa: string
+            fasta file
+        dictionary: string
+            dictionary file, default = None
             
         Returns
         -------
@@ -48,10 +48,10 @@ class picard:
         
         Parameters
         ----------
-        arg1: string
-            bam: bam file
-        arg2: string
-            prefix: output prefix
+        bam: string
+            bam file
+        prefix: string
+            output prefix
             
         Returns
         -------

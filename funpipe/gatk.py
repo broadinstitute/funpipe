@@ -15,16 +15,16 @@ class gatk:
         
         Parameters
         ----------
-        arg1: string
-            fa: input Fasta
-        arg2: string
-            jar: input jar file
-        arg3: string
-            prefix: output file prefix, default = \'output\'
-        arg4: string
-            out_dir: output directory for gatk commands, default = \'.\'
-        arg5: int
-            RAM: RAM usage, default = 4
+        fa: string
+            input Fasta
+        jar: string
+            input jar file
+        prefix: string
+            output file prefix, default = \'output\'
+        out_dir: string
+            output directory for gatk commands, default = \'.\'
+        RAM: int
+            maximum RAM usage in gigabytes, default = 4
             
         '''
         self.out_dir = out_dir
@@ -38,16 +38,16 @@ class gatk:
         
         Parameters
         ----------
-        arg1: string
+        vcf: string
             vcf: input vcf
-        arg2: bool      
-            titv: use TiTv Evaluator
-        arg3: bool
-            samp: stratify by samples
-        arg4: bool  
-            indel: use InDel Evaluator
-        arg5: bool
-            multi: summarize multiallelic sites
+        titv: bool      
+            use TiTv Evaluator
+        samp: bool
+            stratify by samples
+        indel: bool  
+            use InDel Evaluator
+        multi: bool
+            summarize multiallelic sites
             
         Returns
         -------
@@ -74,12 +74,12 @@ class gatk:
         
         Parameters
         ----------
-        arg1: dict
-            vcf_dict: dictionary of vcf files, with key abbreviation of each vcf
-        arg2: string
-            option: merging options, UNIQUIFY,PRIORITIZE or UNSORTED.
-        arg3: 
-            priority:  default = None
+        vcf_dict: dict
+            dictionary of vcf files, with key abbreviation of each vcf
+        option: string
+            merging options, UNIQUIFY,PRIORITIZE or UNSORTED.
+        priority: 
+            ordered list specifying priority for merging, default = None
             
         Returns
         -------
@@ -111,12 +111,12 @@ class gatk:
         
         Parameters
         ----------
-        arg1: string
-            in_vcf: input vcf
-        arg2: string
-            xl: intervals to exclude
-        arg3: string
-            il: intervals to include
+        in_vcf: string
+            input vcf
+        xl: string
+            intervals to exclude
+        il: string
+            intervals to include
             
         Returns
         -------
@@ -140,12 +140,12 @@ class gatk:
         
         Parameters
         ----------
-        arg1: string
-            comp_vcf: VCF file for comparison
-        arg2: string
-            eval_vcf: VCF file for evaluation
-        arg3: bool
-            hap: whether input is haploid VCF
+        comp_vcf: string
+            VCF file for comparison
+        eval_vcf: string
+            VCF file for evaluation
+        hap: bool
+            whether input is haploid VCF
             
         Returns
         -------

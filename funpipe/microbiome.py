@@ -8,10 +8,10 @@ def diamond_blastx(fa, output):
     
     Parameters
     ----------
-    arg1: string
-        fa: input fasta file.
-    arg2: string
-        output: output file
+    fa: string
+        input fasta file.
+    output: string
+        output file
     
     Returns
     -------

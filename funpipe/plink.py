@@ -9,8 +9,8 @@ class plink:
         
         Parameters
         ----------
-        arg1: string
-            prefix: the prefix of bfile
+        prefix: string
+            the prefix of bfile
         """
         self._bfile = prefix
         self._bed = prefix + '.bed'
@@ -38,8 +38,9 @@ class plink:
         
         Parameters
         ----------
-        arg1: int
-            lmm: linear mixed model
+        lmm: int
+            linear mixed model, 1 performs Wald test, 2 performs likelihood ratio test,
+            3 performs score test, and 4 performs all the three tests, default = 4
             
         Returns
         -------
@@ -62,12 +63,12 @@ class plink:
 
         Parameters
         ----------
-        arg1: float
-            ind: individual level missingness, default = 0.1
-        arg2: float
-            miss: site level missingness, default = 0.1
-        arg3: float
-            maf: minor allele frequency cutoff, default = 0.05
+        ind: float
+            individual level missingness, default = 0.1
+        miss: float
+            site level missingness, default = 0.1
+        maf: float
+            minor allele frequency cutoff, default = 0.05
             
         Returns
         -------
