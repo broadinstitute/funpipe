@@ -32,7 +32,11 @@ class gatk:
             'java -Xmx'+str(RAM)+'g -jar', jar, '-R', fa
         ])
         self.prefix = prefix
-
+        
+#    def variant_annot
+    
+    
+    
     def variant_eval(self, vcf, titv=True, samp=True, indel=True, multi=True):
         ''' VCF sample QC by different stratifications
         

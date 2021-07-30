@@ -3,10 +3,7 @@ from .picard import picard as pcd
 from .vcf import tabix
 from .fasta import samtools_index_fa, bwa_index_fa
 from .utils import run
-"""
-BAM: aligned sequences
-======================
-"""
+
 class bam:
     """bam"""
     def __init__(self,filename):
@@ -18,7 +15,12 @@ class bam:
             path to the bam file.
         '''
         self.fname = file_name
-        
+        self.indexed_bam = None
+        self.sorted_bam = None
+        self.depth = None
+        self.depth_per_win = None
+        self.summary = None
+        self.cleanup_bam = None
     
     def index_bam(self):
         ''' index BAM using samtools
@@ -29,7 +31,10 @@ class bam:
             The name of indexed bam file
         '''
         run('samtools index '+ self.fname )
-        return self.name+'.bai'
+        
+        self.indexed_bam = self.fname+'.bai'#assign indexed bam
+        
+        return self.fname+'.bai'
 
 
     def sort_bam(self,out_dir, tmp=None, RAM=2, threads=1):
@@ -58,7 +63,10 @@ class bam:
             tmp = prefix
         outfile = prefix + '.sorted.bam'
         run(' '.join(['samtools sort -T', tmp, '-m', str(RAM)+'G',
-                      '-@', str(threads), '-o', outfile, bam_name]))
+                      '-@', str(threads), '-o', outfile, self.fname ]))
+        
+        self.sorted_bam = outfile #assign sorted bam
+        
         return outfile
 
 
@@ -103,6 +111,9 @@ class bam:
         run(cmd)
         if idx:
             tabix(outfile, type='vcf')
+            
+        self.depth = outfile #assign bam depth
+        
         return outfile
 
 
@@ -129,7 +140,7 @@ class bam:
             pileup file from samtools
         out_prefix: string
             output prefix
-        faidx: bool
+        faidx: string
             fasta index file name
         window: int
             window size in basepair
@@ -145,11 +156,15 @@ class bam:
             '--window', str(window),
             '--faidx', faidx])
         run(cmd)
+        
+        self.depth_per_win = out_prefix #assign depth per window
+        
         return cmd
 
 
     def bam_sum(self,out_txt):
-        ''' get read cateroties
+        ''' get read categories
+        count the number of alignments for each FLAG type
         
         Parameters
         ----------
@@ -163,6 +178,7 @@ class bam:
         '''
         cmd = 'samtools flagstat ' + self.fname + '>' + out_txt
         run(cmd)
+        self.summary = out_txt #assign bam summary
         return out_txt
 
 
@@ -187,4 +203,28 @@ class bam:
              self.fname, '>', out_file]
         )
         run(cmd)
+        self.cleanup_bam = outfile #assign cleaned bam 
+        
         return out_file
+    
+    
+    def breakdancer(self, prefix):
+        ''' Detect structural variation using breakdancer
+
+        Parameters
+        ----------
+        prefix: string
+            output prefix
+
+        Returns
+        -------
+        string
+            contig file
+        '''
+        # create config files
+        cfg_file = prefix+'.cfg'
+        run('bam2cfg.pl -g -h'+ self.fname +'> '+prefix+'.cfg')
+        # Detect chromosomal structural variants using breakdancer-max
+        run('brakdancer-max -q 40 -r 20 -y 90 '+cfg_file)
+        return cfg_file
+
