@@ -1,7 +1,4 @@
-"""
-PLINK
-=====
-"""
+
 
 class plink:
     def __init__(self, prefix):

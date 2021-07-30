@@ -1,8 +1,6 @@
 from funpipe.utils import run
-"""
-Phylogenetics
-=============
-"""
+
+
 class phylo:
     def __init__(self, invcf ):
         """constructor of phylo object
@@ -74,6 +72,7 @@ class phylo:
         '''
         cmd = ' '.join(['java -cp', jar, 'run -f 12', fa])
         run(cmd)
+        
         return output
 
 

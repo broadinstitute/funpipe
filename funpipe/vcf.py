@@ -8,12 +8,27 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from funpipe.utils import run
+from funpipe.gt_pair import gt_pair
 import subprocess as sp
 
 
 class vcf:
     """ vcf class command """
     def __init__(self, vcf_file, prefix='output', outdir='.', fasta=''):
+        """variant call format
+        
+        Parameters
+        ----------
+        vcf_file: string
+            input vcf file
+        prefix: string
+            output prefix, default = 'output'
+        outdir: string
+            output directory, default = '.'
+        fasta: string
+            input fasta file
+            
+        """
         self._vcf = vcf_file
         self._prefix = prefix
         self._outdir = outdir
@@ -64,34 +79,78 @@ class vcf:
     @staticmethod
     def create_snpeff_db(gff3, dir, genome, config, prefix, ram, jar, ref_fa):
         """ Create snpEff database
-        gff3: gff file of gene annotation
-        genome: name of the reference genome
-        config: snpEff config files
-        prefix: output Prefix
-        ram: RAM in GB
-        jar: snpEff jar
-        ref_fa: reference fasta file
+        
+        Parameters
+        ----------
+        gff3: string
+            gff file of gene annotation
+        dir: string
+            destination for snpdb
+        genome: string
+            name of the reference genome
+        config: string
+            snpEff config files
+        prefix: string
+            output Prefix
+        ram: int
+            RAM in GB
+        jar: string
+            snpEff jar
+        ref_fa: string
+            reference fasta file
+            
+        Returns
+        -------
+        string
+            command line
+            
         """
-        run(' '.join(['snpeff_db.sh', dir, jar, genome, ref_fa, gff3, ram]))
+        cmd = ' '.join(['create_snpeff_db.sh', dir, jar, genome, ref_fa, gff3, str(ram) ])
+        run(cmd)
         return cmd
 
     def snpeff_annot(self, jar, config, genome, ram):
         """ run SNPEFF on a vcf
-        invcf: input vcf
-        outvcf: output vcf
-        jar: snpeff jar
-        genome: tag of genome name
-        ram: memory in GB
-        config: configuration file
+        
+        Parameters
+        ----------
+        jar: string
+            path to snpeff jar
+        config: string
+            configuration file
+        genome: string
+            tag of genome name
+        ram:  int
+            RAM in GB
+            
+        Returns
+        -------
+        string
+            output snpeff file, annotated vcf
+            
         """
         self.ann_vcf = os.path.basename(self._vcf).replace('vcf', 'snpeff.vcf')
         run(' '.join([
             'java -Xmx'+str(ram)+'g', '-jar', jar, 'ann', '-v',
             '-c', config, '-i vcf -o vcf', genome,
             self._vcf, '| bgzip >', self.ann_vcf]))
-        return self
+        return self.ann_vcf
 
     def import_snpeff(self, snpeff_tsv=None):
+        """import or generate snp site information,
+        and organize into DataFrame.
+        
+        Parameters
+        ----------
+        snpeff_tsv: string
+            imported snp site information file, default = None
+            
+        Returns
+        -------
+        dataframe
+            table of snp site level information
+            
+        """
         if snpeff_tsv is None:
             info_fields = [
                 'AF', 'AN', 'AC',
@@ -111,17 +170,27 @@ class vcf:
                      + '\n\'')
             run('bcftools query -f {} '.format(query)
                 + self._vcf+'> '+snpeff_tsv)
+            
         self._site_info = pd.read_csv(
             snpeff_tsv, sep='\t', header=None,
             names=['CHR', 'POS', 'REF', 'ALT']+info_fields)
-        return self
+        
+        
+        return self._site_info
 
-    def af():
-        """ get allele frequencies using vcftools """
+    def af(self):
+        """ get allele frequencies using vcftools
+        
+        Returns
+        -------
+        dataframe
+            table of allele frequencies
+            
+        """
         run("vcftools --gzvcf "+self._vcf + " --freq2 --out tmp")
         self._af = pd.read_csv('tmp.frq', sep='\t', header=0)
         rm('tmp.frq')
-        return self
+        return self._af
 
     def get_sample_index():
         """ return sample index from the VCF """
@@ -133,13 +202,24 @@ class vcf:
 
         Parameters
         ----------
-        jar: str
+        jar: string
             GATK jar path
-        prefix: str
-            output file prefix
-        outvcf:
+        outvcf: string
             output vcf
+        ref: string
+            reference
+        snp: bool
+            whether select snp variants
+        pass_only: bool
+            sites that are filtered will all be removed if True.
+        indel: bool 
+            whether select indel variants
 
+        Returns
+        -------
+        string
+            output selected vcf
+            
         """
         if snp and indel:
             raise ValueError("Cannot select both SNPs and InDels")
@@ -154,25 +234,51 @@ class vcf:
         cmd += ' -selectType SNP' if snp else ''
         cmd += ' -selectType INDEL' if indel else ''
         run(cmd)
-        return self
+        
+        return outvcf
 
     def filter_gt(self, outvcf, min_GQ=50, AD=0.8, DP=10):
         """ apply variant filtering using GQ, AD and DP
-        :param invcf: input vcf
-        :param outvcf: output vcf
-        :param min_GQ: minimum GQ cutoff
-        :param AD: allelic depth cutoff
-        :param DP: depth cutoff
+        
+        Parameters
+        ----------
+        outvcf: string
+            output filtered vcf
+        min_GQ: int
+            minimum GQ cutoff
+        AD: float
+            allelic depth cutoff
+        DP: int
+            depth cutoff
+            
+        Returns
+        -------
+        string
+            output filtered vcf
+            
         """
         cmd = ' '.join(['filter_gatk_genotypes.py', '--min_GQ', str(min_GQ),
                         '--min_percent_alt_in_AD', str(AD),
                         '--min_total_DP', str(DP), self._vcf, '>', outvcf])
         self._vcf = outvcf
         run(cmd)
-        return self
+        
+        return self._vcf
 
     def cal_dos(self, haploid=True):
-        """ Get a genotype dosage matrix from the VCF """
+        """ Get a genotype dosage matrix from the VCF
+        
+        Parameters
+        ----------
+        haploid: bool
+            True if haploid, False if polyploid.
+            
+        Returns
+        -------
+        pandas.dataframe
+            genotype dosage matrix
+            
+        """
         dos_file = self._prefix+'.dos.tsv'
         if haploid:
             run("bcftools query -f '[%GT ]\\n' " + self._vcf + '>' + dos_file)
@@ -180,31 +286,77 @@ class vcf:
                 dos_file, sep=r'\s+', header=None, na_values='.')
         else:
             raise ValueError("Not yet support polyploid.")
-        return self
+            
+        return self._dosage_matrix
 
     def samples_concord(self, s1_idx, s2_idx, na_ignore=False):
-        """ For each callset, compare SNP sharing between sample pairs """
+        """ For each callset, compare SNP sharing between sample pairs
+        
+        Parameters
+        ----------
+        s1_idx: string
+            sample 1's index in genotype dosages matrix.
+        s2_idx: string
+            sample 2's index in genotype dosage matrix.
+        na_ignore: bool
+            whether ignore nan data, default = False.
+            
+        Returns
+        -------
+        int
+            shared variants between 2 samples
+        int
+            unique variants between 2 samples
+            
+        """
         gt = gt_pair(self._dosage_matrix[s1_idx], self._dosage_matrix[s2_idx],
-                     na_ignore).get_n_unique()
-        return gt.n_share, gt.n_unique
+                     na_ignore)
+        
+        return gt.get_n_share(), gt.get_n_unique()
 
     def pairwise_concord(self, na_ignore=False):
-        """ pairwise concordance amongst all sample pairs in the call set """
+        """ pairwise concordance amongst all sample pairs in the call set
+        
+        Parameters
+        ----------
+        na_ignore: bool
+            whether ignore nan data, default = False
+            
+        Returns
+        -------
+        numpy.ndarray
+            pairwise shared variants amongst all sample pairs
+        numpy.ndarray
+            unique variants amongst all sample pairs
+        
+        """
         if self._dosage_matrix is None:
-            self = self.cal_dos()
+            self.cal_dos()
+            
         self._pairwise_share = np.zeros((self.n_samples, self.n_samples))
         self._pairwise_unique = np.zeros((self.n_samples, self.n_samples))
         for i in range(self.n_samples):
             for j in range(i, self.n_samples):
                 gt = gt_pair(self._dosage_matrix[i], self._dosage_matrix[j],
-                             na_ignore).get_n_unique()
-                self._pairwise_share[i, j] = gt.n_share
-                self._pairwise_unique[i, j] = gt.n_unique
-        return self
+                             na_ignore)
+                
+                self._pairwise_share[i, j] = gt.get_n_share()
+                self._pairwise_unique[i, j] = gt.get_n_unique()
+                
+        return self._pairwise_share, self._pairwise_unique
 
     # site level APIs
     def has_info(self, info, type=['site', 'sample']):
-        "Whether an info field is presented in the object "
+        """Whether an info field is presented in the object
+        
+        Parameters
+        ----------
+        info: string
+            site or sample information.
+        type: string
+            type = 'site' or 'sample', else raise value error.
+            
+        """
         has_info = False
         if type == 'site':
             has_info = (info in self._site_info.columns)
@@ -217,7 +369,19 @@ class vcf:
                 info+" is not presented in the site info column names.")
 
     def get_info(self, info=['AF']):
-        """ Get variant site level info of interest """
+        """ Get variant site level info of interest
+        
+        Parameters
+        ----------
+        info: list of string
+            a list of site level information, default = ['AF'].
+            
+        Returns
+        -------
+        pandas.dataframe
+            table of site level information
+            
+        """
         header = ['CHR', 'ID'] + info
         query_string = '\'%CHROM\t%CHROM-%POS-%REF-%ALT{0}\t'
         query_string += '\t'.join([('%'+i) for i in info])+'\''
@@ -227,9 +391,14 @@ class vcf:
         run(cmd)
         self._site_info = pd.read_csv(self._site_info_tsv, sep='\t',
                                       header=None, names=header)
-
+        return self._site_info
+    
+    
     def cal_maf(self, af_name='AF'):
+        #TO DO
         """ calculate MAF
+        
+        
         :param df: data.frame containing allele frequencies
         :param AFname: column name for allele frequencies
         :rtype pandas dataframe
@@ -238,7 +407,8 @@ class vcf:
         self._site_info['MAF'] = self._df[af_name]
         self._site_info.ix[self._df[af_name] > 0.5, 'MAF'] = (
             1 - self._df.ix[self._df[af_name] > 0.5, 'MAF'])
-        return self
+        
+        return  self._site_info
 
     def cal_miss(self, name='miss'):
         """ Calculate missingness of all sites"""
@@ -295,7 +465,7 @@ class vcf:
         return(1)
 
     # sample level APIs
-    def plot_sample_info(info):
+    def plot_sample_info(self, info):
         has_info(info, 'sample')
         return self
 
@@ -308,7 +478,7 @@ class vcf:
         self._plink = self._prefix
         return self
 
-
+# incomplete class object
 class siteinfo:
     """ A table contain site level information """
     def __init__(self):
@@ -414,143 +584,6 @@ class siteinfo:
     #
     #
     #
-
-
-def _gt_type(gt):
-    gt_type = type(gt).__name__
-    if gt_type == 'Series':
-        return gt
-    elif gt_type in ['list', 'ndarray']:
-        return pd.Series(gt_type)
-    else:
-        raise ValueError("Input gt vector should be either pandas series, list or numpy ndarray.")
-
-
-class gt_pair:
-    def __init__(self, gt1, gt2, na_ignore=False):
-        """
-        Parameters
-        ----------
-        gt1, gt2: pd.Series
-
-        Example
-        -------
-        >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
-        >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
-        >>> gt = gt_pair(gt1, gt2).get_n_unique()
-        >>> print(gt.n_total, gt.n_unique, gt.n_share)
-        7 5 2
-        >>> gt = gt_pair(gt1, gt2, na_ignore=True).get_n_unique()
-        >>> print(gt.n_total, gt.n_unique, gt.n_share)
-        5 3 2
-
-        """
-        self.gt1 = _gt_type(gt1)
-        self.gt2 = _gt_type(gt2)
-        self.na_ignore = na_ignore
-        self.n_total = None
-        self.n_share = None
-        self.n_unique = None
-        self._not_both_ref = None
-
-    def get_n_total(self):
-        """ total number of non-monomorphic sites between two samples
-
-        >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
-        >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
-        >>> gt_pair(gt1, gt2).get_n_total().n_total
-        7
-        >>> gt_pair(gt1, gt2).get_n_total().n_total
-        5
-
-        """
-        if self.na_ignore:
-            self.n_total = ((self.gt1+self.gt2).fillna(0)
-                            .map(lambda x: 1 if x !=0 else 0).sum())
-        else:
-            self.n_total = ((self.gt1.fillna(0) + self.gt2.fillna(0))
-                            .map(lambda x: 1 if x !=0 else 0).sum())
-        return self
-
-    def get_n_share(self):
-        """ Compare genotypes between two columns within a VCF, and report shared
-        variants between the two samples.
-
-                           A B
-        for example: site1 1 .
-                     site2 . 1
-                     site3 1 1
-
-        The unique variants here will be 2 (site1 and site2).
-
-        Returns
-        -------
-        int: # shared sites
-
-        Example
-        -------
-        >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
-        >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
-        >>> gt_pair(gt1, gt2).get_n_share().n_share
-        2
-
-        Note
-        ----
-
-        This method is also cross-validated with GenotypeConcordance in GATK and
-        bcftools stats.
-
-        NaN will not be matched to any others.
-
-        """
-        # is a polymorphic site (non-reference sites)
-        is_poly = (self.gt1 + self.gt2).map(lambda x: 1 if x != 0 else 0)
-        # two sites are similar, include reference
-        is_same = (self.gt1 - self.gt2).map(lambda x: 1 if x == 0 else 0)
-
-        # number of shared alleles
-        self.n_share = int((is_poly * is_same).sum())
-        return self
-
-
-    def get_n_unique(self):
-        """
-        Unique variants here mean a site that are private to either sample.
-
-                               A B
-        for example: site1 1 .
-                     site2 . 1
-                     site3 1 1
-
-        The unique variants here will be 2 (site1 and site2). If ignore NA,
-        the unique variants will be 0 (site1 and 2 will not be considered here).
-
-        Parameters
-        ----------
-        gt1, gt2: pd.Series
-        na_ignore:
-            bool whether ignore na in the comparison
-
-        Returns
-        -------
-            int: # unique sites
-
-        Example
-        -------
-        >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
-        >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
-        >>> gt_pair(gt1, gt2).get_n_unique()
-        5
-        >>> gt_unique(gt1, gt2)
-        3
-
-        """
-        if self.n_total is None:
-            self = self.get_n_total()
-        if self.n_share is None:
-            self = self.get_n_share()
-        self.n_unique = self.n_total - self.n_share
-        return self
 
 
 # legacy methods for backward compatibility
