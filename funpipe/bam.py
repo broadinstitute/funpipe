@@ -1,8 +1,9 @@
 import os
-from .picard import picard as pcd
-from .vcf import tabix
-from .fasta import samtools_index_fa, bwa_index_fa
-from .utils import run
+import sys
+sys.path.append('.')
+from picard import picard as pcd
+from vcf import tabix
+from utils import run
 
 class bam:
     """bam"""
@@ -14,13 +15,19 @@ class bam:
         filename: string
             path to the bam file.
         '''
-        self.fname = file_name
+        if os.path.exists(filename):
+            self.fname = filename
+        else:
+            raise Exception("Sorry, input bam file does not exist")
+            
         self.indexed_bam = None
         self.sorted_bam = None
         self.depth = None
         self.depth_per_win = None
         self.summary = None
         self.cleanup_bam = None
+        self.sv_config = None
+        self.out_vcf = None
     
     def index_bam(self):
         ''' index BAM using samtools
@@ -34,7 +41,7 @@ class bam:
         
         self.indexed_bam = self.fname+'.bai'#assign indexed bam
         
-        return self.fname+'.bai'
+        return self.indexed_bam
 
 
     def sort_bam(self,out_dir, tmp=None, RAM=2, threads=1):
@@ -67,7 +74,7 @@ class bam:
         
         self.sorted_bam = outfile #assign sorted bam
         
-        return outfile
+        return self.sorted_bam
 
 
 #    def bwa_align(fa, fq1, fq2, prefix):
@@ -114,7 +121,7 @@ class bam:
             
         self.depth = outfile #assign bam depth
         
-        return outfile
+        return self.depth
 
 
 #    def fastqc(bam, fq1, fq2, out_dir):
@@ -159,7 +166,7 @@ class bam:
         
         self.depth_per_win = out_prefix #assign depth per window
         
-        return cmd
+        return self.depth_per_win
 
 
     def bam_sum(self,out_txt):
@@ -179,7 +186,7 @@ class bam:
         cmd = 'samtools flagstat ' + self.fname + '>' + out_txt
         run(cmd)
         self.summary = out_txt #assign bam summary
-        return out_txt
+        return self.summary
 
 
     def clean_bam(self, out_prefix):
@@ -203,9 +210,9 @@ class bam:
              self.fname, '>', out_file]
         )
         run(cmd)
-        self.cleanup_bam = outfile #assign cleaned bam 
+        self.cleanup_bam = out_file #assign cleaned bam 
         
-        return out_file
+        return self.cleanup_bam
     
     
     def breakdancer(self, prefix):
@@ -226,5 +233,50 @@ class bam:
         run('bam2cfg.pl -g -h'+ self.fname +'> '+prefix+'.cfg')
         # Detect chromosomal structural variants using breakdancer-max
         run('brakdancer-max -q 40 -r 20 -y 90 '+cfg_file)
-        return cfg_file
-
+        self.sv_config = cfg_file
+        
+        return self.sv_config
+    
+    def variant_call(self,fa,prefix):
+        """varaint calling from aligned bam file
+        
+        Parameters
+        ----------
+        fa: string
+            reference fasta file
+            
+        prefix:
+            output prefix, without '.vcf' included
+            
+        Returns
+        -------
+        string
+            output vcf file
+        
+        Example
+        -------
+        bcftools mpileup -f reference.fa alignments.bam | bcftools call -mv -Ob -o calls.bcf
+        
+        """
+        if not os.path.exists(fa):
+            raise Exception('Sorry, reference fasta file for variant calling does not exist')
+        
+        output = prefix+'.vcf'
+        
+        cmd =' '.join(['bcftools mpileup','-f',fa,self.fname,
+                       '|','bcftools call -mv -o',prefix+'.vcf'])
+        run(cmd)
+        
+        self.out_vcf = output
+        
+        return self.out_vcf
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    

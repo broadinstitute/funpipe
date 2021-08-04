@@ -3,7 +3,9 @@ from math import ceil
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from funpipe.utils import run
+import sys
+sys.path.append('.')
+from utils import run
 import subprocess as sp
 
 

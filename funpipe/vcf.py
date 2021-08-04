@@ -7,9 +7,12 @@ from math import ceil
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from funpipe.utils import run
-from funpipe.gt_pair import gt_pair
 import subprocess as sp
+
+import sys
+sys.path.append('.')
+from utils import run
+from gt_pair import gt_pair
 
 
 class vcf:
@@ -26,7 +29,7 @@ class vcf:
         outdir: string
             output directory, default = '.'
         fasta: string
-            input fasta file
+            input reference fasta file
             
         """
         self._vcf = vcf_file

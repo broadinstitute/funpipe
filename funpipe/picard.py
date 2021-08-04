@@ -1,5 +1,8 @@
 import os
-from .utils import run
+import sys
+sys.path.append('.')
+from utils import run
+from utils import rm
 """
 Picard
 ======
@@ -11,11 +14,14 @@ class picard:
         Parameters
         ----------
         jar: string
-            jar path of picard tools, default = '/seq/software/picard/1.853/bin/picard.jar'
+            jar path of picard tools, default = '/opt/picard-tools/picard.jar'
         RAM: int
             maximum RAM usage in gigabytes, default = 4
             
         '''
+        if not os.path.exists(jar):
+            raise Exception('Sorry, jar file of picard tools does not exist')
+            
         self.cmd = ' '.join([
             'java -Xmx'+str(RAM)+'g -jar', jar
         ])
@@ -36,11 +42,19 @@ class picard:
             dictionary file
             
         '''
+        
+        
         if dictionary is None:
             dictionary = os.path.splitext(fa)[0]+'.dict'
+        
+        if os.path.exists(dictionary):
+            run('rm '+ dictionary)
+            
+            
         cmd = ' '.join([self.cmd, 'CreateSequenceDictionary', "R="+fa,
                        "O="+dictionary])
         run(cmd)
+        
         return dictionary
 
     def bam2fqs(self, bam, prefix):

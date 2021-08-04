@@ -1,6 +1,9 @@
-from .picard import picard
-from .utils import run
-from .bam import bam
+import os
+import sys
+sys.path.append('.')
+from picard import picard
+from utils import run
+from bam import bam
 # from plumbum import local
 # from plumbum.cmd import wget
 # import configparser
@@ -16,7 +19,11 @@ class fasta:
         fa_name: string
             the name of fasta file
         '''
-        self.fa_name = fa_name
+        if os.path.exists(fa_name):
+            self.fa_name = fa_name
+        else:
+            raise Exception("Sorry, input fasta file does not exist")
+        
         self.picard_index = None
         self.bwa_index = None
         self.samtools_index =None
@@ -31,8 +38,8 @@ class fasta:
             
         '''
         run('bwa index '+self.fa_name)
-        self.bwa_index = self.fa_name.split('.')[0]+'.bwt'
-        return self.fa_name.split('.')[0]+'.bwt'
+        self.bwa_index = self.fa_name+'.bwt'
+        return self.bwa_index
 
 
     def samtools_index_fa(self):
@@ -45,23 +52,28 @@ class fasta:
             
         '''
         run('samtools faidx '+self.fa_name)
-        self.samtools_index = self.fa_name.split('.')[0]+'.fai'
-        return self.fa_name.split('.')[0]+'.fai'
+        self.samtools_index = self.fa_name+'.fai'
+        return self.samtools_index
 
 
-    def index_fa(self):
+    def index_fa(self,jar_path):
         ''' index fasta file with common genomic tools
         
+        Parameters
+        ----------
+        jar_path: string
+            jar path of picard tools, default = '/opt/picard-tools/picard.jar'
+            
         Returns
         -------
         string
             index file name
             
         '''
-        samtools_index_fa()
-        bwa_index_fa()
-        pcd = picard()
-        self.picard_index = pcd.dict( self.fa_name )
+        self.samtools_index_fa()
+        self.bwa_index_fa()
+        pcd = picard(jar=jar_path)
+        self.picard_index = pcd.dict( fa=self.fa_name,dictionary=None )
         return self.picard_index
 
 

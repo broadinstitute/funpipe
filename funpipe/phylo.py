@@ -1,4 +1,7 @@
-from funpipe.utils import run
+import sys
+import os
+sys.path.append('.')
+from utils import run
 
 
 class phylo:
@@ -10,7 +13,10 @@ class phylo:
         invcf: string
             input vcf file
         """
-        self.invcf = invcf
+        if os.path.exists( invcf ):
+            self.invcf = invcf
+        else:
+            raise Exception('Sorry, input vcf file does not exist')
         
     def vcf_snp_to_fasta(self,prefix, max_amb=10):
         """ snp only vcf to fasta file
