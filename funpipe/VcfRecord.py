@@ -33,7 +33,8 @@ class VcfRecord:
         self.filter = fields[6]
         self.info = fields[7]
         self.format = fields[8]
-
+        
+        # problematic code
         self.genotypes = []
         self.vcf_annot = False
         for i in range(9, len(fields)):
@@ -156,6 +157,8 @@ class VcfRecord:
         het_binom_p: bool
             whether compute pvalue of heterozygous binomial test
         return_flags: bool
+            if True, return parsed genotype, else
+            return parsed genotype list.
             
         :return:
         """
@@ -210,10 +213,17 @@ class VcfRecord:
             return parsed_genotype_list
 
     def is_het(self, index=0):  # currently works only on biallelic sites
-        """
-        Whether a
-        :param index: index for GT field in genotype string
-        :return: boolean
+        """check whether a genotype is heterogenous (currently works only on biallelic sites)
+        
+        Parameters
+        ----------
+        index: int
+            index for GT field in genotype string
+            
+        Returns
+        -------
+        bool
+            True if the genotype is heterogenous, else False.
         """
         het = False
         genotype = self.genotypes[index]
@@ -224,6 +234,21 @@ class VcfRecord:
         return het
 
     def get_GQ(self, parsed_genotype, index=0):
+        """get GQ(genotype quality)
+        
+        Parameters
+        ----------
+        parsed_genotype: string
+            genotype parsed in
+        index: int
+            index of genotype, default = 0
+            
+        Returns
+        --------
+        string
+            genotype quality
+            
+        """
         gq = 'Undefined'
         fields = self.genotypes[index]
         gt_fields = fields.split(':')
@@ -236,6 +261,25 @@ class VcfRecord:
 
     def get_percent_AD(self, index=0):
         # currently works only on biallelic sites
+        
+        """get percentage of allelic depths,
+        alt_depth/(alt_depth + ref_depth) 
+        
+        Parameters
+        ----------
+        index: int
+            index of genotype, default = 0
+        
+        Returns
+        -------
+        float
+            percentage of allelic depths
+        
+        Example
+        -------
+        For a GT field,  "GT:AD    0/0:6,9", percentage is 9/(6+9).
+        
+        """
         percent_AD = 'Undefined'
         fields = self.genotypes[index]
         gt_fields = fields.split(':')
@@ -254,7 +298,23 @@ class VcfRecord:
 
     def get_AD_binomial_p(self, index=0):
         # currently works only on biallelic sites
-        pvalue = False
+        
+        """binomial test for allelic depths(ref and alt),
+        assess the significance with a p-value of the hypothesis test.
+        The hypothesized probability of success is 0.5, and the test is 2 sided.
+        
+        Parameters
+        ----------
+        index: int
+            index of genotype, default = 0
+            
+        Returns
+        -------
+        float
+            p value of binomial test
+        
+        """
+        pvalue = None
         fields = self.genotypes[index]
         gt_fields = fields.split(':')
         try:
@@ -269,9 +329,23 @@ class VcfRecord:
                                     (int(split_ad[1]) + int(split_ad[0])))
         except:
             pass
+        
         return pvalue
 
     def get_total_DP(self, index=0):
+        """get total read depth(filtered)
+        
+        Parameters
+        ----------
+        index: int
+            index of genotype, default = 0
+            
+        Returns
+        -------
+        string
+            total read depth
+            
+        """
         total_DP = 'Undefined'
         fields = self.genotypes[index]
         gt_fields = fields.split(':')
@@ -283,6 +357,24 @@ class VcfRecord:
         return total_DP
 
     def get_GQ_index(self, parsed_genotype):
+        """get index of GQ() in format field
+        
+        Parameters
+        ----------
+        parsed_genotype: string
+            genotype parsed in
+            
+        Returns
+        -------
+        int
+            index of GQ
+            
+        Example
+        -------
+            AD:GQ:DP:HQ
+        index of GQ is 1 in format field.
+        
+        """
         gq_index = 'Undefined'
         fields = self.format
         format_fields = fields.split(':')
@@ -302,6 +394,20 @@ class VcfRecord:
         return gq_index
 
     def get_AD_index(self):
+        """get the index of AD in format field,
+        AD is allelic depths for the ref and alt alleles in the order listed.
+        
+        Returns
+        -------
+        int
+            index of AD
+            
+        Example
+        -------
+            AD:GQ:DP:HQ
+        index of AD is 0 in format field.
+        
+        """
         ad_index = 'Undefined'
         fields = self.format
         format_fields = fields.split(':')
@@ -312,6 +418,19 @@ class VcfRecord:
         return ad_index
 
     def get_DP_index(self):
+        """get the index of DP(valid read depth) in format field
+        
+        Returns
+        -------
+        int
+            index of DP
+            
+        Example
+        -------
+            GT:GQ:DP:HQ
+        index of DP is 2 in format field.
+        
+        """
         ad_index = 'Undefined'
         fields = self.format
         format_fields = fields.split(':')
@@ -334,6 +453,19 @@ class VcfRecord:
         return self.ref
 
     def get_alt(self, genotype):
+        """get alternative allele
+        
+        Parameters
+        ----------
+        genotype: string
+            input genotype in vcf record, for example, 0|0
+        
+        Returns
+        -------
+        string
+            alternative allele
+            
+        """
         if genotype in ['0', '.', '0/0', './.', '0|0', '.|.']:
             return False
         else:
@@ -393,27 +525,44 @@ class VcfRecord:
         return self.info
 
     def get_AF(self):
-        AF = False
+        """get allelic frequency at locus
+        
+        Returns
+        -------
+        float
+            allelic frequency
+        """
+        AF = None
         fields = self.info.split(';')
         for field in fields:
             m = re.search('AF=([\d\.]+)', field)
             try:
                 AF = float(m.group(1))
             except:
-                pass
+                raise Exception('Sorry, AF information not found in vcf record.')
+                
         return AF
 
     def get_QP(self):
-        QP = False
+        """get QP: Percentage of As, Cs, Gs, Ts weighted by Q & MQ at locus
+        
+        Returns
+        -------
+        dict
+            A,C,G,T weights at locus
+        """
+        QP_W = None
         fields = self.info.split(';')
         for field in fields:
             m = re.search('QP=(\d+),(\d+),(\d+),(\d+)', field)
             try:
                 QP = m.group(1, 2, 3, 4)
                 QP = [int(q) for q in QP]
+                QP_W = {'A':QP[0],'C':QP[1],'G':QP[2],'T':QP[3]}
             except:
-                pass
-        return QP
+                raise Exception('Sorry, QP information not found in vcf record.')
+                
+        return QP_W
 
     def get_MAF_from_QP(self):
         MAF = False
@@ -437,6 +586,9 @@ class VcfRecord:
         return self.vcf_annot
 
     def is_singleton(self):
+        #ToDo
+        """
+        """
         nonzeros = 0
         last_nonzero_index = False
         for i in range(0, len(self.genotypes)):
@@ -450,6 +602,13 @@ class VcfRecord:
             return False
 
     def is_biallelic(self):
+        """check whether the site is biallelic
+        
+        Returns
+        -------
+        bool
+            True if the site is biallelic, else False
+        """
         split_alt = self.alt.split(',')
         if len(split_alt) > 1:
             return False
@@ -457,6 +616,13 @@ class VcfRecord:
             return True
 
     def count_ambig_genotypes(self):
+        """count the number of ambiguous genotypes
+        
+        Returns
+        -------
+        int
+            the number of ambiguous genotypes
+        """
         ambig = 0
         for current_genotype in self.genotypes:
             if current_genotype.split(':')[0] in ['.', './.']:
@@ -464,6 +630,13 @@ class VcfRecord:
         return ambig
 
     def get_genotype_profile(self):
+        """get a profile of all samples' genotypes in this vcf record
+        
+        Returns
+        -------
+        list of strings
+            genotype profile of all samples
+        """
         profile = list()
         for current_genotype in self.genotypes:
             profile.append(current_genotype.split(':')[0])

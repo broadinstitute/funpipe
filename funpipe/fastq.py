@@ -1,6 +1,9 @@
-from .picard import picard
-from .utils import run
-from .bam import bam
+import os
+import sys
+sys.path.append('.')
+from picard import picard
+from utils import run
+from bam import bam
 # from plumbum import local
 # from plumbum.cmd import wget
 # import configparser
@@ -24,6 +27,13 @@ class fastq:
             
         '''
         self.is_paired = is_paired
+        if len(names) > 2:
+            raise Exception('Sorry, the maximum number of fastq files is 2')
+            
+        for fq in names:
+            if not os.path.exists(fq):
+                raise Exception('Sorry, input fastq file '+ fq + ' does not exist')
+                
         self.names = names
         
         
@@ -59,8 +69,8 @@ class fastq:
         
         Parameters
         ----------
-        fa: string
-            fasta file
+        fa: funpipe.fasta
+            reference fasta
         prefix: string
             output file prefix
             
@@ -70,26 +80,26 @@ class fastq:
             bam object containing indexed bam and sorted bam.
             
         '''
-        if not os.path.isfile(fa+'.fai'):
-            samtools_index_fa(fa)
-        if not (os.path.isfile(fa+'.bwt')):
-            bwa_index_fa(fa)
+        if fa.samtools_index == None or (not os.path.exists(fa.samtools_index)):
+            fa.samtools_index_fa()
+        if fa.bwa_index == None or (not os.path.exists(fa.bwa_index)):
+            fa.bwa_index_fa()
         
         if self.is_paired:
             fq1 = self.names[0]
             fq2 = self.names[1]
-            cmd = ' '.join(['bwa mem', fa, fq1, fq2, '| samtools view -S -b -u > ',
+            cmd = ' '.join(['bwa mem', fa.fa_name, fq1, fq2, '| samtools view -S -b -u > ',
                       prefix+'.bam'])
         else:
             fq = self.names[0]
-            cmd = ' '.join(['bwa mem', fa, fq, '| samtools view -S -b -u > ',
+            cmd = ' '.join(['bwa mem', fa.fa_name, fq, '| samtools view -S -b -u > ',
                       prefix+'.bam'])
             
         run( cmd )
         BM = bam(prefix+'.bam')
+        indexed_bam = BM.index_bam()
         out_dir = os.path.dirname(prefix)
         sorted_bam = BM.sort_bam( out_dir )
-        indexed_bam = BM.index_bam()
         
         return BM
 

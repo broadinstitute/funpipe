@@ -1,4 +1,7 @@
-
+import os
+import sys
+sys.path.append('.')
+from utils import run
 
 class plink:
     def __init__(self, prefix):
@@ -10,9 +13,13 @@ class plink:
             the prefix of bfile
         """
         self._bfile = prefix
-        self._bed = prefix + '.bed'
-        self._fam = prefix + '.fam'
-        self._bim = prefix + '.bim'
+        if os.path.exists(prefix + '.bed') and os.path.exists(prefix + '.fam') and os.path.exists(prefix + '.bim'):
+            self._bed = prefix + '.bed'
+            self._fam = prefix + '.fam'
+            self._bim = prefix + '.bim'
+        else:
+            raise Exception('Sorry, missing at least one bfile for plink to work')
+        
         self._related = None
         self._assoc = None
 

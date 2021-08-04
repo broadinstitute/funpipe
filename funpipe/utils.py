@@ -5,6 +5,7 @@ from subprocess import check_call
 import hashlib
 
 
+    
 def done(job_name):
     """ show that a job is done
     
@@ -59,13 +60,13 @@ def run(cmd):
     return 1
 
 
-def rm(file):
+def rm(*files):
     ''' remove a file
     
     Parameters
     ----------
-    file: string
-        path of file to remove
+    files: tuple of strings
+        paths of files to remove
     
     Returns
     -------
@@ -73,7 +74,7 @@ def rm(file):
         1
         
     '''
-    for i in files:
+    for file in files:
         run('rm '+file)
     return 1
 
