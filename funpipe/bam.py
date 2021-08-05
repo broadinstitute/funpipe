@@ -215,24 +215,26 @@ class bam:
         return self.cleanup_bam
     
     
-    def breakdancer(self, prefix):
+    def breakdancer(self, bam2cfg_path, prefix ):
         ''' Detect structural variation using breakdancer
 
         Parameters
         ----------
+        bam2cfg_path: string
+            path to bam2cfg.pl 
         prefix: string
             output prefix
 
         Returns
         -------
         string
-            contig file
+            config file
         '''
         # create config files
         cfg_file = prefix+'.cfg'
-        run('bam2cfg.pl -g -h'+ self.fname +'> '+prefix+'.cfg')
+        run( bam2cfg_path + ' -g -h '+ self.fname +' > '+prefix+'.cfg')
         # Detect chromosomal structural variants using breakdancer-max
-        run('brakdancer-max -q 40 -r 20 -y 90 '+cfg_file)
+        run('breakdancer-max -q 40 -r 20 -y 90 '+cfg_file)
         self.sv_config = cfg_file
         
         return self.sv_config
