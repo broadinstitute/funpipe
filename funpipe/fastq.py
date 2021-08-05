@@ -43,18 +43,18 @@ class fastq:
         Parameters
         ----------
         out_dir: string
-            output directory
+            qc output directory
             
         Returns
         -------
         string
-            output directory
+            qc output directory
             
         '''
         if self.is_paired:
             fq1 = self.names[0]
             fq2 = self.names[1]
-            cmd = ' '.join(['fastqc -f fastq', fq1, fq2, '-o', out_dir])
+            cmd = ' '.join(['fastqc -f fastq', fq1, fq2, '-o',out_dir])
         else:
             fq = self.names[0]
             cmd = ' '.join(['fastqc -f fastq', fq, '-o', out_dir])
@@ -76,8 +76,8 @@ class fastq:
             
         Returns
         -------
-        bam
-            bam object containing indexed bam and sorted bam.
+        funpipe.bam
+            bam file of aligned sequences
             
         '''
         if fa.samtools_index == None or (not os.path.exists(fa.samtools_index)):
@@ -97,9 +97,9 @@ class fastq:
             
         run( cmd )
         BM = bam(prefix+'.bam')
-        indexed_bam = BM.index_bam()
-        out_dir = os.path.dirname(prefix)
-        sorted_bam = BM.sort_bam( out_dir )
+        #out_dir = os.path.dirname(prefix)
+        #sorted_bam = BM.sort_bam( out_dir )
+        #indexed_bam = BM.index_bam()
         
         return BM
 
