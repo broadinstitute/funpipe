@@ -45,7 +45,9 @@ class TestBam(unittest.TestCase):
     def setUp(self):
         self.bam = 't.bam'
         for file in ['t.bam.bai','t.sorted.bam','t.depth.gz',
-                     't_bam_summary.txt','t.cleanup.bam','t.vcf']:
+                     't_bam_summary.txt','t.cleanup.bam',
+                     't.vcf','t_pileup.txt']:
+            
             if os.path.exists(file):
                 run('rm '+file)
                 
@@ -89,7 +91,34 @@ class TestBam(unittest.TestCase):
         self.assertTrue( bam_test.out_vcf == 't.vcf')
         self.assertTrue(os.path.exists(bam_test.out_vcf ) )
         
+    def testPileup(self):
+        bam_test = bam(self.bam)
+        ref_fa = 'test_ref.fa'
+        pileup = bam_test.create_pileup(fa=ref_fa,out_prefix='t_pileup',C=50,Q=13,q=0)
+        self.assertTrue( bam_test.pileup == 't_pileup.txt')
+        self.assertTrue(os.path.exists(bam_test.pileup) )
         
+    """
+    Error:
+    ../../scripts/dep_per_win.pl --m t_pileup.txt --p t_depthPerW.txt --window 5000 --faidx test_ref.fa.fai
+Experimental keys on scalar is now forbidden at ../../scripts/dep_per_win.pl line 31.
+Type of arg 1 to keys must be hash or array (not hash element) at ../../scripts/dep_per_win.pl line 31, near "}) "
+Execution of ../../scripts/dep_per_win.pl aborted due to compilation errors.
+
+
+    def testDepthPerW(self):
+        bam_test = bam(self.bam)
+        
+        ref_fa = 'test_ref.fa'
+        fasta_test = fasta( ref_fa )
+        fasta_test.samtools_index_fa()
+        
+        bam_test.create_pileup(fa=ref_fa,out_prefix='t_pileup',C=50,Q=13,q=0)
+        depthPerW = bam_test.depth_per_window( bam_test.pileup, 't_depthPerW',
+                                              fasta_test.samtools_index, window=5000)
+    
+    """
+    
     """    
     def testBreakdancer(self):
         bam_test = bam(self.bam)
@@ -97,12 +126,6 @@ class TestBam(unittest.TestCase):
         self.assertTrue( bam_test.sv_config == 't_sv.cfg')
         self.assertTrue(os.path.exists(bam_test.sv_config ) )
     """   
-    """
-    def testDepthPerW(self):
-        bam_test = bam(self.bam)
-    
-    """  
-    
     
     
       

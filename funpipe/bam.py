@@ -23,6 +23,7 @@ class bam:
         self.indexed_bam = None
         self.sorted_bam = None
         self.depth = None
+        self.pileup = None
         self.depth_per_win = None
         self.summary = None
         self.cleanup_bam = None
@@ -138,6 +139,53 @@ class bam:
 #        return out_dir
 
 
+    def create_pileup(self,fa,out_prefix,C=50,reg=None,l=None,Q=13,q=0):
+        """produces "pileup" textual format from an alignment
+        
+        Usage
+        -----
+        samtools mpileup [-EB] [-C capQcoef] [-r reg] [-f in.fa] [-l list] [-Q minBaseQ] [-q minMapQ] in.bam [in2.bam [...]]
+        
+        Parameters
+        ----------
+        fa: string
+            reference fasta file   
+        out_prefix: string
+            prefix of output text file, '.txt' not included.
+        C: int
+            Coefficient for downgrading mapping quality for reads containing excessive mismatches.
+            For BWA, default C = 50 is recommended.
+        reg: string
+            Only generate pileup in region. Requires the BAM files to be indexed.
+            If not specified, default = None, pileup will be generated for all sites.
+        
+        l: string
+            BED or position list file containing a list of regions or
+            sites where pileup or BCF should be generated. Default = None.
+        Q: int
+            Minimum base quality for a base to be considered, default = 13.
+        q: int
+            Minimum mapping quality for an alignment to be used, default = 0.
+        
+        Returns
+        -------
+        string
+            output pileup text, out_prefix+'.txt'
+        """
+        cmd = 'samtools mpileup -C '+ str(C)
+        if reg!=None:
+            cmd = cmd + ' -r ' + reg
+        cmd = cmd + ' -f ' + fa
+        if l!=None:
+            cmd = cmd + ' -l ' + l
+        cmd = cmd + ' -Q ' + str(Q) + ' -q ' + str(q) + ' -o ' + out_prefix + '.txt' + ' ' + self.fname
+        
+        run(cmd)
+        self.pileup = out_prefix + '.txt'
+        
+        return self.pileup
+        
+        
     def depth_per_window(self, pileup, out_prefix, faidx, window=5000):
         ''' calculate depth per window
         
@@ -155,10 +203,15 @@ class bam:
         Returns
         -------
         string
-            command line executed
+            depth per window file
         '''
+        if not os.path.exists(pileup):
+            raise Exception('Sorry, pileup file does not exist.')
+        if not os.path.exists(faidx):
+            raise Exception('Sorry, fasta index file does not exist.')
+            
         cmd = ' '.join([
-            'dep_per_win.pl -m', pileup,
+            '../scripts/dep_per_win.pl -m', pileup,
             '-p', out_prefix,
             '--window', str(window),
             '--faidx', faidx])
