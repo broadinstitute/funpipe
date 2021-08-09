@@ -63,9 +63,9 @@ class gt_pair:
         -------
         >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
         >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
-        >>> gt_pair(gt1, gt2).get_n_total().n_total
+        >>> gt_pair(gt1, gt2).get_n_total()
         7
-        >>> gt_pair(gt1, gt2).get_n_total().n_total
+        >>> gt_pair(gt1, gt2).get_n_total()
         5
 
         """
@@ -97,7 +97,7 @@ class gt_pair:
         -------
         >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
         >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
-        >>> gt_pair(gt1, gt2).get_n_share().n_share
+        >>> gt_pair(gt1, gt2).get_n_share()
         2
 
         Note
@@ -149,9 +149,10 @@ class gt_pair:
 
         """
         if self.n_total is None:
-            self = self.get_n_total()
+            self.get_n_total()
         if self.n_share is None:
-            self = self.get_n_share()
+            self.get_n_share()
+            
         self.n_unique = self.n_total - self.n_share
         
         return self.n_unique

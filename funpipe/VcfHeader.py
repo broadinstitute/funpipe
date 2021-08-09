@@ -6,10 +6,8 @@ from scipy.stats import binom_test
 # to do: merge with vcf.py
 
 
-class VcfHeader:
-    """
-    Vcf Header Class
-    """
+class vcfheader:
+
 
     def __init__(self, vcf_file):
         """constructor of VcfHeader object

@@ -5,7 +5,7 @@ from scipy.stats import binom_test
 
 # to do: merge with vcf.py
 
-class VcfRecord:
+class vcfrecord:
     """
     Object for each record (each line)
     """
