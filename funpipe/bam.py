@@ -35,14 +35,14 @@ class bam:
         
         Returns
         -------
-        string
-            The name of indexed bam file
+        funpipe.bam
+            an updated bam object with indexed bam file generated.
         '''
         run('samtools index '+ self.fname )
         
         self.indexed_bam = self.fname+'.bai'#assign indexed bam
         
-        return self.indexed_bam
+        return self
 
 
     def sort_bam(self,out_dir, tmp=None, RAM=2, threads=1):
@@ -61,8 +61,8 @@ class bam:
         
         Returns
         -------
-        string
-            The name of sorted bam
+        funpipe.bam
+            an updated bam object with sorted bam file generated.
             
         '''
         bam_name = os.path.basename(self.fname)
@@ -75,7 +75,7 @@ class bam:
         
         self.sorted_bam = outfile #assign sorted bam
         
-        return self.sorted_bam
+        return self
 
 
 #    def bwa_align(fa, fq1, fq2, prefix):
@@ -110,8 +110,8 @@ class bam:
             
         Returns
         -------
-        string
-            The name of bam depth file
+        funpipe.bam
+            an updated bam object with depth file generated.
             
         '''
         outfile = out_prefix+'.depth.gz'
@@ -122,7 +122,7 @@ class bam:
             
         self.depth = outfile #assign bam depth
         
-        return self.depth
+        return self
 
 
 #    def fastqc(bam, fq1, fq2, out_dir):
@@ -169,8 +169,9 @@ class bam:
         
         Returns
         -------
-        string
-            output pileup text, out_prefix+'.txt'
+        funpipe.bam
+            an updated bam object with pileup generated, out_prefix+'.txt'.
+            
         """
         cmd = 'samtools mpileup -C '+ str(C)
         if reg!=None:
@@ -183,7 +184,7 @@ class bam:
         run(cmd)
         self.pileup = out_prefix + '.txt'
         
-        return self.pileup
+        return self
         
         
     def depth_per_window(self, pileup, out_prefix, faidx, window=5000):
@@ -202,8 +203,9 @@ class bam:
             
         Returns
         -------
-        string
-            depth per window file
+        funpipe.bam
+            an updated bam object with depth per window file generated.
+            
         '''
         if not os.path.exists(pileup):
             raise Exception('Sorry, pileup file does not exist.')
@@ -219,7 +221,7 @@ class bam:
         
         self.depth_per_win = out_prefix #assign depth per window
         
-        return self.depth_per_win
+        return self
 
 
     def bam_sum(self,out_txt):
@@ -229,17 +231,19 @@ class bam:
         Parameters
         ----------
         out_txt: string
-            output file name
+            output file name,'.txt' must be included.
         
         Returns
         -------
-        string
-            output summary name
+        funpipe.bam
+            an updated bam object with summary text generated.
+            
         '''
         cmd = 'samtools flagstat ' + self.fname + '>' + out_txt
         run(cmd)
-        self.summary = out_txt #assign bam summary
-        return self.summary
+        self.summary = out_txt
+        
+        return self
 
 
     def clean_bam(self, out_prefix):
@@ -252,8 +256,8 @@ class bam:
             
         Returns
         -------
-        string
-            output file name
+        funpipe.bam
+            an updated bam object with cleaned up bam generated, out_prefix+'.cleanup.bam'.
             
         '''
         out_file = out_prefix+'.cleanup.bam'
@@ -265,7 +269,7 @@ class bam:
         run(cmd)
         self.cleanup_bam = out_file #assign cleaned bam 
         
-        return self.cleanup_bam
+        return self
     
     
     def breakdancer(self, bam2cfg_path, prefix ):
@@ -280,8 +284,9 @@ class bam:
 
         Returns
         -------
-        string
-            config file
+        funpipe.bam
+            an updated bam object with structural variation detected by breakdancer.
+            
         '''
         # create config files
         cfg_file = prefix+'.cfg'
@@ -290,7 +295,7 @@ class bam:
         run('breakdancer-max -q 40 -r 20 -y 90 '+cfg_file)
         self.sv_config = cfg_file
         
-        return self.sv_config
+        return self
     
     def variant_call(self,fa,prefix):
         """varaint calling from aligned bam file
@@ -305,8 +310,8 @@ class bam:
             
         Returns
         -------
-        string
-            output vcf file
+        funpipe.bam
+            an updated bam object with variant calling executed, VCF file generated.
         
         Example
         -------
@@ -324,7 +329,7 @@ class bam:
         
         self.out_vcf = output
         
-        return self.out_vcf
+        return self
         
         
         

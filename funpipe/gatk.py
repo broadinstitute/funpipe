@@ -91,7 +91,7 @@ class gatk:
             output combined vcf file
             
         '''
-        out_vcf = self.prefix+'.vcf.gz'
+        out_vcf = self.out_dir + '/' +self.prefix+'.vcf.gz'
         options = ['UNIQUIFY', 'PRIORITIZE', 'UNSORTED']
         if option not in options:
             raise ValueError('Merge option not valid.\n')
@@ -128,7 +128,7 @@ class gatk:
             output vcf file after selection
             
         '''
-        output = self.prefix+'.vcf.gz'
+        output = self.out_dir+'/'+self.prefix+'.vcf.gz'
         cmd = ' '.join([
             self.cmd, '-T SelectVariants', '--variant', in_vcf,
             '-o ', output])

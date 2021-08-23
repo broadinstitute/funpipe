@@ -20,8 +20,23 @@ RUN apt-get update && apt-get install -y software-properties-common && add-apt-r
         vim-common \
         wget \
         zlib1g-dev \
+        pkg-config \
+        libgd-dev \
+        libperl-dev \
+        libgsl0-dev \
+        git \
+        bwa \
     && rm -rf /var/lib/apt/lists/*
 
+#--------------------------
+#cpan
+#--------------------------
+RUN  wget -O- http://cpanmin.us | perl - -l ~/perl5 App::cpanminus local::lib && \
+     eval `perl -I ~/perl5/lib/perl5 -Mlocal::lib` && \
+     echo 'eval `perl -I ~/perl5/lib/perl5 -Mlocal::lib`' >> ~/.bashrc && \
+     echo 'export MANPATH=$HOME/perl5/man:$MANPATH' >> ~/.bashrc && \
+     cpanm Statistics::Descriptive && \
+     cpanm GD::Graph::histogram
 
 #-----------------------------
 # Pipeline components
@@ -49,18 +64,40 @@ ENV LD_LIBRARY_PATH /usr/local/lib/bamtools:$LD_LIBRARY_PATH
 # Picard tools
 RUN mkdir /opt/picard-tools && \
     wget --no-check-certificate -P /opt/picard-tools/ https://github.com/broadinstitute/picard/releases/download/2.9.0/picard.jar
-
 # Pilon
+RUN mkdir /opt/pilon && \
+    wget --no-check-certificate -P /opt/pilon/ https://github.com/broadinstitute/pilon/releases/download/1.23/pilon.jar
 
 # fasttree
+RUN apt-get install -y fasttree
 
-# RXMAL
+# RAXML
+RUN apt-get install -y raxml
 
 # GATK
-
+RUN cd /opt && \
+    wget https://storage.googleapis.com/gatk-software/package-archive/gatk/GenomeAnalysisTK-3.8-1-0-gf15c1c3ef.tar.bz2 && \
+    tar -xf GenomeAnalysisTK-3.8-1-0-gf15c1c3ef.tar.bz2 && rm GenomeAnalysisTK-3.8-1-0-gf15c1c3ef.tar.bz2 && \
+    mv GenomeAnalysisTK-3.8-1-0-gf15c1c3ef/ GATK-3.8/
+    
 # FastQC
+RUN cd /opt && \
+    wget --no-check-certificate https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.9.zip && \
+    unzip fastqc_v0.11.9.zip && rm fastqc_v0.11.9.zip && cd FastQC && chmod 755 fastqc && \
+    sudo ln -s /opt/FastQC/fastqc /usr/local/bin/fastqc 
 
+#bcftools
+RUN cd /opt && \
+    wget --no-check-certificate https://github.com/samtools/bcftools/releases/download/1.13/bcftools-1.13.tar.bz2 && \
+    tar -xf bcftools-1.13.tar.bz2 && rm bcftools-1.13.tar.bz2 && cd bcftools-1.13 && \
+    ./configure --enable-libgsl --enable-perl-filters && make && make install && make clean
+ENV BCFTOOLS_PLUGINS /opt/bcftools-1.13/plugins:$BCFTOOLS_PLUGINS
 
+#breakdancer
+RUN cd /opt && \
+    git clone --recursive https://github.com/genome/breakdancer.git && cd breakdancer && mkdir build && cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX=/usr/local && make && make install && make clean
+    
 # python modules
 RUN pip3 install --upgrade pip
 RUN pip3 install tables numpy pandas funpipe
