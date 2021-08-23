@@ -61,6 +61,7 @@ class fastq:
             
         run(cmd)
         print(' - FastQc finished.')
+        
         return out_dir
         
         

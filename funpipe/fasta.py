@@ -33,13 +33,14 @@ class fasta:
         
         Returns
         -------
-        string
-            index file name
+        funpipe.fasta
+            an updated fasta object with .bwt file generated.
             
         '''
         run('bwa index '+self.fa_name)
         self.bwa_index = self.fa_name+'.bwt'
-        return self.bwa_index
+        
+        return self
 
 
     def samtools_index_fa(self):
@@ -47,13 +48,14 @@ class fasta:
         
         Returns
         -------
-        string
-            index file name
+        funpipe.fasta
+            an updated fasta object with .fai file generated.
             
         '''
         run('samtools faidx '+self.fa_name)
         self.samtools_index = self.fa_name+'.fai'
-        return self.samtools_index
+        
+        return self
 
 
     def index_fa(self,jar_path):
@@ -66,15 +68,16 @@ class fasta:
             
         Returns
         -------
-        string
-            index file name
+        funpipe.fasta
+            an updated fasta object with .fai, .bwt and .dict files generated.
             
         '''
         self.samtools_index_fa()
         self.bwa_index_fa()
         pcd = picard(jar=jar_path)
         self.picard_index = pcd.dict( fa=self.fa_name,dictionary=None )
-        return self.picard_index
+        
+        return self
 
 
 # def get_ref(ftp, md5, dir='.'):
