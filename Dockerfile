@@ -26,6 +26,8 @@ RUN apt-get update && apt-get install -y software-properties-common && add-apt-r
         libgsl0-dev \
         git \
         bwa \
+        libgfortran5 \
+	libopenblas-dev \
     && rm -rf /var/lib/apt/lists/*
 
 #--------------------------
@@ -97,6 +99,23 @@ ENV BCFTOOLS_PLUGINS /opt/bcftools-1.13/plugins:$BCFTOOLS_PLUGINS
 RUN cd /opt && \
     git clone --recursive https://github.com/genome/breakdancer.git && cd breakdancer && mkdir build && cd build && \
     cmake .. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX=/usr/local && make && make install && make clean
+#readseq
+RUN mkdir /opt/readseq && \
+	wget --no-check-certificate -P /opt/readseq/ https://sourceforge.net/projects/readseq/files/latest/download/readseq.jar
+
+#gemma
+RUN cd /opt && \
+	wget --no-check-certificate https://github.com/genetics-statistics/GEMMA/archive/refs/tags/v0.98.5.tar.gz && \
+	tar -xf v0.98.5.tar.gz && rm v0.98.5.tar.gz && cd GEMMA-0.98.5/ && make -j 4 && cd bin/ && cp gemma /usr/local/bin/ && \
+	make clean
+
+#phyml
+RUN sudo apt-get install -y phyml
+
+#plink2
+RUN cd /opt && \
+    wget --no-check-certificate https://s3.amazonaws.com/plink2-assets/alpha2/plink2_linux_x86_64.zip && unzip plink2_linux_x86_64.zip && \
+    rm plink2_linux_x86_64.zip && cp plink2 /usr/local/bin/
     
 # python modules
 RUN pip3 install --upgrade pip

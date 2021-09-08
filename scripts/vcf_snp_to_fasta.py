@@ -10,9 +10,9 @@ with the funpipe package.
 import sys
 import re
 import argparse
-from funpipe import vcftools
+sys.path.append('../funpipe')
+import vcftools
 import gzip
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument(

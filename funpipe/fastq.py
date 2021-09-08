@@ -8,11 +8,6 @@ from bam import bam
 # from plumbum.cmd import wget
 # import configparser
 
-
-"""
-FastQ
-=====
-"""
 class fastq:
     """ fastq """
     def __init__(self,*names,is_paired=False):
@@ -25,6 +20,17 @@ class fastq:
         is_paired: bool
             True if there is a pair of fastq files, else False.
             
+        Attributes
+        ----------
+        names: tuple of strings
+            name(s) of fastq file(s)
+        is_paired: bool
+            True if there is a pair of fastq files, else False.
+        qc_outdir: string
+            output directory of fastq qc report
+        bam: funpipe.bam
+            the bam file of aligned sequences
+            
         '''
         self.is_paired = is_paired
         if len(names) > 2:
@@ -35,7 +41,8 @@ class fastq:
                 raise Exception('Sorry, input fastq file '+ fq + ' does not exist')
                 
         self.names = names
-        
+        self.qc_outdir = None
+        self.bam = None
         
     def fastqc(self,out_dir):
         ''' quality control of raw or aligned BAMs using FastQc
@@ -47,8 +54,8 @@ class fastq:
             
         Returns
         -------
-        string
-            qc output directory
+        funpipe.fastq
+            an updated fastq object with qc files generated.
             
         '''
         if self.is_paired:
@@ -61,8 +68,9 @@ class fastq:
             
         run(cmd)
         print(' - FastQc finished.')
+        self.qc_outdir = out_dir
         
-        return out_dir
+        return self
         
         
     def bwa_align(self,fa,prefix):
@@ -71,14 +79,14 @@ class fastq:
         Parameters
         ----------
         fa: funpipe.fasta
-            reference fasta
+            reference fasta object
         prefix: string
             output file prefix
             
         Returns
         -------
-        funpipe.bam
-            bam file of aligned sequences
+        funpipe.fastq
+            an updated fastq object with bam file of aligned sequences generated.
             
         '''
         if fa.samtools_index == None or (not os.path.exists(fa.samtools_index)):
@@ -89,18 +97,16 @@ class fastq:
         if self.is_paired:
             fq1 = self.names[0]
             fq2 = self.names[1]
-            cmd = ' '.join(['bwa mem', fa.fa_name, fq1, fq2, '| samtools view -S -b -u > ',
+            cmd = ' '.join(['bwa mem', fa.path, fq1, fq2, '| samtools view -S -b -u > ',
                       prefix+'.bam'])
         else:
             fq = self.names[0]
-            cmd = ' '.join(['bwa mem', fa.fa_name, fq, '| samtools view -S -b -u > ',
+            cmd = ' '.join(['bwa mem', fa.path, fq, '| samtools view -S -b -u > ',
                       prefix+'.bam'])
             
         run( cmd )
-        BM = bam(prefix+'.bam')
-        #out_dir = os.path.dirname(prefix)
-        #sorted_bam = BM.sort_bam( out_dir )
-        #indexed_bam = BM.index_bam()
+        print(' - Burrows-Wheeler alignment finished.')
+        self.bam = bam(prefix+'.bam')
         
-        return BM
+        return self
 

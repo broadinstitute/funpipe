@@ -15,32 +15,32 @@ from picard import picard
 
 class TestFasta(unittest.TestCase):
     def setUp(self):
-        self.fa_name = 'test.fa'
+        self.path = 'test.fa'
         for file in ['test.fa.fai','test.fa.bwt','test.dict']:
             if os.path.exists(file):
                 run('rm '+file)
         
     def testConstructor(self):
-        fasta_test = fasta( self.fa_name )
-        self.assertTrue( os.path.exists( fasta_test.fa_name )  )
+        fasta_test = fasta( self.path )
+        self.assertTrue( os.path.exists( fasta_test.path )  )
         
     def testFai(self):
-        fasta_test = fasta( self.fa_name )
+        fasta_test = fasta( self.path )
         fasta_test.samtools_index_fa()
         self.assertTrue(os.path.exists( fasta_test.samtools_index ) )
         
     def testBwt(self):
-        fasta_test = fasta( self.fa_name )
+        fasta_test = fasta( self.path )
         fasta_test.bwa_index_fa()
         self.assertTrue(os.path.exists( fasta_test.bwa_index) )
         
     def testPicardIndex(self):
-        fasta_test = fasta( self.fa_name )
+        fasta_test = fasta( self.path )
         fasta_test.index_fa('/opt/picard-tools/picard.jar')
         self.assertTrue(os.path.exists( fasta_test.picard_index) )
         
-    def testChain(self):
-        fasta_test = fasta( self.fa_name )
+    def testFastaChain(self):
+        fasta_test = fasta( self.path )
         fasta_test.samtools_index_fa().bwa_index_fa()
         self.assertTrue(os.path.exists(fasta_test.bwa_index) )
         self.assertTrue(os.path.exists(fasta_test.samtools_index) )
@@ -51,9 +51,10 @@ class TestBam(unittest.TestCase):
     
     def setUp(self):
         self.bam = 't.bam'
-        for file in ['t.bam.bai','t.sorted.bam','t.depth.gz',
-                     't_bam_summary.txt','t.cleanup.bam',
-                     't.vcf','t_pileup.txt']:
+        self.bam_test = bam(self.bam)
+        for file in ['t.sorted.bam.bai','t.sorted.bam','t.depth.gz',
+                     't_bam_summary.txt','t.cleanup.bam','t.bam.bai',
+                     't.vcf','t_pileup.txt','t.cleanup.sorted.bam','t.cleanup.sorted.bam.bai']:
             
             if os.path.exists(file):
                 run('rm '+file)
@@ -61,49 +62,42 @@ class TestBam(unittest.TestCase):
                 
                 
     def testConstructor(self):
-        bam_test = bam(self.bam)
-        self.assertTrue(os.path.exists(bam_test.fname) )
-        
-    def testIndex(self):
-        bam_test = bam(self.bam)
-        bam_test.index_bam()
-        self.assertTrue(os.path.exists(bam_test.indexed_bam) )
+        self.assertTrue(os.path.exists(self.bam_test.path) )
         
     def testSort(self):
-        bam_test = bam(self.bam)
-        bam_test.sort_bam( '', tmp=None, RAM=2, threads=1)
-        self.assertTrue(os.path.exists(bam_test.sorted_bam) )
+        self.bam_test.sort_bam( '', tmp=None, RAM=2, threads=1)
+        self.assertTrue(os.path.exists( self.bam_test.sorted_bam.path ) )
+        
+    def testIndex(self):
+        self.bam_test.index_bam()
+        self.assertTrue( self.bam_test.bam_index == 't.bam.bai' )
+        self.assertTrue(os.path.exists(self.bam_test.bam_index ) )
         
     def testDepth(self):
-        bam_test = bam(self.bam)
-        bam_test.bam_depth('t', idx=False)
-        self.assertTrue(os.path.exists(bam_test.depth) )
+        self.bam_test.bam_depth('t', idx=False)
+        self.assertTrue(os.path.exists(self.bam_test.depth) )
         
     def testSum(self):
-        bam_test = bam(self.bam)
-        bam_test.bam_sum('t_bam_summary.txt')
-        self.assertTrue( bam_test.summary == 't_bam_summary.txt')
-        self.assertTrue(os.path.exists(bam_test.summary) )
+        self.bam_test.bam_sum('t_bam_summary.txt')
+        self.assertTrue( self.bam_test.summary == 't_bam_summary.txt')
+        self.assertTrue( os.path.exists(self.bam_test.summary) )
         
     def testClean(self):
-        bam_test = bam(self.bam)
-        bam_test.clean_bam('t')
-        self.assertTrue( bam_test.cleanup_bam == 't.cleanup.bam')
-        self.assertTrue(os.path.exists(bam_test.cleanup_bam) )
+        self.bam_test.clean_bam('t')
+        self.assertTrue( self.bam_test.cleanup_bam.path == 't.cleanup.bam')
+        self.assertTrue(os.path.exists(self.bam_test.cleanup_bam.path) )
          
     def testVariantCall(self):
-        bam_test = bam(self.bam)
         ref_fa = 'test_ref.fa'
-        bam_test.variant_call(ref_fa,'t')
-        self.assertTrue( bam_test.out_vcf == 't.vcf')
-        self.assertTrue(os.path.exists(bam_test.out_vcf ) )
+        self.bam_test.variant_call(ref_fa,'t')
+        self.assertTrue( self.bam_test.out_vcf == 't.vcf')
+        self.assertTrue(os.path.exists(self.bam_test.out_vcf ) )
         
     def testPileup(self):
-        bam_test = bam(self.bam)
         ref_fa = 'test_ref.fa'
-        bam_test.create_pileup(fa=ref_fa,out_prefix='t_pileup',C=50,Q=13,q=0)
-        self.assertTrue( bam_test.pileup == 't_pileup.txt')
-        self.assertTrue(os.path.exists(bam_test.pileup) )
+        self.bam_test.create_pileup(fa=ref_fa,out_prefix='t_pileup',C=50,Q=13,q=0)
+        self.assertTrue( self.bam_test.pileup == 't_pileup.txt')
+        self.assertTrue(os.path.exists(self.bam_test.pileup) )
         
     """
     Error:
@@ -111,7 +105,7 @@ class TestBam(unittest.TestCase):
 Experimental keys on scalar is now forbidden at ../../scripts/dep_per_win.pl line 31.
 Type of arg 1 to keys must be hash or array (not hash element) at ../../scripts/dep_per_win.pl line 31, near "}) "
 Execution of ../../scripts/dep_per_win.pl aborted due to compilation errors.
-
+    
 
     def testDepthPerW(self):
         bam_test = bam(self.bam)
@@ -121,40 +115,63 @@ Execution of ../../scripts/dep_per_win.pl aborted due to compilation errors.
         fasta_test.samtools_index_fa()
         
         bam_test.create_pileup(fa=ref_fa,out_prefix='t_pileup',C=50,Q=13,q=0)
-        depthPerW = bam_test.depth_per_window( bam_test.pileup, 't_depthPerW',
+        depthPerW = bam_test.depth_per_window( 't_depthPerW',
                                               fasta_test.samtools_index, window=5000)
-    
-    """
+    """    
     
     """    
     def testBreakdancer(self):
-        bam_test = bam(self.bam)
-        bam_test.breakdancer('/opt/breakdancer/perl/bam2cfg.pl','t_sv')
-        self.assertTrue( bam_test.sv_config == 't_sv.cfg')
-        self.assertTrue(os.path.exists(bam_test.sv_config ) )
+        self.bam_test.breakdancer(prefix='t_sv')
+        self.assertTrue( self.bam_test.sv_config == 't_sv.cfg')
+        self.assertTrue(os.path.exists(self.bam_test.sv_config ) )
     """
-    def testChain_0(self):
-        bam_test = bam(self.bam)
-        if os.path.exists(bam_test.indexed_bam):
-            run('rm ' + bam_test.indexed_bam )
+    def testBAMChain_0(self):
+        if os.path.exists('t.bam.bai'):
+            run('rm ' + 't.bam.bai' )
         
-        if os.path.exists(bam_test.sorted_bam):
-            run('rm ' + bam_test.sorted_bam )
+        if os.path.exists('t.sorted.bam'):
+            run('rm ' + 't.sorted.bam' )
             
-        bam_test.index_bam().sort_bam( '', tmp=None, RAM=2, threads=1)
-        self.assertTrue(os.path.exists(bam_test.indexed_bam) )
-        self.assertTrue(os.path.exists(bam_test.sorted_bam) )
+        self.bam_test.index_bam().sort_bam( '', tmp=None, RAM=2, threads=1)
+        self.assertTrue(os.path.exists(self.bam_test.bam_index ) )
+        self.assertTrue(os.path.exists(self.bam_test.sorted_bam.path) )
         
-    def testChain_1(self):
-        bam_test = bam(self.bam)
-        for file in [bam_test.depth,bam_test.summary,bam_test.cleanup_bam]:
+    def testBAMChain_1(self):
+        for file in ['t.depth.gz','t_bam_summary.txt','t.cleanup.bam']:
             if os.path.exists(file):
                 run('rm ' + file)
                 
-        bam_test.bam_depth('t', idx=False).bam_sum('t_bam_summary.txt').clean_bam('t')
-        self.assertTrue(os.path.exists(bam_test.depth) )
-        self.assertTrue(os.path.exists(bam_test.summary) )
-        self.assertTrue(os.path.exists(bam_test.cleanup_bam) )
+        self.bam_test.bam_depth('t', idx=False).bam_sum('t_bam_summary.txt').clean_bam('t')
+        self.assertTrue(os.path.exists(self.bam_test.depth) )
+        self.assertTrue(os.path.exists(self.bam_test.summary) )
+        self.assertTrue(os.path.exists(self.bam_test.cleanup_bam.path) )
+        
+    def testBAMChain_2(self):
+        for file in ['t.sorted.bam','t.sorted.bam.bai']:
+            if os.path.exists(file):
+                run('rm ' + file)
+                
+        sorted_bam = self.bam_test.sort_bam( '', tmp=None, RAM=2, threads=1).sorted_bam
+        sorted_bam.index_bam()
+        self.assertTrue(os.path.exists(sorted_bam.path) )
+        self.assertTrue(os.path.exists(sorted_bam.bam_index) )
+        
+    def testBAMChain_3(self):
+        for file in ['t.cleanup.bam','t.cleanup.sorted.bam','t.cleanup.sorted.bam.bai']:
+            if os.path.exists(file):
+                run('rm ' + file )
+                
+        cleanup_bam = self.bam_test.clean_bam('t').cleanup_bam
+        sorted_cleanup_bam = cleanup_bam.sort_bam(out_dir="",).sorted_bam
+        sorted_cleanup_bam.index_bam()
+        
+        self.assertTrue(os.path.exists(cleanup_bam.path) )
+        self.assertTrue(os.path.exists( sorted_cleanup_bam.path ) )
+        self.assertTrue(os.path.exists(sorted_cleanup_bam.bam_index) )
+        
+        self.assertTrue(cleanup_bam.path == 't.cleanup.bam' )
+        self.assertTrue( sorted_cleanup_bam.path == 't.cleanup.sorted.bam' )
+        self.assertTrue( sorted_cleanup_bam.bam_index == 't.cleanup.sorted.bam.bai' )
          
     
       
@@ -165,7 +182,7 @@ class TestFastq(unittest.TestCase):
         self.fq2_name = 'sample_fq2.fq'
         self.ref_fa = 'test_ref.fa'
         
-        for file in ['sample.bam','sample.bam.bai','sample.sorted.bam',
+        for file in ['sample.bam','sample.sorted.bam','sample.sorted.bam.bai',
                     'sample_fq1_fastqc.html','sample_fq2_fastqc.html',
                     'sample_fq1_fastqc.zip','sample_fq1_fastqc.zip']:
             if os.path.exists(file):
@@ -176,18 +193,21 @@ class TestFastq(unittest.TestCase):
         self.assertTrue(  fastq_test.is_paired )
         
     def testBwaAlign(self):
-        # index bam failed due to unsorted position
         fastq_test = fastq(self.fq1_name,self.fq2_name,is_paired=True)
         fa = fasta(self.ref_fa)
-        output_bm = fastq_test.bwa_align(fa,prefix = 'sample')
         
-        self.assertTrue(output_bm.fname == 'sample.bam')
-        #self.assertTrue(output_bm.indexed_bam == 'sample.bam.bai')
-        #self.assertTrue(output_bm.sorted_bam == 'sample.sorted.bam')
+        output_bm = fastq_test.bwa_align(fa,prefix = 'sample').bam
+        sorted_bam = output_bm.sort_bam(out_dir="").sorted_bam
+        sorted_bam.index_bam()
+        
+        self.assertTrue(output_bm.path == 'sample.bam')
+        self.assertTrue(sorted_bam.path == 'sample.sorted.bam')
+        self.assertTrue(sorted_bam.bam_index == 'sample.sorted.bam.bai')
         
         self.assertTrue(os.path.exists('sample.bam') )
-        #self.assertTrue(os.path.exists('sample.bam.bai') )
-        #self.assertTrue(os.path.exists('sample.sorted.bam') )
+        self.assertTrue(os.path.exists('sample.sorted.bam') )
+        self.assertTrue(os.path.exists('sample.sorted.bam.bai') )
+        
         
     def testFastqc(self):
         fastq_test = fastq(self.fq1_name,self.fq2_name,is_paired=True)

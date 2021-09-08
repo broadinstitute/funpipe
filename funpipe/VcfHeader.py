@@ -19,7 +19,19 @@ class vcfheader:
         ----------
         vcf_file: string
             name of input vcf file
-            
+         
+        Attributes
+        ----------
+        samples: list of string
+            a list of sample IDs
+        caller: string
+            variant caller
+        snpeff: bool
+            whether VCF is annotated by snpeff or not
+        sample_columns: dict
+            a dict storing the index of each sample
+        contigs: list of string
+            a list of contigs in VCF file, for example, ['chr1','chr2']
         
         """
         self.samples = []

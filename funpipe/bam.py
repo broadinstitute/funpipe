@@ -7,20 +7,44 @@ from utils import run
 
 class bam:
     """bam"""
-    def __init__(self,filename):
+    def __init__(self,path):
         '''constructor of bam object
         
         Parameters
         ----------
-        filename: string
-            path to the bam file.
+        path: string
+            path to the BAM file.
+            
+        Attributes
+        ----------
+        path: string
+            path to BAM file.
+        bam_index: string
+            path to index file.
+        sorted_bam: funpipe.bam
+            a bam object containing sorted BAM file
+        depth: string
+            path to depth file
+        pileup: string
+            path to pileup text file
+        depth_per_win: string
+            path to depth per window file
+        self.summary: string
+            path to summary text file
+        cleanup_bam: funpipe.bam
+            a bam object containing cleanup BAM file
+        sv_config: string
+            path to config file containing structural variation detected by breakdancer
+        out_vcf: string
+            path to output VCF file by variant calling
+        
         '''
-        if os.path.exists(filename):
-            self.fname = filename
+        if os.path.exists(path):
+            self.path = path
         else:
             raise Exception("Sorry, input bam file does not exist")
             
-        self.indexed_bam = None
+        self.bam_index = None
         self.sorted_bam = None
         self.depth = None
         self.pileup = None
@@ -30,22 +54,8 @@ class bam:
         self.sv_config = None
         self.out_vcf = None
     
-    def index_bam(self):
-        ''' index BAM using samtools
-        
-        Returns
-        -------
-        funpipe.bam
-            an updated bam object with indexed bam file generated.
-        '''
-        run('samtools index '+ self.fname )
-        
-        self.indexed_bam = self.fname+'.bai'#assign indexed bam
-        
-        return self
 
-
-    def sort_bam(self,out_dir, tmp=None, RAM=2, threads=1):
+    def sort_bam(self,out_dir=".", tmp=None, RAM=2, threads=1):
         ''' sort BAM using samtools
         
         Parameters
@@ -62,18 +72,39 @@ class bam:
         Returns
         -------
         funpipe.bam
-            an updated bam object with sorted bam file generated.
+            an updated bam object with sorted bam object generated.
             
         '''
-        bam_name = os.path.basename(self.fname)
+        bam_name = os.path.basename(self.path)
         prefix = os.path.join(out_dir, os.path.splitext(bam_name)[0])
         if tmp is None:
             tmp = prefix
         outfile = prefix + '.sorted.bam'
         run(' '.join(['samtools sort -T', tmp, '-m', str(RAM)+'G',
-                      '-@', str(threads), '-o', outfile, self.fname ]))
+                      '-@', str(threads), '-o', outfile, self.path ]))
         
-        self.sorted_bam = outfile #assign sorted bam
+        self.sorted_bam = bam(outfile)
+        
+        return self
+    
+    
+    def index_bam(self):
+        ''' index BAM using samtools and generate ".bai" file.
+        
+        Notification
+        ------------
+        index function of samtools might fail if BAM has unsorted positions.
+        
+        Returns
+        -------
+        funpipe.bam
+            an updated bam object with indexed bam file generated.
+            
+        '''
+            
+        run('samtools index '+ self.path )
+        
+        self.bam_index = self.path +'.bai'
         
         return self
 
@@ -115,12 +146,12 @@ class bam:
             
         '''
         outfile = out_prefix+'.depth.gz'
-        cmd = 'samtools depth '+ self.fname +' | bgzip > '+outfile
+        cmd = 'samtools depth '+ self.path +' | bgzip > '+outfile
         run(cmd)
         if idx:
             tabix(outfile, type='vcf')
             
-        self.depth = outfile #assign bam depth
+        self.depth = outfile 
         
         return self
 
@@ -179,7 +210,7 @@ class bam:
         cmd = cmd + ' -f ' + fa
         if l!=None:
             cmd = cmd + ' -l ' + l
-        cmd = cmd + ' -Q ' + str(Q) + ' -q ' + str(q) + ' -o ' + out_prefix + '.txt' + ' ' + self.fname
+        cmd = cmd + ' -Q ' + str(Q) + ' -q ' + str(q) + ' -o ' + out_prefix + '.txt' + ' ' + self.path
         
         run(cmd)
         self.pileup = out_prefix + '.txt'
@@ -187,7 +218,7 @@ class bam:
         return self
         
         
-    def depth_per_window(self, pileup, out_prefix, faidx, window=5000):
+    def depth_per_window(self, out_prefix, faidx, window=5000):
         ''' calculate depth per window
         
         Parameters
@@ -207,13 +238,13 @@ class bam:
             an updated bam object with depth per window file generated.
             
         '''
-        if not os.path.exists(pileup):
+        if not os.path.exists( self.pileup ):
             raise Exception('Sorry, pileup file does not exist.')
         if not os.path.exists(faidx):
             raise Exception('Sorry, fasta index file does not exist.')
             
         cmd = ' '.join([
-            '../scripts/dep_per_win.pl -m', pileup,
+            '../scripts/dep_per_win.pl -m', self.pileup,
             '-p', out_prefix,
             '--window', str(window),
             '--faidx', faidx])
@@ -239,7 +270,7 @@ class bam:
             an updated bam object with summary text generated.
             
         '''
-        cmd = 'samtools flagstat ' + self.fname + '>' + out_txt
+        cmd = 'samtools flagstat ' + self.path + '>' + out_txt
         run(cmd)
         self.summary = out_txt
         
@@ -257,28 +288,28 @@ class bam:
         Returns
         -------
         funpipe.bam
-            an updated bam object with cleaned up bam generated, out_prefix+'.cleanup.bam'.
+            an updated bam object with cleaned bam object generated.
             
         '''
         out_file = out_prefix+'.cleanup.bam'
         cmd = ' '.join(
             ['samtools view',
              '-bh -f 2 -F 1024 -F 4 -F 8 -F 512 -F 2048 -F 256 -q 30',
-             self.fname, '>', out_file]
+             self.path, '>', out_file]
         )
         run(cmd)
-        self.cleanup_bam = out_file #assign cleaned bam 
+        self.cleanup_bam = bam( out_file )
         
         return self
     
     
-    def breakdancer(self, bam2cfg_path, prefix ):
+    def breakdancer(self, bd_path='/opt/breakdancer/', prefix='sv' ):
         ''' Detect structural variation using breakdancer
 
         Parameters
         ----------
-        bam2cfg_path: string
-            path to bam2cfg.pl 
+        bd_path: string
+            path to breakdancer, default = '/opt/breakdancer/'
         prefix: string
             output prefix
 
@@ -290,7 +321,9 @@ class bam:
         '''
         # create config files
         cfg_file = prefix+'.cfg'
-        run( bam2cfg_path + ' -g -h '+ self.fname +' > '+prefix+'.cfg')
+        bam2cfg_path = os.path.join( bd_path , 'perl/bam2cfg.pl' )
+        
+        run( bam2cfg_path + ' -g -h '+ self.path +' > '+prefix+'.cfg')
         # Detect chromosomal structural variants using breakdancer-max
         run('breakdancer-max -q 40 -r 20 -y 90 '+cfg_file)
         self.sv_config = cfg_file
@@ -323,7 +356,7 @@ class bam:
         
         output = prefix+'.vcf'
         
-        cmd =' '.join(['bcftools mpileup','-f',fa,self.fname,
+        cmd =' '.join(['bcftools mpileup','-f',fa,self.path,
                        '|','bcftools call -mv -o',prefix+'.vcf'])
         run(cmd)
         

@@ -1,5 +1,6 @@
 import os
 import sys
+import pandas as pd
 sys.path.append('.')
 from utils import run
 
@@ -13,29 +14,57 @@ class plink:
             the prefix of bfile
         """
         self._bfile = prefix
-        if os.path.exists(prefix + '.bed') and os.path.exists(prefix + '.fam') and os.path.exists(prefix + '.bim'):
-            self._bed = prefix + '.bed'
-            self._fam = prefix + '.fam'
-            self._bim = prefix + '.bim'
-        else:
-            raise Exception('Sorry, missing at least one bfile for plink to work')
+        if not os.path.exists(prefix + '.bed'):
+            raise Exception('Sorry, missing bed file for plink to work')
+        if not os.path.exists(prefix + '.fam'):
+            raise Exception('Sorry, missing fam file for plink to work')
+        if not os.path.exists(prefix + '.bim'):
+            raise Exception('Sorry, missing bim file for plink to work')
+        
+        self._bed = prefix + '.bed'
+        self._fam = prefix + '.fam'
+        self._bim = prefix + '.bim'
         
         self._related = None
         self._assoc = None
-
+        self._qc = None
+        
+    @property
+    def related(self):
+        return self._related
+    @property
+    def assoc(self):
+        return self._assoc
+    @property
+    def qc(self):
+        return self._qc
+    @property
+    def bfile(self):
+        return self._bfile
+    @property
+    def bed(self):
+        return self._bed
+    @property
+    def fam(self):
+        return self._fam
+    @property
+    def bim(self):
+        return self._bim
+    
     def relatedness(self):
         """ Calculate genetic relatedness matrix
         
         Returns
         -------
-        string
-            output relatedness file
+        funpipe.plink
+            an updated plink object with relatedness file generated.
             
         """
         self._related = self._bfile+'.related.tsv'
         run(" ".join(['gemma', '-bfile '+self._bfile,
                       '-gk -o '+self._related]))
-        return self._related
+        
+        return self
 
     def gwas(self, lmm=4):
         """ Fit a LMM for a univariate model with GEMMA
@@ -48,8 +77,9 @@ class plink:
             
         Returns
         -------
-        string
-            output gwas file
+        funpipe.plink
+            an updated plink object with gwas association file generated.
+            
         """
         self._assoc = self._bfile + '.gemma.assoc.tsv'
         run(" ".join([
@@ -57,10 +87,29 @@ class plink:
             '-k '+self._related,
             '-lmm '+str(lmm),
             '-o '+self._assoc]))
-        return self._assoc
+        
+        return self
 
-    def import_pheno():
-        """ import phenotypes """
+    def import_pheno(self,phenotypes, pheno_name ):
+        """ import phenotypes
+        
+        Parameters
+        ----------
+        phenotypes: list
+            list of phenotypes appended to fam file
+        pheno_name: string
+            name of the phenotype, for example, 'bmi'.
+            
+        """
+        fam_pd = pd.read_csv(self._fam , sep = "\t")
+        if len(fam_pd['IID']) != len(phenotypes):
+            raise Exception("Unmatched length between imported phenotypes and fam file.")
+        else:
+            fam_pd[pheno_name] = phenotypes
+        fam_pd.to_csv( self._bfile + '.add_pheno.fam', sep = "\t", index = None)
+        self._fam = self._bfile + '.add_pheno.fam'
+        
+        return self
 
     def gwas_filter(self, ind=0.1, miss=0.1, maf=0.05):
         """ Filter genotype and sample level missingness and AF
@@ -76,25 +125,25 @@ class plink:
             
         Returns
         -------
-        string
-            output filtered file
+        funpipe.plink
+            an updated plink object with quality control file generated.
 
         """
-        out_bfile = self._bfile+'.qc'
+        self._qc = self._bfile+'.qc'
         run(" ".join([
-            'plink --bfile', self._bfile,
-            '--recode --out '+out_bfile,
+            'plink2 --bfile', self._bfile,
+            '--recode --out '+ self._qc ,
             '--maf', maf,
             '--geno', miss,
             '--mind', ind
         ]))
-        return out_bfile
+        return self
 
-    def variant_qc(self):
+#    def variant_qc(self):
         #         run("plink --bfile --test-missing --allow-extra-chr")
         # plink --bfile ${PREFIX} --cluster missing --allow-extra-chr
         # plink --bfile ${PREFIX} --missing --allow-extra-chr
-        return self
+#        return self
 
-    def sample_qc(self):
-        return self
+#    def sample_qc(self):
+#        return self

@@ -19,7 +19,20 @@ class gt_pair:
         
         na_ignore: bool
             whether to ignore nan in comparison, default = False
-            
+        
+        Attributes
+        ----------
+        gt1, gt2: pd.Series
+            genotypes in VCF file, for example, gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
+        na_ignore: bool
+            whether to ignore nan in comparison, default = False
+        n_total: int
+            total number of non-monomorphic sites between two samples
+        n_share: int
+            shared variants between the two samples
+        n_unique: int
+            unique variants between the two samples
+        
         Example
         -------
         >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
