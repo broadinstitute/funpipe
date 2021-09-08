@@ -4,15 +4,11 @@ import os
 from utils import run
 
 
-"""
-GATK: GenomeAnalysisToolkit
-===========================
-"""
 
 class gatk:
     """ Run GATK commands """
     def __init__(
-            self, fa, jar, prefix='output', out_dir='.', RAM=4):
+            self, fa, jar='/opt/GATK-3.8/GenomeAnalysisTK.jar', prefix='output', out_dir='.', RAM=4):
         ''' constructor of gatk object
         
         Parameters
@@ -28,12 +24,29 @@ class gatk:
         RAM: int
             maximum RAM usage in gigabytes, default = 4
             
+        Attributes
+        ----------
+        prefix: string
+            output file prefix, default = \'output\'
+        concordance: string
+            path to genotype concordance output
+        eval: string
+            path to variant evaluation output
+        combined_vcf: string    
+            path to combined variant output
+        selected_vcf: string
+            path to selected variant output
+            
         '''
         self.out_dir = out_dir
         self.cmd = ' '.join([
             'java -Xmx'+str(RAM)+'g -jar', jar, '-R', fa
         ])
         self.prefix = prefix
+        self.concordance = None
+        self.eval = None
+        self.combined_vcf = None
+        self.selected_vcf = None
           
     
     
@@ -71,7 +84,10 @@ class gatk:
         if multi:
             cmd += ' -EV MultiallelicSummary'
         run(cmd)
-        return out
+        
+        self.eval = out
+        
+        return self
 
     def combine_var(self, vcf_dict, option, priority=None):
         '''combine variants
@@ -108,7 +124,10 @@ class gatk:
             else:
                 cmd += ' --variant '+vcf
         run(cmd)
-        return out_vcf
+        
+        self.combined_vcf = out_vcf
+        
+        return self
 
     def select_var(self, in_vcf, xl=None, il=None):
         ''' select variants
@@ -137,8 +156,13 @@ class gatk:
         if il is not None:
             cmd += '-L '+il
         run(cmd)
-        return output
-
+        
+        self.selected_vcf = output
+        
+        return self
+    
+    
+    
     def genotype_concordance(self, comp_vcf, eval_vcf, hap=False):
         ''' comppare 2 vcf files
         
@@ -160,7 +184,10 @@ class gatk:
         out = self.out_dir+'/'+self.prefix+'.txt'
         cmd = ' '.join([
             self.cmd, '-T GenotypeConcordance', '--comp', comp_vcf, '--eval', eval_vcf,
-            '--out', out
-        ])
+            '--out', out])
         run(cmd)
-        return out
+        
+        self.concordance = out
+        
+        return self
+ 

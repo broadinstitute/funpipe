@@ -20,6 +20,34 @@ class vcfrecord:
         vcf_line: string
             a line of vcf record
         
+        Attributes
+        ----------
+        vcf_line: string
+            the line of VCF record
+        
+        chrom: string
+            chromosome, for example, "chr1"
+        pos: string
+            left and right positions
+        id: string
+            id
+        ref: string
+            base in reference sequence
+        alt: string
+            alternative base in variant sequence
+        qual: string
+            quality score
+        filter: string
+            name of the filter used 
+        info: string
+            information of the VCF record line, for example, "NS=3;DP=9;AA=G"
+        format: string
+            format of information in genotype field, for example, "GT:GQ:DP"
+        genotypes: list of string
+            a list of all samples'genotypes, for example, ["0/1:35:4", "0/2:17:2,"1/1:40:3"]
+        vcf_annot: bool
+            
+        
         """
         self.vcf_line = vcf_line.rstrip()
 
@@ -536,10 +564,11 @@ class vcfrecord:
         fields = self.info.split(';')
         for field in fields:
             m = re.search('AF=([\d\.]+)', field)
-            try:
+            if m:
                 AF = float(m.group(1))
-            except:
-                raise Exception('Sorry, AF information not found in vcf record.')
+                
+        if AF == None:
+            raise Exception('Sorry, AF information not found in vcf record.')
                 
         return AF
 
@@ -555,22 +584,25 @@ class vcfrecord:
         fields = self.info.split(';')
         for field in fields:
             m = re.search('QP=(\d+),(\d+),(\d+),(\d+)', field)
-            try:
+            if m:
                 QP = m.group(1, 2, 3, 4)
                 QP = [int(q) for q in QP]
                 QP_W = {'A':QP[0],'C':QP[1],'G':QP[2],'T':QP[3]}
-            except:
-                raise Exception('Sorry, QP information not found in vcf record.')
+                
+        if QP_W == None:
+            raise Exception('Sorry, QP information not found in vcf record.')
                 
         return QP_W
 
     def get_MAF_from_QP(self):
         MAF = False
-        QP = self.get_QP()
+        QP_dict = self.get_QP()
+        QP = [QP_dict['A'],QP_dict['C'],QP_dict['G'],QP_dict['T']]
         try:
             MAF = (100 - max(QP)) / 100
         except:
             pass
+        
         return MAF
 
     def get_format(self):
