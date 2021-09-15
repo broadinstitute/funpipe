@@ -1,12 +1,8 @@
 import os
 import sys
-sys.path.append('.')
-from utils import run
-from utils import rm
-"""
-Picard
-======
-"""
+from funpipe.utils import run
+from funpipe.utils import rm
+
 class picard:
     def __init__(self, jar='/opt/picard-tools/picard.jar', RAM=4):
         ''' Constructor of picard object.
@@ -25,6 +21,7 @@ class picard:
         self.cmd = ' '.join([
             'java -Xmx'+str(RAM)+'g -jar', jar
         ])
+
 
     def dict(self, fa, dictionary=None):
         ''' Build fasta dictionary.

@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-sys.path.append('.')
-from utils import run
+#sys.path.append('.')
+from funpipe.utils import run
 import subprocess as sp
 
 

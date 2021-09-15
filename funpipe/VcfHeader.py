@@ -10,28 +10,27 @@ class vcfheader:
 
 
     def __init__(self, vcf_file):
-        """constructor of VcfHeader object
-        
+        """Constructor of vcfheader object. 
         Get samples, variant caller, sample columns, contig IDs and
         whether snpeff has been called.
         
         Parameters
         ----------
         vcf_file: string
-            name of input vcf file
+            The path to input vcf file
          
         Attributes
         ----------
-        samples: list of string
-            a list of sample IDs
+        samples: list
+            A list of sample IDs
         caller: string
-            variant caller
+            The variant caller
         snpeff: bool
-            whether VCF is annotated by snpeff or not
+            Whether VCF is annotated by snpeff or not
         sample_columns: dict
-            a dict storing the index of each sample
+            A dict storing the index of each sample
         contigs: list of string
-            a list of contigs in VCF file, for example, ['chr1','chr2']
+            A list of contigs in VCF file, for example, ['chr1','chr2']
         
         """
         self.samples = []

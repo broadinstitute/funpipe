@@ -6,11 +6,11 @@ import matplotlib.pyplot as plt
 import subprocess as sp
 
 import sys
-sys.path.append('.')
-from utils import run,rm
-from gt_pair import gt_pair
-from vcfheader import vcfheader
-from vcfrecord import vcfrecord
+#sys.path.append('.')
+from funpipe.utils import run,rm
+from funpipe.gt_pair import gt_pair
+from funpipe.vcfheader import vcfheader
+from funpipe.vcfrecord import vcfrecord
 
 class vcf:
     def __init__(self, vcf_file, prefix='output', outdir='.', fasta=''):
@@ -97,7 +97,7 @@ class vcf:
     def sample_info(self):
         """ Get sample info dataframe.
         
-         Returns
+        Returns
         -------
         pd.DataFrame
             The table containing sample level information.
@@ -174,7 +174,7 @@ class vcf:
         print("- SnpEff database created.")
         return cmd
 
-    def snpeff_annot(self, jar='/opt/snpEff/snpEff.jar', config, genome, ram):
+    def snpeff_annot(self, jar='/opt/snpEff/snpEff.jar', config=None, genome=None, ram=None):
         """ Run SNPEFF on a VCF file.
         
         Parameters

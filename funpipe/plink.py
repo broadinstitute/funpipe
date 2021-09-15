@@ -1,8 +1,8 @@
 import os
 import sys
 import pandas as pd
-sys.path.append('.')
-from utils import run
+#sys.path.append('.')
+from funpipe.utils import run
 
 class plink:
     def __init__(self, prefix):

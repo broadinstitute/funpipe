@@ -1,9 +1,9 @@
 import sys
 import os
-sys.path.append('.')
-from utils import run
-from fasta import fasta
-from vcf import vcf
+#sys.path.append('.')
+from funpipe.utils import run
+from funpipe.fasta import fasta
+from funpipe.vcf import vcf
 
 class phylo:
     def __init__(self, invcf ):
