@@ -10,8 +10,7 @@ with the funpipe package.
 import sys
 import re
 import argparse
-sys.path.append('../funpipe')
-import vcftools
+from funpipe import vcftools
 import gzip
 
 parser = argparse.ArgumentParser()

@@ -7,12 +7,12 @@ import hashlib
 
     
 def done(job_name):
-    """ show that a job is done
+    """ Show that a job is done.
     
     Parameters
     ----------
     job_name: string
-        job name
+        The job name.
         
     Returns
     -------
@@ -26,12 +26,12 @@ def done(job_name):
 
 @contextlib.contextmanager
 def cd(dir):
-    ''' change directory
+    ''' Change working directory.
     
     Parameters
     ----------
     dir: string
-        new directory to change to
+        New directory to change to.
         
     '''
     original_path = os.getcwd()
@@ -41,12 +41,12 @@ def cd(dir):
 
 
 def run(cmd):
-    ''' execute a specific command
+    ''' Execute a specific command and print out the command.
     
     Parameters
     ----------
     cmd: string
-        command to execute
+        The command to execute.
         
     Returns
     -------
@@ -61,12 +61,12 @@ def run(cmd):
 
 
 def rm(*files):
-    ''' remove a file
+    ''' Remove file(s).
     
     Parameters
     ----------
-    files: tuple of strings
-        paths of files to remove
+    files: tuple
+        Path(s) of file(s) to remove.
     
     Returns
     -------
@@ -80,19 +80,19 @@ def rm(*files):
 
 
 def check_md5(file, checksum):
-    """ perform md5 checksum to verify whether 2 files are the same.
+    """ Perform md5 checksum to verify whether 2 files are the same.
     
     Parameters
     ----------
     file: string
-        file to check
+        The file to check.
     checksum: string
-        known checksum value in hexadecimal format
+        The known checksum value in hexadecimal format.
         
     Returns
     -------
     bool
-        True if 2 files are the same, else False
+        True if 2 files are the same, else False.
         
     """
     with open(file,'rb') as file_to_check:

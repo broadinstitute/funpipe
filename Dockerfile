@@ -66,6 +66,8 @@ ENV LD_LIBRARY_PATH /usr/local/lib/bamtools:$LD_LIBRARY_PATH
 # Picard tools
 RUN mkdir /opt/picard-tools && \
     wget --no-check-certificate -P /opt/picard-tools/ https://github.com/broadinstitute/picard/releases/download/2.9.0/picard.jar
+#vcftools
+RUN apt-get install -y vcftools 
 # Pilon
 RUN mkdir /opt/pilon && \
     wget --no-check-certificate -P /opt/pilon/ https://github.com/broadinstitute/pilon/releases/download/1.23/pilon.jar
@@ -99,18 +101,24 @@ ENV BCFTOOLS_PLUGINS /opt/bcftools-1.13/plugins:$BCFTOOLS_PLUGINS
 RUN cd /opt && \
     git clone --recursive https://github.com/genome/breakdancer.git && cd breakdancer && mkdir build && cd build && \
     cmake .. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX=/usr/local && make && make install && make clean
+    
+#snpeff
+RUN mkdir /opt/snpEff && cd /opt && \
+    wget --no-check-certificate https://sourceforge.net/projects/snpeff/files/snpEff_v4_5covid19_core.zip && \
+    unzip snpEff_v4_5covid19_core.zip
+
 #readseq
 RUN mkdir /opt/readseq && \
-	wget --no-check-certificate -P /opt/readseq/ https://sourceforge.net/projects/readseq/files/latest/download/readseq.jar
+    wget --no-check-certificate -P /opt/readseq/ https://sourceforge.net/projects/readseq/files/latest/download/readseq.jar
 
 #gemma
 RUN cd /opt && \
-	wget --no-check-certificate https://github.com/genetics-statistics/GEMMA/archive/refs/tags/v0.98.5.tar.gz && \
-	tar -xf v0.98.5.tar.gz && rm v0.98.5.tar.gz && cd GEMMA-0.98.5/ && make -j 4 && cd bin/ && cp gemma /usr/local/bin/ && \
-	make clean
+    wget --no-check-certificate https://github.com/genetics-statistics/GEMMA/archive/refs/tags/v0.98.5.tar.gz && \
+    tar -xf v0.98.5.tar.gz && rm v0.98.5.tar.gz && cd GEMMA-0.98.5/ && make -j 4 && cd bin/ && cp gemma /usr/local/bin/ && \
+    make clean
 
 #phyml
-RUN sudo apt-get install -y phyml
+RUN apt-get install -y phyml
 
 #plink2
 RUN cd /opt && \

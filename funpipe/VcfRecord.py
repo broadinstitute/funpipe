@@ -26,7 +26,7 @@ class vcfrecord:
             the line of VCF record
         
         chrom: string
-            chromosome, for example, "chr1"
+            chromosome, for example, "chr1" or "1"
         pos: string
             left and right positions
         id: string
@@ -46,6 +46,7 @@ class vcfrecord:
         genotypes: list of string
             a list of all samples'genotypes, for example, ["0/1:35:4", "0/2:17:2,"1/1:40:3"]
         vcf_annot: bool
+            whether the vcf record line is annotated
             
         
         """

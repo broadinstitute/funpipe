@@ -7,34 +7,59 @@ import subprocess as sp
 
 import sys
 sys.path.append('.')
-from utils import run
+from utils import run,rm
 from gt_pair import gt_pair
 from vcfheader import vcfheader
 from vcfrecord import vcfrecord
 
 class vcf:
-    """ vcf class command """
     def __init__(self, vcf_file, prefix='output', outdir='.', fasta=''):
-        """variant call format
+        """Constructor of vcf object, that contains variant calling results.
         
         Parameters
         ----------
         vcf_file: string
-            input vcf file
+            The path to input vcf file.
         prefix: string
-            output prefix, default = 'output'
+            The output prefix, default = 'output'.
         outdir: string
-            output directory, default = '.'
+            The output directory, default = '.'.
         fasta: string
-            input reference fasta file
+            The path to input reference fasta file.
             
         Attributes
         ----------
+        vcf: string
+            The path to VCF file.
+        vcfheader: funpipe.vcfheader
+            The vcfheader object belonging to vcf object.
+        prefix: string
+            The prefix of output files.
+        outdir: string
+            The path to output directory.
+        pairwise_share: np.ndarray()
+            The matrix of # shared variants among all samples.
+        pairwise_unique: np.ndarray()
+            The matrix of # unique variants among all samples.
+        n_samples: int
+            The number of samples.
+        dosage matrix: pd.DataFrame
+            The genotype dosage matrix.
+        af: pd.DataFrame
+            The table of allelic frequency.
+        ann_vcf: string
+            The path to annotated VCF file.
+        site_info: pd.DataFrame
+            The table containing site level information.
+        sample_info: pd.DataFrame
+            The table containing sample level information.
+        fasta: string
+            The path to reference fasta file.
         
         """
         self._vcf = vcf_file
         self._vcfheader = vcfheader(self._vcf)
-        self._record_list = list()
+        #self._record_list = list()
         self._prefix = prefix
         self._outdir = outdir
         self._pairwise_share = None
@@ -48,34 +73,48 @@ class vcf:
         self._af = None
         self.ann_vcf = None
         self._site_info = pd.DataFrame()
-        self._site_info_tsv = prefix + '.site_info.tsv'
+        self._site_info_tsv = os.path.join( outdir, prefix + '.site_info.tsv')
         self._sample_info = pd.DataFrame()
-        self._sample_info_tsv = prefix + '.sample_info.tsv'
+        self._sample_info_tsv = os.path.join( outdir, prefix + '.sample_info.tsv' )
         self._fasta = fasta
         
 
     @property
     def site_info(self):
-        """ Get site info dataframe"""
-        if self._site_info.empty():
+        """ Get site info dataframe.
+        
+        Returns
+        -------
+        pd.DataFrame
+            The table containing site level information.
+        """
+        if self._site_info.empty:
             warnings.warn(
                 "VCF site info dataframe is empty, get site info using 'get_site_info' function")
         return self._site_info
     
     @property
     def sample_info(self):
-        """ Get sample info dataframe"""
-        if self._sample_info.empty():
+        """ Get sample info dataframe.
+        
+         Returns
+        -------
+        pd.DataFrame
+            The table containing sample level information.
+            
+        """
+        if self._sample_info.empty:
             warnings.warn(
                 "VCF sample info dataframe is empty, get info using 'get_sample_info' function")
         return self._sample_info
-    @property
-    def record_list(self):
-        """Get the list of VCF records"""
-        if len(self._record_list) < 1:
-            warnings.warn(
-                    "The list of VCF records is empty, get VCF records using 'get_record' function")
-        return self._record_list
+    
+#     @property
+#     def record_list(self):
+#         """Get the list of VCF records"""
+#         if len(self._record_list) < 1:
+#             warnings.warn(
+#                     "The list of VCF records is empty, get VCF records using 'get_record' function")
+#         return self._record_list
     
     @property
     def vcfheader(self):
@@ -95,63 +134,64 @@ class vcf:
 
     @property
     def var_counts(self):
-        return self.var_counts
+        return self._var_counts
 
     @property
     def dosage_matrix(self):
         return self._dosage_matrix
 
     @staticmethod
-    def create_snpeff_db(gff3, dir, genome, config, prefix, ram, jar, ref_fa):
-        """ Create snpEff database
+    def create_snpeff_db(gff3, dest_dir, genome, config, prefix, ram=4, jar='/opt/snpEff/snpEff.jar', ref_fa = ''):
+        """ Create snpEff database.
         
         Parameters
         ----------
         gff3: string
-            gff file of gene annotation
-        dir: string
-            destination for snpdb
+            The gff file of gene annotation.
+        dest_dir: string
+            The destination for snp database.
         genome: string
-            name of the reference genome
+            The name of the reference genome.
         config: string
-            snpEff config files
+            The snpEff config files.
         prefix: string
-            output Prefix
+            The output prefix.
         ram: int
-            RAM in GB
+            RAM in GB.
         jar: string
-            snpEff jar
+            The path to snpEff.jar.
         ref_fa: string
-            reference fasta file
+            The path to reference fasta file.
             
         Returns
         -------
         string
-            command line
+            Command line.
             
         """
-        cmd = ' '.join(['create_snpeff_db.sh', dir, jar, genome, ref_fa, gff3, str(ram) ])
+        cmd = ' '.join(['create_snpeff_db.sh', dest_dir, jar, genome, ref_fa, gff3, str(ram) ])
         run(cmd)
+        print("- SnpEff database created.")
         return cmd
 
-    def snpeff_annot(self, jar, config, genome, ram):
-        """ run SNPEFF on a vcf
+    def snpeff_annot(self, jar='/opt/snpEff/snpEff.jar', config, genome, ram):
+        """ Run SNPEFF on a VCF file.
         
         Parameters
         ----------
         jar: string
-            path to snpeff jar
+            The path to snpEff.jar
         config: string
-            configuration file
+            The snpEff config files.
         genome: string
-            tag of genome name
-        ram:  int
-            RAM in GB
+            The tag of genome name.
+        ram: int
+            RAM in GB.
             
         Returns
         -------
         funpipe.vcf
-            an updated vcf object with snpeff annotation generated.
+            An updated vcf object with snpEff annotation generated.
             
         """
         self.ann_vcf = os.path.basename(self._vcf).replace('vcf', 'snpeff.vcf')
@@ -163,18 +203,17 @@ class vcf:
         return self
 
     def import_snpeff(self, snpeff_tsv=None):
-        """import or generate snp site information,
-        and organize into DataFrame.
+        """Import or generate snp site information, and organize into DataFrame.
         
         Parameters
         ----------
         snpeff_tsv: string
-            imported snp site information file, default = None
+            Imported snp site information file, default = None.
             
         Returns
         -------
         funpipe.vcf
-            an updated vcf object with a table of snp site level information generated.
+            An updated vcf object with a table of snp site level information generated.
             
         """
         if snpeff_tsv is None:
@@ -205,22 +244,38 @@ class vcf:
         return self
 
     def af(self):
-        """ get allele frequencies using vcftools
+        """ Get allele frequencies using vcftools.
         
         Returns
         -------
         funpipe.vcf
-            an updated vcf object with a table of allele frequencies generated
+            An updated vcf object with a table of allele frequencies generated.
             
         """
         run("vcftools --gzvcf "+self._vcf + " --freq2 --out tmp")
-        self._af = pd.read_csv('tmp.frq', sep='\t', header=0)
+        header = ['chr','pos','n_alleles','n_chr','AF1','AF2']
+        self._af = pd.read_csv('tmp.frq', sep='\t', header=None, names = header)
+        self._af = self._af.drop(index = 0 )
+        self._af = self._af.reset_index()
+        self._af = self._af.drop(['index'],axis = 1)
         rm('tmp.frq')
         
         return self
 
     def get_sample_index(self, sample_id ):
-        """ return sample index from the VCF """
+        """ Get sample index from the VCF file.
+        
+        Parameters
+        ----------
+        sample_id: string
+            The sample with index that the user looks for.
+            
+        Returns
+        -------
+        int
+            The index of the sample.
+            
+        """
         header = vcfheader(self._vcf)
         sample_list = header.get_samples()
         
@@ -233,27 +288,27 @@ class vcf:
 
     def select(self, jar='/opt/GATK-3.8/GenomeAnalysisTK.jar', outvcf=None, ref=None, snp=False, pass_only=False,
                indel=False):
-        """ parse VCF to get only sites passed quality control
+        """ Parse VCF to get only sites passed quality control.
 
         Parameters
         ----------
         jar: string
-            GATK jar path
+            The path to GATK.jar.
         outvcf: string
-            output vcf
+            The path to output vcf.
         ref: string
-            reference
+            The path to reference.
         snp: bool
-            whether select snp variants
+            Whether select snp variants.
         pass_only: bool
-            sites that are filtered will all be removed if True.
+            If True, sites that are filtered will all be removed.
         indel: bool 
-            whether select indel variants
+            Whether to select indel variants.
 
         Returns
         -------
         funpipe.vcf
-            an updated vcf object with variants selected in the original vcf file.
+            An updated vcf object with variants selected from the original VCF file.
             
         """
         if snp and indel:
@@ -274,23 +329,23 @@ class vcf:
         return self
 
     def filter_gt(self, outvcf, min_GQ=50, AD=0.8, DP=10):
-        """ apply variant filtering using GQ, AD and DP
+        """ Apply variant filtering using GQ, AD and DP cutoffs.
         
         Parameters
         ----------
         outvcf: string
-            output filtered vcf
+            The path to output filtered vcf.
         min_GQ: int
-            minimum GQ cutoff
+            Minimum GQ cutoff.
         AD: float
-            allelic depth cutoff
+            Allelic depth cutoff.
         DP: int
-            depth cutoff
+            Depth cutoff.
             
         Returns
         -------
         funpipe.vcf
-            an updated vcf object with genotypes filtered based on GQ,AD,DP in the original vcf file.
+            An updated vcf object with genotypes filtered based on GQ,AD,DP in the original vcf file.
             
         """
         cmd = ' '.join(['filter_gatk_genotypes.py', '--min_GQ', str(min_GQ),
@@ -302,7 +357,7 @@ class vcf:
         return self
 
     def cal_dos(self, haploid=True):
-        """ Get a genotype dosage matrix from the VCF
+        """ Get a genotype dosage matrix from the VCF file.
         
         Parameters
         ----------
@@ -312,10 +367,10 @@ class vcf:
         Returns
         -------
         funpipe.vcf
-            an updated vcf object with genotype dosage matrix generated.
+            An updated vcf object with genotype dosage matrix generated.
             
         """
-        dos_file = self._prefix+'.dos.tsv'
+        dos_file = os.path.join( self._outdir, self._prefix+'.dos.tsv')
         if haploid:
             run("bcftools query -f '[%GT ]\\n' " + self._vcf + '>' + dos_file)
             self._dosage_matrix = pd.read_csv(
@@ -326,21 +381,21 @@ class vcf:
         return self
 
     def samples_concord(self, s1_idx, s2_idx, na_ignore=False):
-        """ For each callset, compare SNP sharing between sample pairs
+        """ For each callset, compare SNP shared and unique between sample pairs.
         
         Parameters
         ----------
         s1_idx: string
-            sample 1's index in genotype dosages matrix.
+            Sample 1's index in genotype dosages matrix.
         s2_idx: string
-            sample 2's index in genotype dosage matrix.
+            Sample 2's index in genotype dosage matrix.
         na_ignore: bool
-            whether ignore nan data, default = False.
+            Whether to ignore NaN data, default = False.
             
         Returns
         -------
         funpipe.gt_pair
-            a genotype pair with computetd shared and unique variants.
+            A genotype pair with computetd shared and unique variants.
             
         """
         gt = gt_pair(self._dosage_matrix[s1_idx], self._dosage_matrix[s2_idx],
@@ -352,17 +407,17 @@ class vcf:
         return gt
 
     def pairwise_concord(self, na_ignore=False):
-        """ pairwise concordance amongst all sample pairs in the call set
+        """ Get pairwise concordance amongst all sample pairs in the callset.
         
         Parameters
         ----------
         na_ignore: bool
-            whether ignore nan data, default = False
+            whether to ignore NaN data, default = False.
             
         Returns
         -------
         funpipe.vcf
-            an updated vcf object with pairwise concordance computetd:
+            An updated vcf object with pairwise concordance computetd:
                 * pairwise_share: numpy.ndarray, pairwise shared variants amongst all sample pairs.
                 * pairwise_unique: numpy.ndarray, unique variants amongst all sample pairs.
                 
@@ -377,46 +432,60 @@ class vcf:
                 gt = gt_pair(self._dosage_matrix[i], self._dosage_matrix[j],
                              na_ignore)
                 
-                self._pairwise_share[i, j] = gt.get_n_share()
-                self._pairwise_unique[i, j] = gt.get_n_unique()
+                self._pairwise_share[i][j] = gt.get_n_share()
+                self._pairwise_unique[i][j] = gt.get_n_unique()
                 
         return self
 
-    # site level APIs
-    def has_info(self, info, type=['site', 'sample']):
-        """Whether an info field is presented in the object
+    
+    def has_info(self, info, level = 'site' ):
+        """Check whether an info field is present.
         
         Parameters
         ----------
         info: string
-            site or sample information.
-        type: string
-            type = 'site' or 'sample', else raise value error.
+            Site or sample information.
+        level: string
+            The level = 'site' or 'sample', else raise value error, default = 'site'.
+            
+        Returns
+        -------
+        bool
+            True, if the info field is present, else, False.
             
         """
         has_info = False
-        if type == 'site':
-            has_info = (info in self._site_info.columns)
-        elif type == 'sample':
-            has_info = (info in self._sample_info.columns)
+        sample_list = self._vcfheader.get_samples()
+        
+        if level == 'site':
+            has_info = ( info in self._site_info.columns)
+        elif level == 'sample':
+            temp = True
+            for i in range(len(sample_list)):
+                temp = temp&( info+'_'+sample_list[i] in self._sample_info.columns)
+            has_info = temp
         else:
-            raise ValueError("No such type")
+            raise ValueError("Error, info level can only be site or sample.")
+        
         if not has_info:
-            raise ValueError(
-                info+" is not presented in the site info column names.")
-
+            raise ValueError( info+" is not presented in the "+level+" info column names." )
+         
+        return has_info
+            
+            
+    # site level APIs
     def get_site_info(self, info=['AF']):
-        """ Get variant site level info of interest
+        """ Get variant site level infomation of interest.
         
         Parameters
         ----------
         info: list of string
-            a list of site level information, default = ['AF'].
+            A list of site level information types, default = ['AF'].
             
         Returns
         -------
         funpipe.vcf
-            an updated vcf object with a table of site level information generated:
+            An updated vcf object with a table of site level information generated:
                 * site_info: pandas.dataframe, a table of site level information.
             
         """
@@ -433,17 +502,17 @@ class vcf:
     
     
     def cal_maf(self, af_name='AF'):
-        """ calculate MAF
+        """Calculate minor allele frequency.
         
         Parameters
         ----------
         af_name: string
-            column name for allele frequencies
+            The column name for allele frequencies
         
         Returns
         -------
         funpipe.vcf
-            an updated vcf object with MAF computed and updated in site_info table.
+            An updated vcf object with MAF computed and updated in site_info table.
             
         """
         self.has_info(af_name, 'site')
@@ -453,101 +522,108 @@ class vcf:
         
         return  self
 
-    def cal_miss(self, name='miss'):
-        """ Calculate missingness of all sites"""
-        # TO DO
+    def cal_miss(self):
+        """ Calculate missingness of all sites.
+        
+        Returns
+        -------
+        funpipe.vcf
+            An updated vcf obeject with missingness computed for all sites.
+        
+        """
         self.get_plink()
         run('plink2 --bfile '+self._plink+' --missing --allow-extra-chr --out '
-            +self._prefix)
+            + os.path.join(self._outdir,self._prefix) )
         
         return self
 
-    def plot_site_info(self, info, bins=100, normed=True, label=None ):
-        """ plot info field in the site. For example,minor allele frequencies.
+    def plot_site_info(self, info, bins=100, density=True):
+        """ Plot info field in the site. For example,minor allele frequencies.
         
         Parameters
         ----------
         info: string
-            info field in the site.
+            Info field in the site.
         bins: int
-            the number of bins for histogram, default = 100.
-        normed: boolean
-            Data will be normalized if True, else not.
-        label: string
-            plot labels.
+            The number of bins for histogram, default = 100.
+        density: boolean
+            If True, draw and return a probability density: each bin 
+            will display the bin's raw count divided by the total number of counts.
             
         """
         self.has_info(info, 'site')
 
-        plt.hist( self._site_info[info], bins=bins, normed=normed, label = label )
+        plt.hist( self._site_info[info], bins=bins, density=density )
         plt.legend()
         plt.xlabel(info)
         plt.ylabel('# sites')
 
         return self
 
-    def genome_dist(self, info, pdf=None, window_size=2000000, ymax=12000, build='hg38',
-                    centro_tsv='/xchip/gtex/xiaoli/resources/centromeres.txt.tz'):
-        """plot distribution of genomic elements across the genome
+#     def genome_dist(self, info, pdf=None, window_size=2000000, ymax=12000, build='hg38',
+#                     centro_tsv='/xchip/gtex/xiaoli/resources/centromeres.txt.tz'):
+#         """plot distribution of genomic elements across the genome
         
-        Parameters
-        ----------
-        info: string
-            info field in the site.
-        pdf: string
-            output pdf name.
-        window_size: int
-            sliding windong size, default = 2000000.
-        ymax: int
-            y axis maximum, default = 12000
-        build: string
-            human genome build
-        centro_tsv: string
-            tsv containing centromere positions
+#         Parameters
+#         ----------
+#         info: string
+#             info field in the site.
+#         pdf: string
+#             output pdf name.
+#         window_size: int
+#             sliding windong size, default = 2000000.
+#         ymax: int
+#             y axis maximum, default = 12000
+#         build: string
+#             human genome build
+#         centro_tsv: string
+#             tsv containing centromere positions
             
-        """
-        has_info(info, 'site')
-        df = self._site_info
-#         centr = pd.read_csv(centro_tsv, header=None, sep='\t')
-        plt.figure(1)
-        for i in range(len(chrs)):
-            plt.subplot(4, 6, i+1)
-            pos = df.ix[df.contig == chrs[i], 'pos'].astype(float)
-            plt.ylim(0, ymax)
-            plt.hist( pos, bins=int(ceil(max(pos)/window_size)))
-            plt.title(chrs[i])
-#             centrStart = min(centr.loc[centr[0] == chrs[i], 1])
-#             centrEnd = max(centr.loc[centr[0] == chrs[i], 2])
-#             plt.axvline(x=centrStart, color='r')
-#             plt.axvline(x=centrEnd, color='r')
-        if pdf is not None:
-            plt.savefig(pdf)
-        else:
-            plt.show()
+#         """
+#         has_info(info, 'site')
+#         df = self._site_info
+# #         centr = pd.read_csv(centro_tsv, header=None, sep='\t')
+#         plt.figure(1)
+#         for i in range(len(chrs)):
+#             plt.subplot(4, 6, i+1)
+#             pos = df.ix[df.contig == chrs[i], 'pos'].astype(float)
+#             plt.ylim(0, ymax)
+#             plt.hist( pos, bins=int(ceil(max(pos)/window_size)))
+#             plt.title(chrs[i])
+# #             centrStart = min(centr.loc[centr[0] == chrs[i], 1])
+# #             centrEnd = max(centr.loc[centr[0] == chrs[i], 2])
+# #             plt.axvline(x=centrStart, color='r')
+# #             plt.axvline(x=centrEnd, color='r')
+#         if pdf is not None:
+#             plt.savefig(pdf)
+#         else:
+#             plt.show()
             
-        return(1)
+#         return(1)
 
     # sample level APIs
     def get_sample_info(self, info=['GT']):
-        #to do
         """ Get sample level info of interest
         
         Parameters
         ----------
         info: list of string
-            a list of sample level information, default = ['GT'].
+            A list of sample level information, default = ['GT','DP'].
             
         Returns
         -------
         funpipe.vcf
-            an updated vcf object with a table of sample level information generated:
+            An updated vcf object with a table of sample level information generated:
                 * sample_info: pandas.dataframe, a table of sample level information.
             
         """
-        header = ['CHR', 'ID'] + info
-        query_string = '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE='
-        query_string += '\t'.join([('%'+i) for i in info])+'\''
-        query_string = query_string + ']\n'
+        sample_list = self._vcfheader.get_samples()
+        header = ['CHR', 'POS','REF','ALT'] +  [ info[i]+'_'+sample_list[j] 
+                                       for j in range(len(sample_list)) for i in range(len(info))]
+        
+        query_string = '\'%CHROM\t%POS\t%REF\t%ALT[\t'
+        query_string += '\t'.join([('%'+i) for i in info])
+        query_string =  query_string + ']\n\''
         
         cmd = ' '.join([
             "bcftools query -f ", query_string, self._vcf, '>',
@@ -557,58 +633,47 @@ class vcf:
                                       header=None, names=header)
         return self
     
-    
-    def plot_sample_info(self, info, bins=100, normed=True, label=None ):
-        """ plot info field in the sample. For example,minor allele frequencies.
+    #TODO
+#     def plot_sample_info(self, info, bins=100, density=True, label=None ):
+#         """ plot info field in the sample. For example,minor allele frequencies.
         
-        Parameters
-        ----------
-        info: string
-            info field in the sample.
-        bins: int
-            the number of bins for histogram, default = 100.
-        normed: boolean
-            Data will be normalized if True, else not.
-        label: string
-            plot labels.
+#         Parameters
+#         ----------
+#         info: string
+#             info field in the sample.
+#         bins: int
+#             the number of bins for histogram, default = 100.
+#         density: boolean
+#             If True, draw and return a probability density: each bin 
+#             will display the bin's raw count divided by the total number of counts.
+#         label: string
+#             plot labels.
             
-        """
+#         """
         
-        has_info(info, 'sample')
+#         has_info(info, 'sample')
         
-        plt.hist( self._sample_info[info], bins=bins, normed=normed, label = label )
-        plt.legend()
-        plt.xlabel(info)
-        plt.ylabel('# samples')
+#         plt.hist( self._sample_info[info], bins=bins, density=density, label = label )
+#         plt.legend()
+#         plt.xlabel(info)
+#         plt.ylabel('# samples')
         
-        return self
+#         return self
 
     # formating
     def get_plink(self):
-        """ Get plink format files """
-        cmd = ' '.join('plink2 --vcf', self._vcf, '--allow-extra-chr', '--make_bed --out',
-        self._prefix)
-        run(cmd)
-        self._plink = self._prefix
-        return self
-    
-    # organize VCF records
-    def get_record(self):
-        """organize VCF record lines into a record list
+        """ Get plink format files 
         
         Returns
         -------
         funpipe.vcf
-            an updated vcf object with a list of VCF records generated.
-        
+            an updated vcf object with bfile(bed,fam,bim) generated.
+            
         """
-        comment_pattern = re.compile(r"^#")
-        with open( self._vcf ) as file:
-            for full_line in file:
-                line = full_line.rstrip()
-                if not( re.search(comment_pattern, line) ):
-                    self._record_list.append( vcfrecord(line) )
-                    
+        out = os.path.join(self._outdir,self._prefix)
+        cmd = ' '.join(['plink2 --vcf', self._vcf,'--max-alleles 2' ,'--allow-extra-chr', '--make-bed --out',out])
+        run(cmd)
+        self._plink = out
         return self
                     
                 

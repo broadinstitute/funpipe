@@ -13,7 +13,9 @@ from vcf import vcf
 
 class TestPlink(unittest.TestCase):
     def setUp(self):
+        
         self.bfile = ''
+        
         
     def testConstructor(self):
         plink_test = plink(self.bfile)
@@ -22,23 +24,18 @@ class TestPlink(unittest.TestCase):
         self.assertTrue( plink_test.assoc == None )
         self.assertTrue( plink_test.qc == None )
         
-    def testRelatedness(self):
-        plink_test = plink(self.bfile)
-        plink_test.relatedness()
-        self.assertTrue( os.path.exists( plink_test.related )  )
-        self.assertTrue(  plink_test.related == self.bfile+'.related.tsv' )
+#     def testRelatedness(self):
+#         plink_test = plink(self.bfile)
+#         plink_test.relatedness()
+#         self.assertTrue( os.path.exists( plink_test.related )  )
+#         self.assertTrue(  plink_test.related == self.bfile+'.related.tsv' )
         
-    def testGwas(self):
-        plink_test = plink(self.bfile)
-        plink_test.gwas()
-        self.assertTrue( os.path.exists( plink_test.assoc )  )
-        self.assertTrue(  plink_test.assoc == self.bfile + '.gemma.assoc.tsv' )
+#     def testGwas(self):
+#         plink_test = plink(self.bfile)
+#         plink_test.gwas()
+#         self.assertTrue( os.path.exists( plink_test.assoc )  )
+#         self.assertTrue(  plink_test.assoc == self.bfile + '.gemma.assoc.tsv' )
         
-    def testGwasFilter(self):
-        plink_test = plink(self.bfile)
-        plink_test.gwas_filter()
-        self.assertTrue( os.path.exists( plink_test.qc )  )
-        self.assertTrue(  plink_test.qc == self._bfile+'.qc' )
         
     def testImportPheno(self):
         plink_test = plink(self.bfile)

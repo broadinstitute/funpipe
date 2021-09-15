@@ -6,12 +6,28 @@ from utils import run
 
 class plink:
     def __init__(self, prefix):
-        """constructor of plink object
+        """Constructor of plink object.
         
         Parameters
         ----------
         prefix: string
-            the prefix of bfile
+            The prefix of bfile.
+            
+        Attributes
+        ----------
+        bed: string
+            The path to bed file.
+        fam: string
+            The path to fam file.
+        bim: string
+            The path to bim file.
+        related: string
+            The path to genetic relatedness matrix.
+        assoc: string
+            The path to gwas result file.
+        qc: string
+            The path to quality control file.
+        
         """
         self._bfile = prefix
         if not os.path.exists(prefix + '.bed'):
@@ -52,12 +68,12 @@ class plink:
         return self._bim
     
     def relatedness(self):
-        """ Calculate genetic relatedness matrix
+        """ Calculate genetic relatedness matrix.
         
         Returns
         -------
         funpipe.plink
-            an updated plink object with relatedness file generated.
+            An updated plink object with relatedness file generated.
             
         """
         self._related = self._bfile+'.related.tsv'
@@ -67,18 +83,18 @@ class plink:
         return self
 
     def gwas(self, lmm=4):
-        """ Fit a LMM for a univariate model with GEMMA
+        """ Fit a LMM for a univariate model with GEMMA.
         
         Parameters
         ----------
         lmm: int
-            linear mixed model, 1 performs Wald test, 2 performs likelihood ratio test,
-            3 performs score test, and 4 performs all the three tests, default = 4
+            Linear mixed model, 1 performs Wald test, 2 performs likelihood ratio test,
+            3 performs score test, and 4 performs all the three tests, default = 4.
             
         Returns
         -------
         funpipe.plink
-            an updated plink object with gwas association file generated.
+            An updated plink object with gwas result file generated.
             
         """
         self._assoc = self._bfile + '.gemma.assoc.tsv'
@@ -90,43 +106,46 @@ class plink:
         
         return self
 
-    def import_pheno(self,phenotypes, pheno_name ):
+    def import_pheno(self,phenotypes ):
         """ import phenotypes
         
         Parameters
         ----------
         phenotypes: list
-            list of phenotypes appended to fam file
-        pheno_name: string
-            name of the phenotype, for example, 'bmi'.
-            
-        """
-        fam_pd = pd.read_csv(self._fam , sep = "\t")
-        if len(fam_pd['IID']) != len(phenotypes):
-            raise Exception("Unmatched length between imported phenotypes and fam file.")
-        else:
-            fam_pd[pheno_name] = phenotypes
-        fam_pd.to_csv( self._bfile + '.add_pheno.fam', sep = "\t", index = None)
-        self._fam = self._bfile + '.add_pheno.fam'
-        
-        return self
-
-    def gwas_filter(self, ind=0.1, miss=0.1, maf=0.05):
-        """ Filter genotype and sample level missingness and AF
-
-        Parameters
-        ----------
-        ind: float
-            individual level missingness, default = 0.1
-        miss: float
-            site level missingness, default = 0.1
-        maf: float
-            minor allele frequency cutoff, default = 0.05
+            The list of phenotypes appended to fam file.
             
         Returns
         -------
         funpipe.plink
-            an updated plink object with quality control file generated.
+            An updated plink object with phenotype imported in fam file.
+            
+        """
+        fam_pd = pd.read_csv(self._fam , sep = "\t", header = None)
+        if len(fam_pd[ list(fam_pd.columns)[0] ]) != len(phenotypes):
+            raise Exception("Unmatched length between imported phenotypes and fam file.")
+        else:
+            fam_pd[len(fam_pd.columns)] = phenotypes
+        fam_pd.to_csv( self._bfile + '.fam', sep = "\t", index = None)
+        self._fam = self._bfile + '.fam'
+        
+        return self
+
+    def gwas_filter(self, ind=0.1, miss=0.1, maf=0.05):
+        """ Filter genotype and sample level missingness and MAF.
+
+        Parameters
+        ----------
+        ind: float
+            Individual level missingness, default = 0.1.
+        miss: float
+            Site level missingness, default = 0.1.
+        maf: float
+            Minor allele frequency cutoff, default = 0.05.
+            
+        Returns
+        -------
+        funpipe.plink
+            An updated plink object with quality control file generated.
 
         """
         self._qc = self._bfile+'.qc'

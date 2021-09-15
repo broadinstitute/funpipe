@@ -11,25 +11,25 @@ from bam import bam
 class fastq:
     """ fastq """
     def __init__(self,*names,is_paired=False):
-        '''constructor of fastq object
+        '''Constructor of fastq object.
         
         Parameters
         ----------
-        names: tuple of strings
-            name(s) of fastq file(s)
+        names: tuple
+            The path(s) of fastq file(s).
         is_paired: bool
             True if there is a pair of fastq files, else False.
             
         Attributes
         ----------
         names: tuple of strings
-            name(s) of fastq file(s)
+            The path(s) of fastq file(s).
         is_paired: bool
             True if there is a pair of fastq files, else False.
         qc_outdir: string
-            output directory of fastq qc report
+            The output directory of fastq quality control report.
         bam: funpipe.bam
-            the bam file of aligned sequences
+            The bam object of aligned sequences.
             
         '''
         self.is_paired = is_paired
@@ -45,17 +45,17 @@ class fastq:
         self.bam = None
         
     def fastqc(self,out_dir):
-        ''' quality control of raw or aligned BAMs using FastQc
+        ''' Quality control of raw or aligned BAMs using FastQc.
         
         Parameters
         ----------
         out_dir: string
-            qc output directory
+            The output directory of quality control.
             
         Returns
         -------
         funpipe.fastq
-            an updated fastq object with qc files generated.
+            An updated fastq object with quality control files generated.
             
         '''
         if self.is_paired:
@@ -74,19 +74,19 @@ class fastq:
         
         
     def bwa_align(self,fa,prefix):
-        ''' perform Burrows-Wheeler alignment
+        ''' Burrows-Wheeler alignment for sequences in fastq file(s).
         
         Parameters
         ----------
         fa: funpipe.fasta
-            reference fasta object
+            Reference fasta object.
         prefix: string
-            output file prefix
+            Output file prefix.
             
         Returns
         -------
         funpipe.fastq
-            an updated fastq object with bam file of aligned sequences generated.
+            An updated fastq object with the bam object of aligned sequences generated, path = prefix.bam.
             
         '''
         if fa.samtools_index == None or (not os.path.exists(fa.samtools_index)):
