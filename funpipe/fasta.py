@@ -1,16 +1,14 @@
 import os
 import sys
-sys.path.append('.')
-from picard import picard
-from utils import run
-from bam import bam
+#sys.path.append('.')
+from funpipe.picard import picard
+from funpipe.utils import run
 # from plumbum import local
 # from plumbum.cmd import wget
 # import configparser
 
 
 class fasta:
-    """fasta"""
     def __init__(self,path):
         '''Constructor of fasta object.
         

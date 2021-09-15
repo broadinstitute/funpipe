@@ -1,9 +1,9 @@
 import os
 import sys
-sys.path.append('.')
-from picard import picard as pcd
-from vcf import tabix
-from utils import run
+#sys.path.append('.')
+from funpipe.picard import picard as pcd
+from funpipe.vcf import tabix
+from funpipe.utils import run
 
 class bam:
     def __init__(self,path):

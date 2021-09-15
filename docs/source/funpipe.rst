@@ -1,6 +1,8 @@
-funpipe
-=======
+funpipe package
+===============
 
+Submodules
+----------
 
 funpipe.bam module
 ------------------
@@ -18,10 +20,26 @@ funpipe.fasta module
    :undoc-members:
    :show-inheritance:
 
+funpipe.fastq module
+--------------------
+
+.. automodule:: funpipe.fastq
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 funpipe.gatk module
 -------------------
 
 .. automodule:: funpipe.gatk
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+funpipe.gt\_pair module
+-----------------------
+
+.. automodule:: funpipe.gt_pair
    :members:
    :undoc-members:
    :show-inheritance:
@@ -82,6 +100,22 @@ funpipe.vcf module
    :undoc-members:
    :show-inheritance:
 
+funpipe.vcfheader module
+------------------------
+
+.. automodule:: funpipe.vcfheader
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+funpipe.vcfrecord module
+------------------------
+
+.. automodule:: funpipe.vcfrecord
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 funpipe.vcftools module
 -----------------------
 
@@ -90,3 +124,10 @@ funpipe.vcftools module
    :undoc-members:
    :show-inheritance:
 
+Module contents
+---------------
+
+.. automodule:: funpipe
+   :members:
+   :undoc-members:
+   :show-inheritance:
