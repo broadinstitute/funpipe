@@ -10,39 +10,41 @@ import subprocess as sp
 
 
 class gt_pair:
-    """ genotype pair """
     def __init__(self, gt1, gt2, na_ignore=False):
-        """
+        """Constructor of gt_pair.
         Parameters
         ----------
         gt1, gt2: pd.Series
+            A pair of genotypes.
         
         na_ignore: bool
-            whether to ignore nan in comparison, default = False
+            Whether to ignore NaN in comparison, default = False.
         
         Attributes
         ----------
         gt1, gt2: pd.Series
-            genotypes in VCF file, for example, gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
+            Genotypes in VCF file, for example, gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan]).
         na_ignore: bool
-            whether to ignore nan in comparison, default = False
+            Whether to ignore NaN in comparison, default = False.
         n_total: int
-            total number of non-monomorphic sites between two samples
+            The total number of non-monomorphic sites between two samples.
         n_share: int
-            shared variants between the two samples
+            The number of shared variants between the two samples.
         n_unique: int
-            unique variants between the two samples
+            The number of unique variants between the two samples.
         
         Example
         -------
-        >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
-        >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
-        >>> gt = gt_pair(gt1, gt2).get_n_unique()
-        >>> print(gt.n_total, gt.n_unique, gt.n_share)
-        7 5 2
-        >>> gt = gt_pair(gt1, gt2, na_ignore=True).get_n_unique()
-        >>> print(gt.n_total, gt.n_unique, gt.n_share)
-        5 3 2
+        .. highlight:: python
+        .. code-block:: python
+            >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
+            >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
+            >>> gt = gt_pair(gt1, gt2).get_n_unique()
+            >>> print(gt.n_total, gt.n_unique, gt.n_share)
+            7 5 2
+            >>> gt = gt_pair(gt1, gt2, na_ignore=True).get_n_unique()
+            >>> print(gt.n_total, gt.n_unique, gt.n_share)
+            5 3 2
 
         """
         # helper method to convert gt datatype
@@ -65,21 +67,23 @@ class gt_pair:
         self._not_both_ref = None
 
     def get_n_total(self):
-        """ compute total number of non-monomorphic sites between two samples
+        """ Compute the total number of non-monomorphic sites between two samples.
         
         Returns
         -------
         int
-            total number of non-monomorphic sites between two samples
+            The total number of non-monomorphic sites between two samples.
             
         Example
         -------
-        >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
-        >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
-        >>> gt_pair(gt1, gt2).get_n_total()
-        7
-        >>> gt_pair(gt1, gt2).get_n_total()
-        5
+        .. highlight:: python
+        .. code-block:: python
+            >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
+            >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
+            >>> gt_pair(gt1, gt2).get_n_total()
+            7
+            >>> gt_pair(gt1, gt2).get_n_total()
+            5
 
         """
         if self.na_ignore:
@@ -91,7 +95,7 @@ class gt_pair:
         return self.n_total
 
     def get_n_share(self):
-        """ Compare genotypes between two columns within a VCF, and report shared
+        """ Compare genotypes between two columns within a VCF file, and report shared
         variants between the two samples.
 
                            A B
@@ -99,34 +103,34 @@ class gt_pair:
                      site2 . 1
                      site3 1 1
 
-        The shared variant here will be 1 (site3).
+        The number of shared variants here will be 1 (site3).
 
         Returns
         -------
         int
-            number of shared sites
+            The number of shared sites.
 
         Example
         -------
-        >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
-        >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
-        >>> gt_pair(gt1, gt2).get_n_share()
-        2
+        .. highlight:: python
+        .. code-block:: python
+            >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
+            >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
+            >>> gt_pair(gt1, gt2).get_n_share()
+            2
 
         Note
         ----
 
         This method is also cross-validated with GenotypeConcordance in GATK and
-        bcftools stats.
-
-        NaN will not be matched to any others.
+        bcftools stats. NaN will not be matched to any others.
 
         """
+      
         # is a polymorphic site (non-reference sites)
         is_poly = (self.gt1 + self.gt2).map(lambda x: 1 if x != 0 else 0)
         # two sites are similar, include reference
         is_same = (self.gt1 - self.gt2).map(lambda x: 1 if x == 0 else 0)
-
         # number of shared alleles
         self.n_share = int((is_poly * is_same).sum())
         
@@ -142,23 +146,25 @@ class gt_pair:
                      site2 . 1
                      site3 1 1
 
-        The unique variants here will be 2 (site1 and site2). If ignore NA,
+        The number of unique variants here will be 2 (site1 and site2). If ignore NA,
         the unique variants will be 0 (site1 and 2 will not be considered here).
 
 
         Returns
         -------
         int
-            number of unique sites
+            The number of unique sites.
 
         Example
         -------
-        >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
-        >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
-        >>> gt_pair(gt1, gt2).get_n_unique()
-        5
-        >>> gt_unique(gt1, gt2)
-        3
+        .. highlight:: python
+        .. code-block:: python
+            >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
+            >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
+            >>> gt_pair(gt1, gt2).get_n_unique()
+            5
+            >>> gt_unique(gt1, gt2)
+            3
 
         """
         if self.n_total is None:

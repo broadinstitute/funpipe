@@ -2,24 +2,22 @@ import os
 import sys
 sys.path.append('.')
 from utils import run
-"""
-Diamond
-=======
-"""
+
 def diamond_blastx(fa, output):
     ''' blastx with diamond
     
     Parameters
     ----------
     fa: string
-        input fasta file.
+        The path to input fasta file.
     output: string
-        output file
+        The path to output file.
     
     Returns
     -------
     string
-        output file
+        The path to output file.
+        
     '''
     if not os.path.exists( fa ):
         raise Exception('Sorry, input fasta file does not exist')

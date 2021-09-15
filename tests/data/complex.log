@@ -1,0 +1,33 @@
+PLINK v2.00a2.3LM 64-bit Intel (24 Jan 2020)
+Options in effect:
+  --allow-extra-chr
+  --make-bed
+  --max-alleles 2
+  --out data/complex
+  --vcf data/phy_test.vcf
+
+Hostname: DESKTOP-OL261DO
+Working directory: /mnt/c/Users/siq00/Desktop/Lab_Project/XLab/funpipe/tests
+Start time: Mon Sep 13 10:19:58 2021
+
+Random number seed: 1631499598
+3124 MiB RAM detected; reserving 1562 MiB for main workspace.
+Using up to 4 compute threads.
+Warning: Header line 19 of --vcf file has an unexpected definition of INFO:PR.
+This interferes with a few merge and liftover operations.
+--vcf: 106 variants scanned.
+--vcf: data/complex-temporary.pgen + data/complex-temporary.pvar +
+data/complex-temporary.psam written.
+4 samples (0 females, 0 males, 4 ambiguous; 4 founders) loaded from
+data/complex-temporary.psam.
+Warning: Header line 18 of data/complex-temporary.pvar has an unexpected
+definition of INFO:PR. This interferes with a few merge and liftover
+operations.
+105 out of 106 variants loaded from data/complex-temporary.pvar.
+Note: No phenotype data present.
+105 variants remaining after main filters.
+Writing data/complex.fam ... done.
+Writing data/complex.bim ... done.
+Writing data/complex.bed ... done.
+
+End time: Mon Sep 13 10:19:58 2021

@@ -9,33 +9,33 @@ class gatk:
     """ Run GATK commands """
     def __init__(
             self, fa, jar='/opt/GATK-3.8/GenomeAnalysisTK.jar', prefix='output', out_dir='.', RAM=4):
-        ''' constructor of gatk object
+        '''Constructor of gatk object.
         
         Parameters
         ----------
         fa: string
-            input Fasta
+            The path to input Fasta.
         jar: string
-            input jar file
+            The path to GATK.jar.
         prefix: string
-            output file prefix, default = \'output\'
+            The output file prefix, default = \'output\'.
         out_dir: string
-            output directory for gatk commands, default = \'.\'
+            The output directory for gatk commands, default = \'.\'.
         RAM: int
-            maximum RAM usage in gigabytes, default = 4
+            Maximum RAM usage in gigabytes, default = 4.
             
         Attributes
         ----------
         prefix: string
-            output file prefix, default = \'output\'
+            The output file prefix, default = \'output\'.
         concordance: string
-            path to genotype concordance output
+            The path to genotype concordance output file.
         eval: string
-            path to variant evaluation output
+            The path to variant evaluation output file.
         combined_vcf: string    
-            path to combined variant output
+            The path to combined variants output file.
         selected_vcf: string
-            path to selected variant output
+            The path to selected variants output file.
             
         '''
         self.out_dir = out_dir
@@ -51,25 +51,25 @@ class gatk:
     
     
     def variant_eval(self, vcf, titv=True, samp=True, indel=True, multi=True):
-        ''' VCF sample QC by different stratifications
+        ''' VCF sample QC by different stratifications.
         
         Parameters
         ----------
         vcf: string
-            vcf: input vcf
+            The path to input VCF file.
         titv: bool      
-            use TiTv Evaluator
+            Use TiTv Evaluator.
         samp: bool
-            stratify by samples
+            Stratify by samples.
         indel: bool  
-            use InDel Evaluator
+            Use InDel Evaluator.
         multi: bool
-            summarize multiallelic sites
+            Summarize multiallelic sites.
             
         Returns
         -------
-        string
-            output file name
+        funpipe.gatk
+            An updated gatk object with the evaluation file of VCF generated,"prefix.eval".
             
         '''
         out = os.path.join(self.out_dir, self.prefix+'.eval')
@@ -90,24 +90,24 @@ class gatk:
         return self
 
     def combine_var(self, vcf_dict, option, priority=None):
-        '''combine variants
+        '''Combine variants from multiple VCF files.
         
         Parameters
         ----------
         vcf_dict: dict
-            dictionary of vcf files, with key abbreviation of each vcf
+            The input dictionary of VCF files, with key abbreviations of each VCF.
         option: string
-            merging options, UNIQUIFY,PRIORITIZE or UNSORTED.
+            Merging options, UNIQUIFY,PRIORITIZE or UNSORTED.
         priority: 
-            ordered list specifying priority for merging, default = None
+            An ordered list specifying priority for merging, default = None.
             
         Returns
         -------
-        string
-            output combined vcf file
+        funpipe.gatk
+            An updated gatk object with combined VCF file generated,"prefix.combined.vcf.gz".
             
         '''
-        out_vcf = self.out_dir + '/' +self.prefix+'.vcf.gz'
+        out_vcf = os.path.join(self.out_dir,self.prefix+'.combined.vcf.gz')
         options = ['UNIQUIFY', 'PRIORITIZE', 'UNSORTED']
         if option not in options:
             raise ValueError('Merge option not valid.\n')
@@ -130,24 +130,24 @@ class gatk:
         return self
 
     def select_var(self, in_vcf, xl=None, il=None):
-        ''' select variants
+        ''' Select variants by customized intervals to exclude and include.
         
         Parameters
         ----------
         in_vcf: string
-            input vcf
+            The path to input VCF file.
         xl: string
-            intervals to exclude
+            Intervals to exclude.
         il: string
-            intervals to include
+            Intervals to include.
             
         Returns
         -------
-        string
-            output vcf file after selection
+        funpipe.gatk
+            An updated gatk object with the VCF file containing selected variants generated,"prefix.selected.vcf.gz".
             
         '''
-        output = self.out_dir+'/'+self.prefix+'.vcf.gz'
+        output = os.path.join(self.out_dir,self.prefix+'.selected.vcf.gz')
         cmd = ' '.join([
             self.cmd, '-T SelectVariants', '--variant', in_vcf,
             '-o ', output])
@@ -164,24 +164,24 @@ class gatk:
     
     
     def genotype_concordance(self, comp_vcf, eval_vcf, hap=False):
-        ''' comppare 2 vcf files
+        ''' Compare genotypes in 2 VCF files.
         
         Parameters
         ----------
         comp_vcf: string
-            VCF file for comparison
+            The path to VCF file for comparison.
         eval_vcf: string
-            VCF file for evaluation
+            The path to VCF file for evaluation.
         hap: bool
-            whether input is haploid VCF
+            Whether input VCF files are haploid.
             
         Returns
         -------
-        string
-            output comparison result name
+        funpipe.gatk
+            An updated gatk object with concordance output file generated,"prefix.concord.txt".
             
         '''
-        out = self.out_dir+'/'+self.prefix+'.txt'
+        out = os.path.join(self.out_dir,self.prefix+'.concord.txt')
         cmd = ' '.join([
             self.cmd, '-T GenotypeConcordance', '--comp', comp_vcf, '--eval', eval_vcf,
             '--out', out])

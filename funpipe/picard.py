@@ -9,14 +9,14 @@ Picard
 """
 class picard:
     def __init__(self, jar='/opt/picard-tools/picard.jar', RAM=4):
-        '''
+        ''' Constructor of picard object.
         
         Parameters
         ----------
         jar: string
-            jar path of picard tools, default = '/opt/picard-tools/picard.jar'
+            The path to picard.jar, default = '/opt/picard-tools/picard.jar'.
         RAM: int
-            maximum RAM usage in gigabytes, default = 4
+            Maximum RAM usage in gigabytes, default = 4.
             
         '''
         if not os.path.exists(jar):
@@ -27,19 +27,19 @@ class picard:
         ])
 
     def dict(self, fa, dictionary=None):
-        ''' build fasta dictionary
+        ''' Build fasta dictionary.
         
         Parameters
         ----------
         fa: string
-            fasta file
+            The path to fasta file.
         dictionary: string
-            dictionary file, default = None
+            The path to existing dictionary file, default = None.
             
         Returns
         -------
         string
-            dictionary file
+            The path to existing dictionary file
             
         '''
         
@@ -57,24 +57,36 @@ class picard:
         
         return dictionary
 
-    def bam2fqs(self, bam, prefix):
-        ''' Realign BAM file to a reference genome
+    def bam2fqs(self, bam, prefix, is_paired = True ):
+        ''' Realign BAM file to a reference genome, convert BAM to FASTQ.
         
         Parameters
         ----------
         bam: string
-            bam file
+            The path to bam file.
         prefix: string
-            output prefix
+            The output prefix.
+        is_paired: bool
+            True if BAM is aligned from a pair of FASTQ files, else, False.
             
         Returns
         -------
         tuple
-            tuple of fq file pairs
+            The pair of FASTQ files or a single FASTQ file.
             
         '''
-        fq1 = prefix+'_1.fq.gz'
-        fq2 = prefix+'_2.fq.gz'
-        cmd = ' '.join([self.cmd, 'SamToFastq', 'I='+bam, 'F='+fq1, 'F2='+fq2])
+        out = None
+        if is_paired:
+            fq1 = prefix+'_1.fq.gz'
+            fq2 = prefix+'_2.fq.gz'
+            cmd = ' '.join([self.cmd, 'SamToFastq', 'I='+bam, 'F='+fq1, 'F2='+fq2])
+            out = (fq1, fq2)
+        else:
+            fq = prefix+'.fq.gz'
+            cmd = ' '.join([self.cmd, 'SamToFastq', 'I='+bam, 'F='+fq ])
+            out = (fq)
+            
         run(cmd)
-        return(fq1, fq2)
+        print("- bam2fqs Done.")
+        
+        return out
