@@ -1,15 +1,12 @@
 import sys
-#sys.path.append('.')
 import os
 from funpipe.utils import run
-
-
 
 class gatk:
     def __init__(
             self, fa, jar='/opt/GATK-3.8/GenomeAnalysisTK.jar', prefix='output', out_dir='.', RAM=4):
-        '''Constructor of gatk object.
-        
+        '''
+
         Parameters
         ----------
         fa: string

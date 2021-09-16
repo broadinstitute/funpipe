@@ -1,10 +1,9 @@
 import os
 import sys
-#sys.path.append('.')
 from funpipe.utils import run
 
 def diamond_blastx(fa, output):
-    ''' blastx with diamond
+    ''' Blastx with diamond
     
     Parameters
     ----------

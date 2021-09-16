@@ -1,6 +1,5 @@
 import os
 import sys
-#sys.path.append('.')
 from funpipe.picard import picard
 from funpipe.utils import run
 from funpipe.bam import bam
@@ -9,10 +8,9 @@ from funpipe.bam import bam
 # import configparser
 
 class fastq:
-    """ fastq """
-    def __init__(self,*names,is_paired=False):
-        '''Constructor of fastq object.
-        
+    def __init__(self,*names,is_paired= True):
+        '''
+
         Parameters
         ----------
         names: tuple
@@ -30,7 +28,17 @@ class fastq:
             The output directory of fastq quality control report.
         bam: funpipe.bam
             The bam object of aligned sequences.
-            
+        
+        Examples
+        --------
+        >>> from funpipe.fastq import fastq
+        >>> fastq = fastq( 'sample_1.fq', 'sample_2.fq', is_paired = True )
+        Perform QC:
+        >>> fastq.fastqc( out_dir = '.' )
+        Perform alignment:
+        >>> fastq.bwa_align('ref.fasta', 'sample')
+        The BAM file "sample.bam" is generated.
+
         '''
         self.is_paired = is_paired
         if len(names) > 2:

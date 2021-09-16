@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 import argparse
 import os
-from funpipe import bam, fastqc, picard
+from funpipe import bam, fastq, picard
 
 
 def bam_fast_qc(bam, ref_fa, out_dir, prefix):
     ''' use FastQc for a BAM '''
     picard_cmd = picard()
     (fq1, fq2) = picard_cmd.bam2fqs(bam, os.path.join(out_dir, prefix))
-    fastqc(bam, fq1, fq2, out_dir)
+    temp_fastq = fastq(fq1, fq2, is_paired= True )
+    temp_fastq.fastqc(out_dir)
     print(' - bam_fast_qc done.')
     return 1
 

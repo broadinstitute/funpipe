@@ -1,13 +1,12 @@
 import os
 import sys
-#sys.path.append('.')
 from funpipe.picard import picard as pcd
-from funpipe.vcf import tabix
+from funpipe.legacy import tabix
 from funpipe.utils import run
 
 class bam:
     def __init__(self,path):
-        '''Constructor of bam object.
+        '''
         
         Parameters
         ----------
@@ -36,7 +35,24 @@ class bam:
             The path to config file containing structural variation detected by breakdancer.
         out_vcf: string
             The path to output VCF file by variant calling.
-        
+
+        Examples
+        --------
+        >>> from funpipe.bam import bam
+        >>> bam = bam( 'sample.bam' )
+        Sort BAM file:
+        >>> sorted_bam = bam.sort_bam().sorted_bam
+        Clean BAM file:
+        >>> cleanup_sorted_bam = sorted_bam.clean_bam().cleanup_bam
+        Index BAM file:
+        >>> cleanup_sorted_bam.index_bam()
+        Compute the depth of alignment:
+        >>> cleanup_sorted_bam.bam_depth( out_prefix = 'sample' )
+        Detect structural variation:
+        >>> cleanup_sorted_bam.breakdancer()
+        Variant calling:
+        >>> cleanup_sorted_bam.variant_calling( 'ref.fasta', 'sample')
+
         '''
         if os.path.exists(path):
             self.path = path
@@ -329,7 +345,7 @@ class bam:
         return self
     
     def variant_call(self,fa,prefix):
-        """varaint calling from aligned bam file
+        """Perform varaint calling from aligned bam file
         
         Parameters
         ----------

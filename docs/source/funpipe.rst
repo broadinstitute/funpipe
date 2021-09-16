@@ -1,133 +1,109 @@
 funpipe package
 ===============
 
-Submodules
-----------
-
-funpipe.bam module
-------------------
+bam
+---
 
 .. automodule:: funpipe.bam
    :members:
    :undoc-members:
    :show-inheritance:
 
-funpipe.fasta module
---------------------
+fasta
+-----
 
 .. automodule:: funpipe.fasta
    :members:
    :undoc-members:
    :show-inheritance:
 
-funpipe.fastq module
---------------------
+fastq
+-----
 
 .. automodule:: funpipe.fastq
    :members:
    :undoc-members:
    :show-inheritance:
 
-funpipe.gatk module
--------------------
+gatk
+----
 
 .. automodule:: funpipe.gatk
    :members:
    :undoc-members:
    :show-inheritance:
 
-funpipe.gt\_pair module
------------------------
+gt_pair
+-------
 
 .. automodule:: funpipe.gt_pair
    :members:
    :undoc-members:
    :show-inheritance:
 
-funpipe.microbiome module
--------------------------
+microbiome
+----------
 
 .. automodule:: funpipe.microbiome
    :members:
    :undoc-members:
    :show-inheritance:
 
-funpipe.phylo module
---------------------
+phylo
+-----
 
 .. automodule:: funpipe.phylo
    :members:
    :undoc-members:
    :show-inheritance:
 
-funpipe.picard module
----------------------
+picard
+------
 
 .. automodule:: funpipe.picard
    :members:
    :undoc-members:
    :show-inheritance:
 
-funpipe.plink module
---------------------
+plink
+-----
 
 .. automodule:: funpipe.plink
    :members:
    :undoc-members:
    :show-inheritance:
 
-funpipe.sv module
------------------
 
-.. automodule:: funpipe.sv
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-funpipe.utils module
---------------------
+utils
+-----
 
 .. automodule:: funpipe.utils
    :members:
    :undoc-members:
    :show-inheritance:
 
-funpipe.vcf module
-------------------
+vcf
+---
 
 .. automodule:: funpipe.vcf
    :members:
    :undoc-members:
    :show-inheritance:
 
-funpipe.vcfheader module
-------------------------
+vcfheader
+---------
 
 .. automodule:: funpipe.vcfheader
    :members:
    :undoc-members:
    :show-inheritance:
 
-funpipe.vcfrecord module
-------------------------
+vcfrecord
+---------
 
 .. automodule:: funpipe.vcfrecord
    :members:
    :undoc-members:
    :show-inheritance:
 
-funpipe.vcftools module
------------------------
 
-.. automodule:: funpipe.vcftools
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: funpipe
-   :members:
-   :undoc-members:
-   :show-inheritance:
