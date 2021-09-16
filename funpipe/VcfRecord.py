@@ -6,48 +6,42 @@ from scipy.stats import binom_test
 # to do: merge with vcf.py
 
 class vcfrecord:
-    """
-    Object for each record (each line)
-    """
-
     def __init__(self, vcf_line):
-        """parse in each vcf record (each line) as
+        """Parse in each VCF record (each line) as
         chrom, pos, id, ref, alt, qual, filter, info, format
         and genotypes.
         
         Parameters
         ----------
         vcf_line: string
-            a line of vcf record
+            A line of VCF record.
         
         Attributes
         ----------
         vcf_line: string
-            the line of VCF record
-        
+            A line of VCF record.
         chrom: string
-            chromosome, for example, "chr1" or "1"
+            Chromosome, for example, "chr1" or "1".
         pos: string
-            left and right positions
+            The left and right positions.
         id: string
-            id
+            ID of the variant.
         ref: string
-            base in reference sequence
+            The base in reference genome sequence.
         alt: string
-            alternative base in variant sequence
+            The alternative base in variant sequence.
         qual: string
-            quality score
+            Quality score.
         filter: string
-            name of the filter used 
+            The name of the filter used.
         info: string
-            information of the VCF record line, for example, "NS=3;DP=9;AA=G"
+            The information of the VCF record line, for example, "NS=3;DP=9;AA=G".
         format: string
-            format of information in genotype field, for example, "GT:GQ:DP"
-        genotypes: list of string
-            a list of all samples'genotypes, for example, ["0/1:35:4", "0/2:17:2,"1/1:40:3"]
+            The format of information in genotype field, for example, "GT:GQ:DP".
+        genotypes: list
+            The list of all samples'genotypes, for example, ["0/1:35:4", "0/2:17:2,"1/1:40:3"].
         vcf_annot: bool
-            whether the vcf record line is annotated
-            
+            Whether the vcf record line is annotated. 
         
         """
         self.vcf_line = vcf_line.rstrip()
@@ -75,17 +69,17 @@ class vcfrecord:
                     self.vcf_annot = fields[i]
 
     def is_passing(self, caller):
-        """ check whether the record passes Quality check
+        """ Check whether the record passes quality check.
         
         Parameters
         ----------
         caller: string
-            variant caller, either GATK or PILON
+            The variant caller, either GATK or PILON.
         
         Returns
         -------
         bool
-            True if the record passess quality check, else False
+            True if the record passess quality check, else False.
             
         """
         if self.filter == 'PASS':
@@ -96,26 +90,24 @@ class vcfrecord:
             return False
 
     def get_variant_type(self, caller, genotype):
-        """ get variant type in vcf record
+        """Get variant type in VCF record.
         
         Parameters
         ----------
         caller: string
-            variant caller, either GATK or PILON
+            The variant caller, either GATK or PILON.
         
         genotype: string 
-            genotype of an individual sample.
-            The vertical pipe | indicates that the genotype is phased, 
-            and is used to indicate which chromosome the alleles are on. 
-            If this is a slash / rather than a vertical pipe, 
-            it means we don’t know which chromosome they are on.
+            Genotype of an individual sample.
+            The vertical pipe "|" indicates that the genotype is phased, and is used to indicate which chromosome the alleles are on. 
+            If this is a slash "/" rather than a vertical pipe, it means we don’t know which chromosome they are on.
             
         Returns
         -------
         string
-            variant type in [ 'uncalled_ambiguous', 'structural',
-                'inside_deletion', 'SNP', 'DELETION', 'INSERTION',
-                'unknown' ]
+            A variant type in [ 'uncalled_ambiguous', 'structural','inside_deletion',
+                            'SNP', 'DELETION', 'INSERTION','unknown' ].
+                            
         """
         split_alt = self.alt.split(',')
         if genotype in ['.', './.', '.|.']:
@@ -141,21 +133,19 @@ class vcfrecord:
                 return 'unknown'
 
     def get_variant_length(self, genotype):
-        """ Get Variant length for a specific sample
+        """ Get variant length for a specific sample.
         
         Parameters
         ----------
         genotype: string
-            genotype of an individual sample
-            The vertical pipe | indicates that the genotype is phased, 
-            and is used to indicate which chromosome the alleles are on. 
-            If this is a slash / rather than a vertical pipe, 
-            it means we don’t know which chromosome they are on.
+            Genotype of an individual sample.
+            The vertical pipe "|" indicates that the genotype is phased, and is used to indicate which chromosome the alleles are on. 
+            If this is a slash "/" rather than a vertical pipe, it means we don’t know which chromosome they are on.
             
         Returns
         -------
         int
-            length of a variant
+            The length of the variant.
             
         """
         if genotype in ['0', '0/0', '0|0', '.', '.|.', './.']:
@@ -171,23 +161,22 @@ class vcfrecord:
 
     def get_genotype(self, index=0, min_gq=0, min_per_ad=float(0),
                      min_tot_dp=0, het_binom_p=False, return_flags=False):
-        """Return genotypes of a record
+        """Return genotypes of a VCF record.
         
         Parameters
         ----------
         index: int
-            index of genotype, default = 0
+            The index of genotype, default = 0.
         min_gq: int
-            minimum genotype quality score cutoff, default = 0
+            Minimum genotype quality score cutoff, default = 0.
         min_per_ad: float
-            minimum allelic depth, default = float(0)
+            Minimum allelic depth, default = float(0).
         min_tot_dp: int
-            minimum total depth, default = 0
+            Minimum total depth, default = 0.
         het_binom_p: bool
-            whether compute pvalue of heterozygous binomial test
+            Whether to compute the p-value of heterozygous binomial test.
         return_flags: bool
-            if True, return parsed genotype, else
-            return parsed genotype list.
+            If True, return parsed genotype, else return parsed genotype list.
             
         :return:
         """
@@ -242,17 +231,18 @@ class vcfrecord:
             return parsed_genotype_list
 
     def is_het(self, index=0):  # currently works only on biallelic sites
-        """check whether a genotype is heterogenous (currently works only on biallelic sites)
+        """Check whether a genotype is heterogenous (currently works only on biallelic sites).
         
         Parameters
         ----------
         index: int
-            index for GT field in genotype string
+            The index of GT field in genotype string.
             
         Returns
         -------
         bool
             True if the genotype is heterogenous, else False.
+            
         """
         het = False
         genotype = self.genotypes[index]
@@ -263,19 +253,19 @@ class vcfrecord:
         return het
 
     def get_GQ(self, parsed_genotype, index=0):
-        """get GQ(genotype quality)
+        """Get GQ(genotype quality).
         
         Parameters
         ----------
         parsed_genotype: string
-            genotype parsed in
+            The genotype parsed in.
         index: int
-            index of genotype, default = 0
+            The index of genotype, default = 0.
             
         Returns
         --------
         string
-            genotype quality
+            The genotype quality.
             
         """
         gq = 'Undefined'
@@ -291,22 +281,18 @@ class vcfrecord:
     def get_percent_AD(self, index=0):
         # currently works only on biallelic sites
         
-        """get percentage of allelic depths,
-        alt_depth/(alt_depth + ref_depth) 
-        
+        """Get the percentage of allelic depth, percent_AD = alt_depth/(alt_depth + ref_depth).
+        For example, given a GT field, "GT:AD    0/0:6,9", percentage is 9/(6+9).
+
         Parameters
         ----------
         index: int
-            index of genotype, default = 0
+            The index of genotype, default = 0.
         
         Returns
         -------
         float
-            percentage of allelic depths
-        
-        Example
-        -------
-        For a GT field,  "GT:AD    0/0:6,9", percentage is 9/(6+9).
+            The percentage of allelic depth.
         
         """
         percent_AD = 'Undefined'
@@ -328,19 +314,19 @@ class vcfrecord:
     def get_AD_binomial_p(self, index=0):
         # currently works only on biallelic sites
         
-        """binomial test for allelic depths(ref and alt),
+        """Perform binomial test for allelic depths(ref and alt),
         assess the significance with a p-value of the hypothesis test.
         The hypothesized probability of success is 0.5, and the test is 2 sided.
         
         Parameters
         ----------
         index: int
-            index of genotype, default = 0
+            The index of genotype, default = 0.
             
         Returns
         -------
         float
-            p value of binomial test
+            The p-value of binomial test.
         
         """
         pvalue = None
@@ -362,17 +348,17 @@ class vcfrecord:
         return pvalue
 
     def get_total_DP(self, index=0):
-        """get total read depth(filtered)
+        """Get the total read depth(filtered).
         
         Parameters
         ----------
         index: int
-            index of genotype, default = 0
+            The index of genotype, default = 0.
             
         Returns
         -------
         string
-            total read depth
+            The total read depth.
             
         """
         total_DP = 'Undefined'
@@ -386,22 +372,18 @@ class vcfrecord:
         return total_DP
 
     def get_GQ_index(self, parsed_genotype):
-        """get index of GQ() in format field
-        
+        """Get the index of GQ in format field,GQ is genotype quality.
+        For example, "AD:GQ:DP:HQ", the index of GQ is 1 in format field.
+
         Parameters
         ----------
         parsed_genotype: string
-            genotype parsed in
+            The genotype parsed in.
             
         Returns
         -------
         int
-            index of GQ
-            
-        Example
-        -------
-            AD:GQ:DP:HQ
-        index of GQ is 1 in format field.
+            The index of GQ.
         
         """
         gq_index = 'Undefined'
@@ -423,19 +405,14 @@ class vcfrecord:
         return gq_index
 
     def get_AD_index(self):
-        """get the index of AD in format field,
-        AD is allelic depths for the ref and alt alleles in the order listed.
-        
+        """Get the index of AD in format field, AD is allelic depths for the ref and alt alleles in the order listed.
+        For example, "AD:GQ:DP:HQ", the index of AD is 0 in format field.
+
         Returns
         -------
         int
-            index of AD
+            The index of AD.
             
-        Example
-        -------
-            AD:GQ:DP:HQ
-        index of AD is 0 in format field.
-        
         """
         ad_index = 'Undefined'
         fields = self.format
@@ -447,17 +424,13 @@ class vcfrecord:
         return ad_index
 
     def get_DP_index(self):
-        """get the index of DP(valid read depth) in format field
-        
+        """Get the index of DP(valid read depth) in format field.
+        For example, "GT:GQ:DP:HQ", the index of DP is 2 in format field.
+
         Returns
         -------
         int
-            index of DP
-            
-        Example
-        -------
-            GT:GQ:DP:HQ
-        index of DP is 2 in format field.
+            The index of DP.
         
         """
         ad_index = 'Undefined'
@@ -482,17 +455,17 @@ class vcfrecord:
         return self.ref
 
     def get_alt(self, genotype):
-        """get alternative allele
+        """Get the alternative allele.
         
         Parameters
         ----------
         genotype: string
-            input genotype in vcf record, for example, 0|0
+            Input genotype, for example, "0|0".
         
         Returns
         -------
         string
-            alternative allele
+            The alternative allele.
             
         """
         if genotype in ['0', '.', '0/0', './.', '0|0', '.|.']:
@@ -511,6 +484,19 @@ class vcfrecord:
         return self.alt
 
     def get_snpeff_annot(self, alt):
+        """ Get annotation by snpEff.
+        
+        Parameters
+        ----------
+        alt: string
+            The alternative allele.
+            
+        Returns
+        -------
+        string
+            Variant site annotation.
+        
+        """
         fields = self.info.split(';')
         for field in fields:
             if re.match('ANN', field):
@@ -521,9 +507,22 @@ class vcfrecord:
                     if m.group(2):
                         if m.group(2) == alt:
                             return ann_field.replace('ANN=', '')
-        return False
+        return None
 
     def get_snpeff_effect(self, snpeff_annot):
+        """Get estimated effect by snpEff.
+        
+        Parameters
+        ----------
+        snpeff_annot: string
+            Variant site annotation.
+            
+        Returns
+        -------
+        string
+            Computed effect of the variant by snpEff.
+            
+        """
         try:
             annot_sections = snpeff_annot.split('|')
             return annot_sections[1]
@@ -531,6 +530,19 @@ class vcfrecord:
             return False
 
     def get_snpeff_impact(self, snpeff_annot):
+        """Get estimated impact by snpEff.
+        
+        Parameters
+        ----------
+        snpeff_annot: string
+            Variant site annotation.
+            
+        Returns
+        -------
+        string
+            Computed impact of the variant by snpEff.
+        
+        """
         try:
             annot_sections = snpeff_annot.split('|')
             return annot_sections[2]
@@ -538,6 +550,19 @@ class vcfrecord:
             return False
 
     def get_snpeff_feature(self, snpeff_annot):
+        """Get estimated impact by snpEff.
+        
+        Parameters
+        ----------
+        snpeff_annot: string
+            Variant site annotation.
+            
+        Returns
+        -------
+        string
+            Computed feature of the variant by snpEff.
+        
+        """
         try:
             annot_sections = snpeff_annot.split('|')
             return annot_sections[3]
@@ -554,12 +579,13 @@ class vcfrecord:
         return self.info
 
     def get_AF(self):
-        """get allelic frequency at locus
+        """Get allelic frequency at locus.
         
         Returns
         -------
         float
-            allelic frequency
+            Allelic frequency.
+            
         """
         AF = None
         fields = self.info.split(';')
@@ -574,12 +600,13 @@ class vcfrecord:
         return AF
 
     def get_QP(self):
-        """get QP: Percentage of As, Cs, Gs, Ts weighted by Q & MQ at locus
+        """Get QP, percentages of As, Cs, Gs, Ts weighted by Q & MQ at locus
         
         Returns
         -------
         dict
             A,C,G,T weights at locus
+            
         """
         QP_W = None
         fields = self.info.split(';')
@@ -596,6 +623,14 @@ class vcfrecord:
         return QP_W
 
     def get_MAF_from_QP(self):
+        """ Get minor allele frquency from QP.
+        
+        Returns
+        -------
+        float
+            Minor allele frequency.
+            
+        """
         MAF = False
         QP_dict = self.get_QP()
         QP = [QP_dict['A'],QP_dict['C'],QP_dict['G'],QP_dict['T']]
@@ -620,7 +655,13 @@ class vcfrecord:
 
     def is_singleton(self):
         #ToDo
-        """
+        """ Check whether the variant site is singleton.
+        
+        Returns
+        -------
+        bool
+            True if the variant site is singleton, else False.
+            
         """
         nonzeros = 0
         last_nonzero_index = False
@@ -635,12 +676,13 @@ class vcfrecord:
             return False
 
     def is_biallelic(self):
-        """check whether the site is biallelic
+        """Check whether the site is biallelic.
         
         Returns
         -------
         bool
-            True if the site is biallelic, else False
+            True if the site is biallelic, else False.
+            
         """
         split_alt = self.alt.split(',')
         if len(split_alt) > 1:
@@ -649,12 +691,13 @@ class vcfrecord:
             return True
 
     def count_ambig_genotypes(self):
-        """count the number of ambiguous genotypes
+        """Count the number of ambiguous genotypes.
         
         Returns
         -------
         int
-            the number of ambiguous genotypes
+            The number of ambiguous genotypes.
+            
         """
         ambig = 0
         for current_genotype in self.genotypes:
@@ -663,12 +706,13 @@ class vcfrecord:
         return ambig
 
     def get_genotype_profile(self):
-        """get a profile of all samples' genotypes in this vcf record
+        """Get a profile of all samples' genotypes.
         
         Returns
         -------
-        list of strings
-            genotype profile of all samples
+        list
+            The genotype profile of all samples.
+            
         """
         profile = list()
         for current_genotype in self.genotypes:

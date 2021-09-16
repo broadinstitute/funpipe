@@ -2,7 +2,7 @@
 
 import sys
 import argparse
-from funpipe.vcf import pilon, process_pilon_out
+from funpipe.legacy import pilon, process_pilon_out
 
 
 def main(inargs):

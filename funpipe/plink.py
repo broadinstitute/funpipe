@@ -1,12 +1,11 @@
 import os
 import sys
 import pandas as pd
-#sys.path.append('.')
 from funpipe.utils import run
 
 class plink:
     def __init__(self, prefix):
-        """Constructor of plink object.
+        """
         
         Parameters
         ----------
@@ -28,6 +27,13 @@ class plink:
         qc: string
             The path to quality control file.
         
+        Examples
+        --------
+        >>> from funpipe.plink import plink
+        >>> plink = plink( prefix = 'sample' )
+        Perform GWAS:
+        >>> plink.relatedness().gwas()
+
         """
         self._bfile = prefix
         if not os.path.exists(prefix + '.bed'):
@@ -107,7 +113,7 @@ class plink:
         return self
 
     def import_pheno(self,phenotypes ):
-        """ import phenotypes
+        """ Import phenotypes
         
         Parameters
         ----------

@@ -10,9 +10,8 @@ class vcfheader:
 
 
     def __init__(self, vcf_file):
-        """Constructor of vcfheader object. 
-        Get samples, variant caller, sample columns, contig IDs and
-        whether snpeff has been called.
+        """Get samples, variant caller, sample columns, contig IDs and
+        whether snpeff has been called from the header of VCF file.
         
         Parameters
         ----------

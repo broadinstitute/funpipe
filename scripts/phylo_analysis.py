@@ -4,15 +4,16 @@
 import os
 import sys
 import argparse
-from funpipe.phylo import vcf_snp_to_fasta, FastTreeDP
-from funpipe.vcf import filter_variants
+from funpipe.phylo import phylo #vcf_snp_to_fasta, fasttree
+from funpipe.legacy import filter_variants
 from funpipe.utils import cd
 
 
 def phylo_analysis(input, prefix, max_amb):
     outvcf = filter_variants(input, prefix+'.vcf')
-    fa = vcf_snp_to_fasta(outvcf, prefix, max_amb)
-    FastTreeDP(fa, prefix)
+    temp_phylo = phylo( outvcf )
+    temp_phylo.vcf_snp_to_fasta(max_amb)
+    temp_phylo.fasttree()
     return 1
 
 

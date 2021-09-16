@@ -1,13 +1,12 @@
 import sys
 import os
-#sys.path.append('.')
 from funpipe.utils import run
 from funpipe.fasta import fasta
 from funpipe.vcf import vcf
 
 class phylo:
     def __init__(self, invcf ):
-        """constructor of phylo object
+        """
         
         Parameters
         ----------
@@ -32,7 +31,16 @@ class phylo:
             The paths to output of raxml.
         phyml_result: list
             The paths to output of phyml.
-            
+        
+        Examples
+        --------
+        >>> from funpipe.phylo import phylo
+        >>> phylo = phylo( 'sample.vcf' )
+        Get SNPs into fasta file:
+        >>> phylo.vcf_snp_to_fasta().fa2phylip()
+        Perform phylogenetic analysis:
+        >>> phylo.fasttree().raxml().phyml()
+
         """
         
         self.snp_fasta = None
@@ -50,7 +58,7 @@ class phylo:
         self.prefix = os.path.splitext( os.path.basename( self.invcf )  )[0]
         
     def vcf_snp_to_fasta(self, max_amb=10):
-        """ snp only vcf to fasta file
+        """Save SNPs in VCF to fasta file
 
         Parameters
         ----------

@@ -4,14 +4,14 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-#sys.path.append('.')
 from funpipe.utils import run
 import subprocess as sp
 
 
 class gt_pair:
     def __init__(self, gt1, gt2, na_ignore=False):
-        """Constructor of gt_pair.
+        """
+
         Parameters
         ----------
         gt1, gt2: pd.Series
@@ -33,18 +33,17 @@ class gt_pair:
         n_unique: int
             The number of unique variants between the two samples.
         
-        Example
-        -------
-        .. highlight:: python
-        .. code-block:: python
-            >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
-            >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
-            >>> gt = gt_pair(gt1, gt2).get_n_unique()
-            >>> print(gt.n_total, gt.n_unique, gt.n_share)
-            7 5 2
-            >>> gt = gt_pair(gt1, gt2, na_ignore=True).get_n_unique()
-            >>> print(gt.n_total, gt.n_unique, gt.n_share)
-            5 3 2
+        Examples
+        --------
+        >>> from funpipe.gt_pair import gt_pair
+        >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
+        >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
+        >>> gt = gt_pair(gt1, gt2).get_n_unique()
+        >>> print(gt.n_total, gt.n_unique, gt.n_share)
+        7 5 2
+        >>> gt = gt_pair(gt1, gt2, na_ignore=True).get_n_unique()
+        >>> print(gt.n_total, gt.n_unique, gt.n_share)
+        5 3 2
 
         """
         # helper method to convert gt datatype
@@ -74,16 +73,15 @@ class gt_pair:
         int
             The total number of non-monomorphic sites between two samples.
             
-        Example
-        -------
-        .. highlight:: python
-        .. code-block:: python
-            >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
-            >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
-            >>> gt_pair(gt1, gt2).get_n_total()
-            7
-            >>> gt_pair(gt1, gt2).get_n_total()
-            5
+        Examples
+        --------
+        >>> from funpipe.gt_pair import gt_pair
+        >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
+        >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
+        >>> gt_pair(gt1, gt2).get_n_total()
+        7
+        >>> gt_pair(gt1, gt2).get_n_total()
+        5
 
         """
         if self.na_ignore:
@@ -98,10 +96,9 @@ class gt_pair:
         """ Compare genotypes between two columns within a VCF file, and report shared
         variants between the two samples.
 
-                           A B
-        for example: site1 1 .
-                     site2 . 1
-                     site3 1 1
+        For example: |site1 1 .
+                     |site2 . 1
+                     |site3 1 1
 
         The number of shared variants here will be 1 (site3).
 
@@ -110,18 +107,16 @@ class gt_pair:
         int
             The number of shared sites.
 
-        Example
-        -------
-        .. highlight:: python
-        .. code-block:: python
-            >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
-            >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
-            >>> gt_pair(gt1, gt2).get_n_share()
-            2
+        Examples
+        --------
+        >>> from funpipe.gt_pair import gt_pair
+        >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
+        >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
+        >>> gt_pair(gt1, gt2).get_n_share()
+        2
 
-        Note
-        ----
-
+        Notes
+        -----
         This method is also cross-validated with GenotypeConcordance in GATK and
         bcftools stats. NaN will not be matched to any others.
 
@@ -141,10 +136,9 @@ class gt_pair:
         """
         Unique variants here mean a site that are private to either sample.
 
-                               A B
-        for example: site1 1 .
-                     site2 . 1
-                     site3 1 1
+        For example: |site1 1 .
+                     |site2 . 1
+                     |site3 1 1
 
         The number of unique variants here will be 2 (site1 and site2). If ignore NA,
         the unique variants will be 0 (site1 and 2 will not be considered here).
@@ -155,16 +149,15 @@ class gt_pair:
         int
             The number of unique sites.
 
-        Example
-        -------
-        .. highlight:: python
-        .. code-block:: python
-            >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
-            >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
-            >>> gt_pair(gt1, gt2).get_n_unique()
-            5
-            >>> gt_unique(gt1, gt2)
-            3
+        Examples
+        --------
+        >>> from funpipe.gt_pair import gt_pair
+        >>> gt1 = pd.Series([0, 1, 2, 0, 1, 2, 0, 1, 2, np.nan])
+        >>> gt2 = pd.Series([0, 1, 2, 1, 0, 1, np.nan, np.nan, np.nan, np.nan])
+        >>> gt_pair(gt1, gt2).get_n_unique()
+        5
+        >>> gt_unique(gt1, gt2)
+        3
 
         """
         if self.n_total is None:

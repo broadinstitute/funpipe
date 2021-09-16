@@ -5,8 +5,8 @@ from funpipe.utils import rm
 
 class picard:
     def __init__(self, jar='/opt/picard-tools/picard.jar', RAM=4):
-        ''' Constructor of picard object.
-        
+        '''
+
         Parameters
         ----------
         jar: string
