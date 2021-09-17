@@ -14,8 +14,8 @@ sphinx:
 
 submodules:
   include:
-    - one
-    - two
+    - bam
+    - fasta
   recursive: true 
   
 # Optionally build your docs in additional formats such as PDF
