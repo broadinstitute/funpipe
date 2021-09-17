@@ -1,2 +1,3 @@
 include README.md
-
+numpydoc==1.1.0
+sphinx==4.2.0
