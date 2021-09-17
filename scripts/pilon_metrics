@@ -1,0 +1,152 @@
+#!/bin/env python
+# Use python 2.7.1
+import os
+import sys
+import re
+from optparse import OptionParser
+from gaemr.SimpleTable import SimpleTable
+
+
+class Metric:
+    def __init__(self, name, desc, type, value):
+        self.name = name
+        self.desc = desc
+        self.type = type
+        self.value = value
+
+    def __str__(self):
+        return "%s\t%s\t%s\t%s" % (self.name, self.value, self.type, self.desc)
+
+
+def make_gaemr_table(metrics, output_prefix):
+    data = []
+    headers = []
+    for m in metrics:
+        metrics_string = m.__str__()
+        fields = metrics_string.split('\t')
+        if fields[-1] == 'Pilon Version':
+            headers = [fields[-1], fields[1]]
+        else:
+            data.append(
+                [''.join(word.capitalize() + " " for word in fields[-1].split()),
+                 fields[1]])
+
+    st = SimpleTable(headers, data, "Pilon Metrics")
+    st.print_output(output_prefix)
+
+
+def pilon_log_metrics(logfile, output_prefix):
+    metrics = []
+
+    with open(logfile, 'r') as f:
+        log = f.read()
+
+    version = None
+    for v in re.compile("Pilon version ([0-9.]+) ").findall(log):
+        version = v
+    if version:
+        metrics.append(
+            Metric('pilonVersion', 'Pilon Version', 'string', version))
+
+    genome = None
+    for g in re.compile("Copying reference genome (.*)").findall(log):
+        genome = g
+    if version:
+        metrics.append(
+            Metric('reference', 'Reference genome', 'string', genome))
+
+    bams = {}
+    coverage = {}
+    coverage_re = re.compile(
+        "(\w+) ([A-Za-z0-9._-]+) Reads: [0-9]+, Coverage: ([0-9]+)")
+    for (kind, bam, cov) in coverage_re.findall(log):
+        if kind[-1] == 's':
+            kind = kind[:-1]
+        if bam not in bams:
+            bams[bam] = (kind, cov)
+            coverage[kind] = coverage.get(kind, 0) + int(cov)
+
+    for (kind, cov) in coverage.iteritems():
+        metrics.append(
+            Metric(kind + 'Coverage', kind + ' coverage', 'int', cov))
+
+
+    snps_re = re.compile(
+        "([0-9]+) snps; ([0-9]+) ambiguous bases; ([0-9]+) small insertions totaling ([0-9]+) bases; ([0-9]+) small deletions totaling ([0-9]+)")
+    snps = ambiguous = insertions = ins_bases = deletions = del_bases = 0
+    for (s, a, i, ib, d, db) in snps_re.findall(log):
+        snps += int(s)
+        ambiguous += int(a)
+        insertions += int(i)
+        ins_bases += int(ib)
+        deletions += int(d)
+        del_bases += int(db)
+    metrics.append(
+        Metric('snps', 'SNPs', 'int', snps))
+    metrics.append(
+        Metric('ambiguousBases', 'Ambiguous bases', 'int', ambiguous))
+    metrics.append(
+        Metric('insertions', 'Small insertions', 'int', insertions))
+    metrics.append(
+        Metric('insertionBases', 'Small insertion bases', 'int', ins_bases))
+    metrics.append(
+        Metric('deletions', 'Small deletions', 'int', deletions))
+    metrics.append(
+        Metric('deletionBases', 'Small deletion bases', 'int', del_bases))
+
+    fixes = fix_added = fix_removed = 0
+    fix_re = re.compile("^fix.*-([0-9]+) \+([0-9]+)", re.MULTILINE)
+    for (removed, added) in fix_re.findall(log):
+        fixes += 1
+        fix_added += int(added)
+        fix_removed += int(removed)
+    metrics.append(
+        Metric('fixes', 'Local reassembly fixes', 'int', fixes))
+    metrics.append(
+        Metric('fixBasesAdded', 'Bases added in reassembly fixes', 'int',
+               fix_added))
+    metrics.append(
+        Metric('fixBasesRemoved', 'Bases removed in reassembly fixes', 'int',
+               fix_removed))
+    gaps_opened = len(re.compile("^fix.*OpenedGap", re.MULTILINE).findall(log))
+    metrics.append(Metric('gapsOpened', 'Gaps opened', 'int', gaps_opened))
+    gaps_closed = len(re.compile("^fix.*ClosedGap", re.MULTILINE).findall(log))
+    metrics.append(Metric('gapsClosed', 'Gaps closed', 'int', gaps_closed))
+
+    collapsed_re = re.compile(".*collapsed region:.*size ([0-9]+)",
+                              re.MULTILINE)
+    collapsed_regions = collapsed_bases = 0
+    for (size) in collapsed_re.findall(log):
+        collapsed_regions += 1
+        collapsed_bases += int(size)
+    metrics.append(
+        Metric('collapsedRegions', 'Collapsed regions', 'int',
+               collapsed_regions))
+    metrics.append(
+        Metric('collapsedBases', 'Collapsed bases', 'int', collapsed_bases))
+
+    make_gaemr_table(metrics, output_prefix)
+
+
+if __name__ == '__main__':
+    parser = OptionParser(usage="""
+    usage: %prog [options] <pilon_output_directory>
+
+    Parses pilon log and generates summary metrics.
+    """)
+
+    parser.add_option('--log', '-l', default='pilon.log',
+                      help='Name of pilon log file')
+    parser.add_option('--dir', '-d', default='.',
+                      help="output directory of pilon summary")
+    parser.add_option('--out_prefix', default='Pilon.pilon_metrics',
+                      help="Output pilon metrics")
+
+    (options, args) = parser.parse_args()
+
+    # back compatibility...free argument is directory
+    if len(args) == 1:
+        options.directory = args[0]
+
+    pilon_log_metrics(
+        options.log, os.path.join(options.dir, options.out_prefix))
