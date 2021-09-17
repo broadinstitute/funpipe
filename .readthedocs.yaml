@@ -11,6 +11,12 @@ sphinx:
    
 # submodules:
 #   include: - docs/build/html/_modules/funpipe/bam.html
+
+submodules:
+  include:
+    - one
+    - two
+  recursive: true 
   
 # Optionally build your docs in additional formats such as PDF
 #formats:
