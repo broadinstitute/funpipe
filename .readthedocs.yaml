@@ -9,8 +9,8 @@ version: 2
 sphinx:
    configuration: docs/source/conf.py
    
-submodules:
-  include: - docs/build/html/_modules/funpipe/bam.html
+# submodules:
+#   include: - docs/build/html/_modules/funpipe/bam.html
   
 # Optionally build your docs in additional formats such as PDF
 #formats:
