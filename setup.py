@@ -28,13 +28,13 @@ setup(
         'Natural Language :: English'
     ],
     keywords=['bioinformatics'],
-    url='https://github.com/broadinstitute/funpipe',
+    url='https://github.com/x-lab/funpipe',
     project_urls={
-        'Bug tracker': 'https://github.com/broadinstitute/funpipe/issues',
-        'Documentation': 'https://github.com/broadinstitute/funpipe/README.md'
+        'Bug tracker': 'https://github.com/x-lab/funpipe/issues',
+        'Documentation': 'https://github.com/x-lab/funpipe/README.md'
     },
     author='Xiao Li',
-    author_email='xiaoli@broadinstitute.org',
+    author_email='xiaoli@x-lab.org',
     license='MIT',
     packages=['funpipe', 'funpipe.scripts'],
     package_dir={
@@ -43,10 +43,10 @@ setup(
     },
     install_requires=[
         'argparse>=1.1', 'crimson>=0.4.0', 'pandas>=0.23.4',
-        'matplotlib>=3.0.2', 'seaborn>=0.9.0'
+        'matplotlib>=3.0.2', 'seaborn>=0.9.0', 'numpy==1.15.4'
     ],
     test_suite='setup.test_suite',
     scripts=glob('scripts/*'),
     include_package_data=True,
-    zip_safe=False
+    zip_safe=False,
 )
