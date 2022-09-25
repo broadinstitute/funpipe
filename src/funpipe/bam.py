@@ -1,11 +1,12 @@
 import os
 import sys
+# unused
 from funpipe.picard import picard as pcd
 from funpipe.legacy import tabix
 from funpipe.utils import run
 
-class bam:
-    def __init__(self,path):
+class Bam:
+    def __init__(self, path):
         '''
         
         Parameters
@@ -39,8 +40,10 @@ class bam:
         Examples
         --------
         >>> from funpipe.bam import bam
+        # sample = Bam('sample.bam')
         >>> bam = bam( 'sample.bam' )
         Sort BAM file:
+        # sorted_bam = sample.sort_bam()
         >>> sorted_bam = bam.sort_bam().sorted_bam
         Clean BAM file:
         >>> cleanup_sorted_bam = sorted_bam.clean_bam().cleanup_bam
@@ -70,7 +73,7 @@ class bam:
         self.out_vcf = None
     
 
-    def sort_bam(self,out_dir=".", tmp=None, RAM=2, threads=1):
+    def sort_bam(self, out_dir=".", tmp=None, RAM=2, threads=1):
         ''' Sort BAM using samtools.
         
         Parameters
@@ -97,7 +100,8 @@ class bam:
         outfile = prefix + '.sorted.bam'
         run(' '.join(['samtools sort -T', tmp, '-m', str(RAM)+'G',
                       '-@', str(threads), '-o', outfile, self.path ]))
-        
+        # sorted_bam = outfile
+        # return sorted_bam
         self.sorted_bam = bam(outfile)
         
         return self
@@ -116,9 +120,9 @@ class bam:
             An updated bam object with indexed bam file generated.
             
         '''
-            
-        run('samtools index '+ self.path )
         
+        run('samtools index '+ self.path )
+        # prefix name?
         self.bam_index = self.path +'.bai'
         
         return self
@@ -144,7 +148,7 @@ class bam:
 
         
 
-    def bam_depth(self, out_prefix, idx=False):
+    def bam_depth(self, out_prefix, idx = False):
         '''Calculate bam depth.
         
         Parameters
@@ -160,8 +164,8 @@ class bam:
             An updated bam object with depth file generated.
             
         '''
-        outfile = out_prefix+'.depth.gz'
-        cmd = 'samtools depth '+ self.path +' | bgzip > '+outfile
+        outfile = out_prefix + '.depth.gz'
+        cmd = 'samtools depth ' + self.path + ' | bgzip > ' + outfile
         run(cmd)
         if idx:
             tabix(outfile, type='vcf')
@@ -185,7 +189,7 @@ class bam:
 #        return out_dir
 
 
-    def create_pileup(self,fa,out_prefix,C=50,reg=None,l=None,Q=13,q=0):
+    def create_pileup(self, fa, prefix, C = 50, reg = None, l = None, Q = 13, q = 0):
         """Produce pileup text format from an alignment
         
         Usage
@@ -218,21 +222,21 @@ class bam:
             An updated bam object with pileup generated, out_prefix+'.txt'.
             
         """
-        cmd = 'samtools mpileup -C '+ str(C)
-        if reg!=None:
+        cmd = 'samtools mpileup -C ' + str(C)
+        if reg != None:
             cmd = cmd + ' -r ' + reg
         cmd = cmd + ' -f ' + fa
-        if l!=None:
+        if l != None:
             cmd = cmd + ' -l ' + l
-        cmd = cmd + ' -Q ' + str(Q) + ' -q ' + str(q) + ' -o ' + out_prefix + '.txt' + ' ' + self.path
+        cmd = cmd + ' -Q ' + str(Q) + ' -q ' + str(q) + ' -o ' + prefix + '.txt' + ' ' + self.path
         
         run(cmd)
-        self.pileup = out_prefix + '.txt'
+        self.pileup = prefix + '.txt'
         
         return self
         
         
-    def depth_per_window(self, out_prefix, faidx, window=5000):
+    def depth_per_window(self, out_prefix, faidx, window = 5000):
         '''Calculate depth per window.
         
         Parameters
@@ -344,7 +348,7 @@ class bam:
         
         return self
     
-    def variant_call(self,fa,prefix):
+    def variant_call(self, fa, prefix):
         """Perform varaint calling from aligned bam file
         
         Parameters
@@ -374,12 +378,3 @@ class bam:
         
         return self
         
-        
-        
-        
-        
-        
-        
-        
-    
-    

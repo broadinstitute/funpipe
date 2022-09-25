@@ -32,6 +32,7 @@ class fastq:
         Examples
         --------
         >>> from funpipe.fastq import fastq
+        # variable name
         >>> fastq = fastq( 'sample_1.fq', 'sample_2.fq', is_paired = True )
         Perform QC:
         >>> fastq.fastqc( out_dir = '.' )
