@@ -1,4 +1,4 @@
-.*
+.g*
 
 # Compiled python modules.
 *.pyc
@@ -20,4 +20,3 @@ docs/build*
 
 # python cache
 */__pycache__/*
-
