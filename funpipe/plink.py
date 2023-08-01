@@ -6,12 +6,12 @@ from funpipe.utils import run
 class plink:
     def __init__(self, prefix):
         """
-        
+
         Parameters
         ----------
         prefix: string
             The prefix of bfile.
-            
+
         Attributes
         ----------
         bed: string
@@ -26,7 +26,7 @@ class plink:
             The path to gwas result file.
         qc: string
             The path to quality control file.
-        
+
         Examples
         --------
         >>> from funpipe.plink import plink
@@ -42,15 +42,15 @@ class plink:
             raise Exception('Sorry, missing fam file for plink to work')
         if not os.path.exists(prefix + '.bim'):
             raise Exception('Sorry, missing bim file for plink to work')
-        
+
         self._bed = prefix + '.bed'
         self._fam = prefix + '.fam'
         self._bim = prefix + '.bim'
-        
+
         self._related = None
         self._assoc = None
         self._qc = None
-        
+
     @property
     def related(self):
         return self._related
@@ -72,36 +72,36 @@ class plink:
     @property
     def bim(self):
         return self._bim
-    
+
     def relatedness(self):
         """ Calculate genetic relatedness matrix.
-        
+
         Returns
         -------
         funpipe.plink
             An updated plink object with relatedness file generated.
-            
+
         """
         self._related = self._bfile+'.related.tsv'
         run(" ".join(['gemma', '-bfile '+self._bfile,
                       '-gk -o '+self._related]))
-        
+
         return self
 
     def gwas(self, lmm=4):
         """ Fit a LMM for a univariate model with GEMMA.
-        
+
         Parameters
         ----------
         lmm: int
             Linear mixed model, 1 performs Wald test, 2 performs likelihood ratio test,
             3 performs score test, and 4 performs all the three tests, default = 4.
-            
+
         Returns
         -------
         funpipe.plink
             An updated plink object with gwas result file generated.
-            
+
         """
         self._assoc = self._bfile + '.gemma.assoc.tsv'
         run(" ".join([
@@ -109,22 +109,22 @@ class plink:
             '-k '+self._related,
             '-lmm '+str(lmm),
             '-o '+self._assoc]))
-        
+
         return self
 
     def import_pheno(self,phenotypes ):
         """ Import phenotypes
-        
+
         Parameters
         ----------
         phenotypes: list
             The list of phenotypes appended to fam file.
-            
+
         Returns
         -------
         funpipe.plink
             An updated plink object with phenotype imported in fam file.
-            
+
         """
         fam_pd = pd.read_csv(self._fam , sep = "\t", header = None)
         if len(fam_pd[ list(fam_pd.columns)[0] ]) != len(phenotypes):
@@ -133,7 +133,7 @@ class plink:
             fam_pd[len(fam_pd.columns)] = phenotypes
         fam_pd.to_csv( self._bfile + '.fam', sep = "\t", index = None)
         self._fam = self._bfile + '.fam'
-        
+
         return self
 
     def gwas_filter(self, ind=0.1, miss=0.1, maf=0.05):
@@ -147,7 +147,7 @@ class plink:
             Site level missingness, default = 0.1.
         maf: float
             Minor allele frequency cutoff, default = 0.05.
-            
+
         Returns
         -------
         funpipe.plink
@@ -180,12 +180,12 @@ from funpipe.utils import run
 class plink:
     def __init__(self, prefix):
         """
-        
+
         Parameters
         ----------
         prefix: string
             The prefix of bfile.
-            
+
         Attributes
         ----------
         bed: string
@@ -200,7 +200,7 @@ class plink:
             The path to gwas result file.
         qc: string
             The path to quality control file.
-        
+
         Examples
         --------
         >>> from funpipe.plink import plink
@@ -216,15 +216,15 @@ class plink:
             raise Exception('Sorry, missing fam file for plink to work')
         if not os.path.exists(prefix + '.bim'):
             raise Exception('Sorry, missing bim file for plink to work')
-        
+
         self._bed = prefix + '.bed'
         self._fam = prefix + '.fam'
         self._bim = prefix + '.bim'
-        
+
         self._related = None
         self._assoc = None
         self._qc = None
-        
+
     @property
     def related(self):
         return self._related
@@ -246,36 +246,36 @@ class plink:
     @property
     def bim(self):
         return self._bim
-    
+
     def relatedness(self):
         """ Calculate genetic relatedness matrix.
-        
+
         Returns
         -------
         funpipe.plink
             An updated plink object with relatedness file generated.
-            
+
         """
         self._related = self._bfile+'.related.tsv'
         run(" ".join(['gemma', '-bfile '+self._bfile,
                       '-gk -o '+self._related]))
-        
+
         return self
 
     def gwas(self, lmm=4):
         """ Fit a LMM for a univariate model with GEMMA.
-        
+
         Parameters
         ----------
         lmm: int
             Linear mixed model, 1 performs Wald test, 2 performs likelihood ratio test,
             3 performs score test, and 4 performs all the three tests, default = 4.
-            
+
         Returns
         -------
         funpipe.plink
             An updated plink object with gwas result file generated.
-            
+
         """
         self._assoc = self._bfile + '.gemma.assoc.tsv'
         run(" ".join([
@@ -283,22 +283,22 @@ class plink:
             '-k '+self._related,
             '-lmm '+str(lmm),
             '-o '+self._assoc]))
-        
+
         return self
 
     def import_pheno(self,phenotypes ):
         """ Import phenotypes
-        
+
         Parameters
         ----------
         phenotypes: list
             The list of phenotypes appended to fam file.
-            
+
         Returns
         -------
         funpipe.plink
             An updated plink object with phenotype imported in fam file.
-            
+
         """
         fam_pd = pd.read_csv(self._fam , sep = "\t", header = None)
         if len(fam_pd[ list(fam_pd.columns)[0] ]) != len(phenotypes):
@@ -307,7 +307,7 @@ class plink:
             fam_pd[len(fam_pd.columns)] = phenotypes
         fam_pd.to_csv( self._bfile + '.fam', sep = "\t", index = None)
         self._fam = self._bfile + '.fam'
-        
+
         return self
 
     def gwas_filter(self, ind=0.1, miss=0.1, maf=0.05):
@@ -321,7 +321,7 @@ class plink:
             Site level missingness, default = 0.1.
         maf: float
             Minor allele frequency cutoff, default = 0.05.
-            
+
         Returns
         -------
         funpipe.plink
