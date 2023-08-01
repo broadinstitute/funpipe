@@ -43,7 +43,7 @@ setup(
     },
     install_requires=[
         'argparse>=1.1', 'crimson>=0.4.0', 'pandas>=0.23.4',
-        'matplotlib>=3.0.2', 'seaborn>=0.9.0', 'numpy==1.15.4'
+        'matplotlib>=3.0.2', 'seaborn>=0.9.0', 'numpy==1.22.0'
     ],
     test_suite='setup.test_suite',
     scripts=glob('scripts/*'),
